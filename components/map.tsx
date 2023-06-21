@@ -13,7 +13,7 @@ export default function Map() {
         longitude: -9.11,
         zoom: 14,
       }}
-      style={{ width: 800, height: 600 }}
+      style={{ width: "100vw", height: "100vh" }}
       mapLib={maplibregl}
       mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
     >
