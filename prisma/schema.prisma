@@ -12,10 +12,10 @@ datasource db {
 }
 
 model buildings {
-  name       String                  @id
-  geom       Unsupported("geometry")
+  name       String                                      @id
+  geom       Unsupported("geometry(Polygon, 4326)")
   properties Json
-  metrics    metrics[]               @ignore
+  metrics    metrics[]                                   @ignore
 }
 
 /// This table has subclasses and requires additional setup for migrations. Visit https://pris.ly/d/table-inheritance for more info.
