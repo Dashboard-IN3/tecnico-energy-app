@@ -21,6 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
       headers: {
         "Content-Type": "application/octet-stream",
         "Content-Length": st_asmvt.length.toString(),
+        "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=600",
       },
     }
   );
