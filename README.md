@@ -1,54 +1,102 @@
----
-name: Vercel Postgres + Prisma Next.js Starter
-slug: postgres-prisma
-description: Simple Next.js template that uses Vercel Postgres as the database and Prisma as the ORM.
-framework: Next.js
-useCase: Starter
-css: Tailwind
-database: Vercel Postgres
-deployUrl: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fstorage%2Fpostgres-prisma&project-name=postgres-prisma&repository-name=postgres-prisma&demo-title=Vercel%20Postgres%20%2B%20Prisma%20Next.js%20Starter&demo-description=Simple%20Next.js%20template%20that%20uses%20Vercel%20Postgres%20as%20the%20database%20and%20Prisma%20as%20the%20ORM.&demo-url=https%3A%2F%2Fpostgres-prisma.vercel.app%2F&demo-image=https%3A%2F%2Fpostgres-prisma.vercel.app%2Fopengraph-image.png&stores=%5B%7B"type"%3A"postgres"%7D%5D
-demoUrl: https://postgres-prisma.vercel.app/
-relatedTemplates:
-  - postgres-starter
-  - postgres-kysely
-  - postgres-sveltekit
----
+# NextJS + Postgres + Prisma
 
-# Vercel Postgres + Prisma Next.js Starter
+## Data Prep
 
-Simple Next.js template that uses [Vercel Postgres](https://vercel.com/postgres) as the database and [Prisma](https://prisma.io/) as the ORM.
+To turn our wide timeseries CSVs into long CSVs that better match our DB tables, run the following in a directory with our CSVs:
 
-## Demo
+```python
+import datetime
+import os
+import csv
+import smart_open
 
-https://postgres-prisma.vercel.app/
+for f in os.listdir():
+    if not f.endswith('.csv'):
+        continue
 
-## How to Use
+    print(f)
+    with open(f, 'r') as f_in:
 
-You can choose from one of the following two methods to use this repository:
+        out_name = f.split('.csv')[0] + '.reformat.csv.gz'
+        with smart_open.open(out_name, 'w') as f_out:
 
-### One-Click Deploy
+            reader = csv.DictReader(f_in)
+            writer = csv.DictWriter(f_out, fieldnames=['building_name', 'metric', 'dt', 'value'])
+            writer.writeheader()
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+            for row in reader:
+                building_name = row['Building Name']
+                metric = row['Metric']
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fstorage%2Fpostgres-prisma&project-name=postgres-prisma&repository-name=postgres-prisma&demo-title=Vercel%20Postgres%20%2B%20Prisma%20Next.js%20Starter&demo-description=Simple%20Next.js%20template%20that%20uses%20Vercel%20Postgres%20as%20the%20database%20and%20Prisma%20as%20the%20ORM.&demo-url=https%3A%2F%2Fpostgres-prisma.vercel.app%2F&demo-image=https%3A%2F%2Fpostgres-prisma.vercel.app%2Fopengraph-image.png&stores=%5B%7B"type"%3A"postgres"%7D%5D)
+                if not row['1']:
+                    print(f"WARNING: no value for {building_name}/{metric}")
+                    continue
 
-### Clone and Deploy
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [pnpm](https://pnpm.io/installation) to bootstrap the example:
-
-```bash
-pnpm create next-app --example https://github.com/vercel/examples/tree/main/storage/postgres-prisma
+                for hour in range(1, 8761):
+                    value = row[str(hour)]
+                    writer.writerow({
+                      'building_name': building_name,
+                      'metric': metric,
+                      'dt': datetime.datetime(2021,1,1) + datetime.timedelta(hours=hour),
+                      'value': value
+                    })
 ```
 
-Once that's done, copy the .env.example file in this directory to .env.local (which will be ignored by Git):
+NOTE: We gzip the output CSVs to save disk space, each CSV would be over 1GB otherwise.
+
+## Development
+
+### Install
 
 ```bash
-cp .env.example .env.local
+pnpm install
 ```
 
-Then open `.env.local` and set the environment variables to match the ones in your Vercel Storage Dashboard.
+### Secrets
 
-Next, run Next.js in development mode:
+To obtain configuration for your local development environment:
+
+```bash
+npx vercel env pull .env
+```
+
+### Setup database
+
+First, let's create a local database and user.
+
+```bash
+createdb tecnico
+psql tecnico -c "CREATE ROLE tecnico_user WITH LOGIN SUPERUSER PASSWORD 'secretpass';"
+```
+
+To do a quick and dirty setup of our dev db (not using migrations):
+
+```bash
+# Push our DB schema to database
+npx prisma db push
+```
+
+See [Schema prototyping with db push](https://www.prisma.io/docs/guides/migrate/prototyping-schema-db-push) for more information.
+
+```bash
+# Convert our geojson to a CSV of building name, geometry, & properties (without building name) and pipe to postgres database
+cat data/buildings.geojson | jq -r '.features[] | .properties.Name + ";" + (.geometry | tojson) + ";" + (del(.properties.Name) | .properties | tojson)' | psql tecnico -c "copy buildings from stdin (delimiter ';');"
+```
+
+You should see something like `COPY 5193` as output.
+
+Now lets load our CSVs:
+
+```bash
+for f in data/*.csv.gz; do
+  echo $f;
+  zcat < $f | psql tecnico -c "copy metrics(building_name, metric, dt, value) from stdin (format csv, header)";
+done
+```
+
+### Running the Application
+
+Run Next.js in development mode:
 
 ```bash
 pnpm dev
