@@ -6,8 +6,6 @@ Based off of the [Vercel Postgres + Prisma Next.js Starter](https://vercel.com/t
 - [Prisma](https://www.prisma.io/) - database modeling/ORM
 - [Tailwind](https://tailwindcss.com/) - CSS framework
 
-
-
 ## Development
 
 ### Install
@@ -42,7 +40,6 @@ npx prisma db push
 
 See [Schema prototyping with db push](https://www.prisma.io/docs/guides/migrate/prototyping-schema-db-push) for more information.
 
-
 ### Load data
 
 #### Buildings
@@ -61,7 +58,6 @@ cat data/buildings.geojson | jq -r '.features[] | .properties.Name + ";" + (.geo
 ```
 
 You should see something like `COPY 5193` as output.
-
 
 #### Metrics
 
