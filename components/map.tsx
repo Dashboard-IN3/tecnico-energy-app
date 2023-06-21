@@ -20,7 +20,7 @@ export default function Map() {
       <Source
         id="building-footprints"
         type="vector"
-        tiles={["http://localhost:3000/api/tiles/{z}/{x}/{y}"]}
+        tiles={[`${window.location.origin}/api/tiles/{z}/{x}/{y}`]}
         minzoom={6}
         maxzoom={14}
       >
