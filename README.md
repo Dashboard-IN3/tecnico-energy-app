@@ -1,14 +1,71 @@
-# NextJS + Postgres + Prisma
+# Técnico Application
 
-## Data Prep
+Based off of the [Vercel Postgres + Prisma Next.js Starter](https://vercel.com/templates/next.js/postgres-prisma). This utilizes the following tools:
 
-To turn our Shapefile of buildings in EPSG:32729 into a GeoJSON in EPSG:4326:
+- [Next.js](https://nextjs.org/) - React.js framework
+- [Prisma](https://www.prisma.io/) - database modeling/ORM
+- [Tailwind](https://tailwindcss.com/) - CSS framework
+
+
+
+## Development
+
+### Install
+
+```bash
+pnpm install
+```
+
+### Secrets
+
+To obtain configuration for your local development environment:
+
+```bash
+npx vercel env pull .env
+```
+
+### Setup database
+
+First, let's create a local database and user for the app to use during devleopment.
+
+```bash
+createdb tecnico
+psql tecnico -c "CREATE ROLE tecnico_user WITH LOGIN SUPERUSER PASSWORD 'secretpass';"
+```
+
+To do a quick and dirty setup of our dev db (not using migrations):
+
+```bash
+# Push our DB schema to database
+npx prisma db push
+```
+
+See [Schema prototyping with db push](https://www.prisma.io/docs/guides/migrate/prototyping-schema-db-push) for more information.
+
+
+### Load data
+
+#### Buildings
+
+To turn our Shapefile of buildings (`shapefile.shp`) in EPSG:32729 into a GeoJSON in EPSG:4326:
 
 ```bash
 ogr2ogr -f GeoJSON -s_srs EPSG:32729 -t_srs EPSG:4326 buildings.geojson shapefile.shp
 ```
 
-To turn our wide timeseries CSVs into long CSVs that better match our DB tables, run the following in a directory with our CSVs:
+To insert these records into our local database:
+
+```bash
+# Convert our geojson to a CSV of building name, geometry, & properties (without building name) and pipe to postgres database
+cat data/buildings.geojson | jq -r '.features[] | .properties.Name + ";" + (.geometry | tojson) + ";" + (del(.properties.Name) | .properties | tojson)' | psql tecnico -c "copy buildings from stdin (delimiter ';');"
+```
+
+You should see something like `COPY 5193` as output.
+
+
+#### Metrics
+
+To turn our wide timeseries CSVs (`*.csv`) into long CSVs that better match our DB tables, run the following in a directory with our CSVs:
 
 ```python
 import datetime
@@ -50,48 +107,7 @@ for f in os.listdir():
 
 NOTE: We gzip the output CSVs to save disk space, each CSV would be over 1GB otherwise.
 
-## Development
-
-### Install
-
-```bash
-pnpm install
-```
-
-### Secrets
-
-To obtain configuration for your local development environment:
-
-```bash
-npx vercel env pull .env
-```
-
-### Setup database
-
-First, let's create a local database and user.
-
-```bash
-createdb tecnico
-psql tecnico -c "CREATE ROLE tecnico_user WITH LOGIN SUPERUSER PASSWORD 'secretpass';"
-```
-
-To do a quick and dirty setup of our dev db (not using migrations):
-
-```bash
-# Push our DB schema to database
-npx prisma db push
-```
-
-See [Schema prototyping with db push](https://www.prisma.io/docs/guides/migrate/prototyping-schema-db-push) for more information.
-
-```bash
-# Convert our geojson to a CSV of building name, geometry, & properties (without building name) and pipe to postgres database
-cat data/buildings.geojson | jq -r '.features[] | .properties.Name + ";" + (.geometry | tojson) + ";" + (del(.properties.Name) | .properties | tojson)' | psql tecnico -c "copy buildings from stdin (delimiter ';');"
-```
-
-You should see something like `COPY 5193` as output.
-
-Now lets load our CSVs:
+To insert these records into our local database:
 
 ```bash
 for f in data/*.csv.gz; do
