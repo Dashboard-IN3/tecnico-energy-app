@@ -2,6 +2,12 @@
 
 ## Data Prep
 
+To turn our Shapefile of buildings in EPSG:32729 into a GeoJSON in EPSG:4326:
+
+```bash
+ogr2ogr -f GeoJSON -s_srs EPSG:32729 -t_srs EPSG:4326 buildings.geojson shapefile.shp
+```
+
 To turn our wide timeseries CSVs into long CSVs that better match our DB tables, run the following in a directory with our CSVs:
 
 ```python
