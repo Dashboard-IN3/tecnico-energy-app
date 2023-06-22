@@ -12,23 +12,29 @@ datasource db {
 }
 
 model buildings {
-  name       String                                      @id
+  name       String                                 @id
   geom       Unsupported("geometry(Polygon, 4326)")
   properties Json
-  metrics    metrics[]                                   @ignore
+  metrics    metrics[]                              @ignore
 }
 
 /// This table has subclasses and requires additional setup for migrations. Visit https://pris.ly/d/table-inheritance for more info.
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model metrics {
-  building_name String
-  metric        String
-  value         Float
-  dt            DateTime
-  buildings     buildings @relation(fields: [building_name], references: [name])
+  building_name            String
+  dt                       DateTime
+  cooling                  Float
+  total_operational_energy Float
+  lighting                 Float
+  domestic_hot_water       Float
+  equipment                Float
+  window_radiation         Float
+  heating                  Float
 
+  buildings buildings @relation(fields: [building_name], references: [name])
+
+  @@id([building_name, dt])
   @@index([dt(sort: Desc)])
-  @@ignore
 }
 
 model spatial_ref_sys {

@@ -61,55 +61,49 @@ You should see something like `COPY 5193` as output.
 
 #### Metrics
 
-To turn our wide timeseries CSVs (`*.csv`) into long CSVs that better match our DB tables, run the following in a directory with our CSVs:
+To insert these records into our local database, run the following command in a directory with our CSVs:
 
 ```python
+python3 <<EOF | psql tecnico -c "copy metrics(building_name, dt, cooling, total_operational_energy, lighting, domestic_hot_water, equipment, window_radiation, heating) from stdin (format csv, header)"
 import datetime
 import os
 import csv
-import smart_open
+import sys
 
-for f in os.listdir():
-    if not f.endswith('.csv'):
-        continue
+format_header = lambda h: h.split('/').pop().replace(' ', '_').lower()
 
-    print(f)
-    with open(f, 'r') as f_in:
+csv_files = [open(f, 'r') for f in os.listdir() if f.endswith('.csv')]
+metric_names = [format_header(next(csv.DictReader(csv_file))['Metric']) for csv_file in csv_files]
+[f.seek(0) for f in csv_files] # Reset files
 
-        out_name = f.split('.csv')[0] + '.reformat.csv.gz'
-        with smart_open.open(out_name, 'w') as f_out:
+try:
+  writer = csv.DictWriter(sys.stdout, fieldnames=['building_name', 'dt', *metric_names])
+  writer.writeheader()
 
-            reader = csv.DictReader(f_in)
-            writer = csv.DictWriter(f_out, fieldnames=['building_name', 'metric', 'dt', 'value'])
-            writer.writeheader()
+  for row in zip(*[csv.DictReader(csv_file) for csv_file in csv_files]):
+    building_names = set(r['Building Name'] for r in row)
+    assert len(building_names) == 1, 'Got differing buildings'
+    building_name = building_names.pop()
 
-            for row in reader:
-                building_name = row['Building Name']
-                metric = row['Metric']
+    # {'metric1': ['0.3', '0.1' ...], 'metric2': ['0.9', '0.4', ...], ...}
+    metrics = {r['Metric']: list(r.values())[5:] for r in row}
+    # [{'metric1': '0.3', 'metric2': '0.9', ...}, {'metric1': '0.1', 'metric2': '0.4', ...} ...]
+    metrics_by_hour = [dict(zip((format_header(h) for h in metrics.keys()), values)) for values in zip(*metrics.values())]
 
-                if not row['1']:
-                    print(f"WARNING: no value for {building_name}/{metric}")
-                    continue
+    if any(not metric for metric in metrics_by_hour[0].values()):
+      print(f"WARNING: no value for {building_name}")
+      continue
 
-                for hour in range(1, 8761):
-                    value = row[str(hour)]
-                    writer.writerow({
-                      'building_name': building_name,
-                      'metric': metric,
-                      'dt': datetime.datetime(2021,1,1) + datetime.timedelta(hours=hour),
-                      'value': value
-                    })
-```
-
-NOTE: We gzip the output CSVs to save disk space, each CSV would be over 1GB otherwise.
-
-To insert these records into our local database:
-
-```bash
-for f in data/*.csv.gz; do
-  echo $f;
-  zcat < $f | psql tecnico -c "copy metrics(building_name, metric, dt, value) from stdin (format csv, header)";
-done
+    for hour, metrics in enumerate(metrics_by_hour, 1):
+      writer.writerow({
+        'building_name': building_name,
+        'dt': datetime.datetime(2021,1,1) + datetime.timedelta(hours=hour),
+        **metrics
+      })
+finally:
+    for csv_file in csv_files:
+        csv_file.close()
+EOF
 ```
 
 ### Running the Application
