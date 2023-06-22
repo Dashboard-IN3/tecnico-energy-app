@@ -76,33 +76,32 @@ csv_files = [open(f, 'r') for f in os.listdir() if f.endswith('.csv')]
 metric_names = [format_header(next(csv.DictReader(csv_file))['Metric']) for csv_file in csv_files]
 [f.seek(0) for f in csv_files] # Reset files
 
-try:
-  writer = csv.DictWriter(sys.stdout, fieldnames=['building_name', 'dt', *metric_names])
-  writer.writeheader()
+readers = zip(*[csv.DictReader(csv_file) for csv_file in csv_files])
 
-  for row in zip(*[csv.DictReader(csv_file) for csv_file in csv_files]):
-    building_names = set(r['Building Name'] for r in row)
-    assert len(building_names) == 1, 'Got differing buildings'
-    building_name = building_names.pop()
+writer = csv.DictWriter(sys.stdout, fieldnames=['building_name', 'dt', *metric_names])
+writer.writeheader()
 
-    # {'metric1': ['0.3', '0.1' ...], 'metric2': ['0.9', '0.4', ...], ...}
-    metrics = {r['Metric']: list(r.values())[5:] for r in row}
-    # [{'metric1': '0.3', 'metric2': '0.9', ...}, {'metric1': '0.1', 'metric2': '0.4', ...} ...]
-    metrics_by_hour = [dict(zip((format_header(h) for h in metrics.keys()), values)) for values in zip(*metrics.values())]
+for row_num, row in enumerate(readers, 1):
+  building_names = set(r['Building Name'] for r in row)
+  assert len(building_names) == 1, 'Got differing buildings'
+  building_name = building_names.pop()
 
-    if any(not metric for metric in metrics_by_hour[0].values()):
-      print(f"WARNING: no value for {building_name}")
-      continue
+  # {'metric1': ['0.3', '0.1' ...], 'metric2': ['0.9', '0.4', ...], ...}
+  metrics = {r['Metric']: list(r.values())[5:] for r in row}
+  # [{'metric1': '0.3', 'metric2': '0.9', ...}, {'metric1': '0.1', 'metric2': '0.4', ...} ...]
+  metrics_by_hour = [dict(zip((format_header(h) for h in metrics.keys()), values)) for values in zip(*metrics.values())]
 
-    for hour, metrics in enumerate(metrics_by_hour, 1):
-      writer.writerow({
-        'building_name': building_name,
-        'dt': datetime.datetime(2021,1,1) + datetime.timedelta(hours=hour),
-        **metrics
-      })
-finally:
-    for csv_file in csv_files:
-        csv_file.close()
+  # Some row contain null values. We skip those.
+  if any(not metric for metric in metrics_by_hour[0].values()):
+    print(f"WARNING: no value for row {row_num} ({building_name})", file=sys.stderr)
+    continue
+
+  for hour, metrics in enumerate(metrics_by_hour, 1):
+    writer.writerow({
+      'building_name': building_name,
+      'dt': datetime.datetime(2021,1,1) + datetime.timedelta(hours=hour),
+      **metrics
+    })
 EOF
 ```
 
