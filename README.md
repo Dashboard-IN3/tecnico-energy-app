@@ -105,6 +105,8 @@ for row_num, row in enumerate(readers, 1):
 EOF
 ```
 
+This operation can take a fair amount of time to complete (15-20 minutes). Once complete, you should see something like `COPY 43440840` as output.
+
 ### Running the Application
 
 Run Next.js in development mode:
