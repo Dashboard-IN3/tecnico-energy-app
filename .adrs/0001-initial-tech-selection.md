@@ -14,7 +14,7 @@ While the fine details of the application's interface are still being designed, 
 
 - **Infrequent Updates**: Data will update on an infrequent basis as requested by the partner. This implies that the application's focus is not on real-time data streaming or continuous updates, but rather on providing analytical capabilities on static or periodically updated datasets.
 
-- **Web access only**: The application is designed to be accessed exclusively through a web interface. Users will interact with the application using web browsers, and all functionality and data will be accessible through the web interface. This decision eliminates the need to develop and maintain a generic API layer, simplifying the architecture and focusing efforts on delivering a seamless and user-friendly web experience. By providing web access only, we can ensure consistent and controlled access to the application while maintaining a unified user interface for all interactions.
+- **Web Access Only**: The application is designed to be accessed exclusively through a web interface. Users will interact with the application using web browsers, and all functionality and data will be accessible through the web interface. This decision eliminates the need to develop and maintain a generic API layer, simplifying the architecture and focusing efforts on delivering a seamless and user-friendly web experience. By providing web access only, we can ensure consistent and controlled access to the application while maintaining a unified user interface for all interactions.
 
 ## Decision 1: Next.js
 
@@ -94,11 +94,11 @@ While the fine details of the application's interface are still being designed, 
 
 ### Vercel Platform
 
-1. **Lack of async computing**: A concern with Vercel is the absence of an asynchronous computing option, which can pose challenges when dealing with long-running or computationally intensive tasks that require non-blocking operations. Vercel's architecture primarily focuses on serverless functions and static content hosting, making it less suitable for efficiently handling tasks such as background processing or parallel execution of large datasets. To address this limitation, alternative approaches include:
+1. **No Async Computing**: A concern with Vercel is the absence of an asynchronous computing option, which can pose challenges when dealing with long-running or computationally intensive tasks that require non-blocking operations. Vercel's architecture primarily focuses on serverless functions and static content hosting, making it less suitable for efficiently handling tasks such as background processing or parallel execution of large datasets. To address this limitation, alternative approaches include:
 
    1. Adding an asyncronous job queue from a third-party, wherein worker services would read from the queue and perform long-running tasks. This would come at the cost of added complexity and cost to the system.
 
-1. **Per-seat pricing**: Vercel's per-seat charge for organizations can create a disincentive for granting operational control to multiple individuals within the organization. This pricing approach may discourage widespread access and collaboration, as each additional user comes with an associated cost. Limiting operational control to a smaller number of individuals can hinder agility, impede efficient decision-making, and limit the ability to delegate responsibilities effectively.
+1. **Per-Seat Pricing**: Vercel's per-seat charge for organizations can create a disincentive for granting operational control to multiple individuals within the organization. This pricing approach may discourage widespread access and collaboration, as each additional user comes with an associated cost. Limiting operational control to a smaller number of individuals can hinder agility, impede efficient decision-making, and limit the ability to delegate responsibilities effectively.
 
 ### Costs
 
