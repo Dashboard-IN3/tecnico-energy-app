@@ -84,6 +84,11 @@ While the fine details of the application's interface are still being designed, 
 1. **Sizing Limitations**: With traditional always-on databases, if data-access performance is deemed inadequate after best efforts are made to optimize the database schema and queries, then the database instance's RAM and CPU allocation can be adjusted to provide better performance. With Vercel's serverless PostgreSQL offering, this is not an option. If database performance is deemed unacceptable, possible solutions include:
 
    1. Migrate database service to an alternative always-on Postgresql provider. This would come with consequence of increased monthly costs and adding another expense account to manage.
+  
+1. **TimescaleDB License**: As stipulated by the TimescaleDB License Agreement ([3]), database-as-a-service (DBaaS) providers (e.g. Vercel Database, Neon, AWS RDS) are only permitted to provide the Apache 2 version of TimescaleDB while self-hosted deployments and Timescale (a DBaaS solution provided by the creators of TimescaleDB) can run the Timescale Community Edition version. The Apache 2 version of TimescaleDB offers a subset of the features included in the Community Edition version ([4]). Missing features that could be of interest to this project include compression and certain advanced hypertable functions. In the event that this functionality is considered highly-desired, possible solutions include:
+
+   1. Migrate database service to a self-hosted solution, such as running the database within AWS EC2. Attention should be given to also ensuring that a connection pooling service such as pgBouncer is available to avoid exhausting connections by the serverless Vercel Functions. This would come with consequence of a possible increase monthly costs, increased system architecture complexity, and adding another expense account to manage.
+   2. Migrate database to Timescale. This would come with consequence of a likely increase monthly costs and adding another expense account to manage.
 
 ### Vercel Functions
 
@@ -102,7 +107,7 @@ While the fine details of the application's interface are still being designed, 
 
 ### Costs
 
-Estimated monthly costs [[3], [4]] (calculated in USD):
+Estimated monthly costs [[5], [6]] (calculated in USD):
 
 | Decription                              | Price          | Required     | Included    | Total            |
 | --------------------------------------- | -------------- | ------------ | ----------- | ---------------- |
@@ -119,5 +124,7 @@ Estimated monthly costs [[3], [4]] (calculated in USD):
 
 [1]: https://vercel.com/docs/storage/vercel-postgres/limits#vercel-postgres-cold-starts "Vercel Postgres: Cold Starts"
 [2]: https://vercel.com/guides/how-to-allowlist-deployment-ip-address#allow-all-ip-addresses
-[3]: https://vercel.com/pricing "Vercel Pricing"
-[4]: https://vercel.com/docs/storage/vercel-postgres/usage-and-pricing#pricing "Vercel Postgres: Pricing"
+[3]: https://www.timescale.com/legal/licenses
+[4]: https://docs.timescale.com/about/latest/timescaledb-editions/
+[5]: https://vercel.com/pricing "Vercel Pricing"
+[6]: https://vercel.com/docs/storage/vercel-postgres/usage-and-pricing#pricing "Vercel Postgres: Pricing"
