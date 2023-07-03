@@ -35,22 +35,18 @@ class Tile {
 
   constructor({ z, x, y }: Params) {
     if ([z, x, y].map((val) => parseInt(val)).some(isNaN)) {
-      throw new Error("Bad coordinates");
+      throw new Error("Coordinates must be numbers");
     }
-    // if 'format' not in tile or tile['format'] not in ['pbf', 'mvt']:
-    //     return False
 
-    // size = 2 ** tile['zoom'];
+    [this.zoom, this.x, this.y] = [z, x, y].map((val) => parseInt(val));
 
-    // if tile['x'] >= size or tile['y'] >= size:
-    //     return False
+    if ([this.x, this.y].some((val) => val >= 2 ** this.zoom)) {
+      throw new Error("Coordinates must be appropriate for zoom level");
+    }
 
-    // if tile['x'] < 0 or tile['y'] < 0:
-    //     return False
-
-    this.zoom = parseInt(z);
-    this.x = parseInt(x);
-    this.y = parseInt(y);
+    if ([this.x, this.y].some((val) => val < 0)) {
+      throw new Error("Coordinates must be greater than 0");
+    }
   }
 
   private asEnvelope(): Envelope {
@@ -111,8 +107,6 @@ class Tile {
     `;
   }
 }
-
-// function envelopeToBoundsSql(env) {}
 
 interface Params {
   x: string;
