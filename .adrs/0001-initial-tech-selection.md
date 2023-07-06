@@ -99,7 +99,7 @@ While the fine details of the application's interface are still being designed, 
 
 ### Vercel Platform
 
-1. **No Async Computing**: A concern with Vercel is the absence of an asynchronous computing option, which can pose challenges when dealing with long-running or computationally intensive tasks that require non-blocking operations. Vercel's architecture primarily focuses on serverless functions and static content hosting, making it less suitable for efficiently handling tasks such as background processing or parallel execution of large datasets. To address this limitation, alternative approaches include:
+1. **No Async Computing**: Vercel's architecture primarily focuses on serverless functions and static content hosting, making it less suitable for efficiently handling tasks such as background processing or parallel execution of large datasets. To address this limitation, alternative approaches include:
 
    1. Adding an asyncronous job queue from a third-party, wherein worker services would read from the queue and perform long-running tasks. This would come at the cost of added complexity and cost to the system.
 
