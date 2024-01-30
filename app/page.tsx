@@ -12,7 +12,7 @@ export default async function Home() {
       <Header />
       <div className="container mx-2 px-2 sm:px-6 lg:px-8 py-8">
         <h1 className="text-xl font-bold">Explore Urban Data Studies</h1>
-        {/* <CardGrid /> */}
+        <CardGrid />
       </div>
     </div>
   )
