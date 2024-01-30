@@ -16,7 +16,7 @@ interface Props {
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const pathname = usePathname()
   console.log({ pathname })
-  console.warn("test")
+
   const [isDrawing, setIsDrawing] = useState(false)
   // TODO make this driven by studies inventory
   const whiteList = [
@@ -61,6 +61,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
         >
           <Source
             id="building-footprints"
+            promoteId={"name"}
             type="vector"
             tiles={[`${window.location.origin}/api/tiles/{z}/{x}/{y}`]}
             minzoom={6}

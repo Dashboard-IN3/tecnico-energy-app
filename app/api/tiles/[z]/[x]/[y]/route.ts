@@ -100,6 +100,7 @@ class Tile {
       ),
       mvtgeom AS (
           SELECT ST_AsMVTGeom(ST_Transform(t.${rawVals.geomColumn}, 3857), bounds.b2d) AS geom,
+          name,
           43 AS height
           FROM ${rawVals.table} t, bounds
           WHERE ST_Intersects(t.${rawVals.geomColumn}, ST_Transform(bounds.geom, ${srid}::integer))

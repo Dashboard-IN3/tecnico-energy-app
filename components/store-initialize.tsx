@@ -3,9 +3,8 @@
 // This component syncs the client side Zustand store with the server store
 import { useStore } from "../app/lib/store"
 import { useRef } from "react"
-import { StudyWithThemes } from "./explore"
 
-type Props = { selectedStudy: StudyWithThemes }
+type Props = { selectedStudy: Studies.Study }
 
 function StoreInitialize({ selectedStudy }: Props) {
   const { setSelectedStudy } = useStore()

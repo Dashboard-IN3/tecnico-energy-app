@@ -4,13 +4,12 @@ import React, { useRef, useState, ReactNode, useEffect } from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl, { LngLatLike } from "maplibre-gl"
-import BackgroundTiles from "./background-tiles"
 import DrawBboxControl from "./draw-bbox-control"
 import { GeoJSONFeature } from "./types"
 import { bbox } from "@turf/turf"
-import { useAoiSearch } from "../aoi/aoi-search"
+import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
-import { useStore } from "../app/lib/store"
+import { useStore } from "../../app/lib/store"
 
 type MapViewProps = {
   children?: ReactNode
@@ -50,40 +49,40 @@ const MapView = ({
     }))
   }
 
-  // useEffect(() => {
-  //   if (!map || !aoi.feature) return
+  useEffect(() => {
+    if (!map || !aoi.feature || !aoi.bbox[0]) return
 
-  //   const southWest = [aoi.bbox[0], aoi.bbox[1]] as LngLatLike
-  //   const northEast = [aoi.bbox[2], aoi.bbox[3]] as LngLatLike
+    const southWest = [aoi.bbox[0], aoi.bbox[1]] as LngLatLike
+    const northEast = [aoi.bbox[2], aoi.bbox[3]] as LngLatLike
 
-  //   const northEastPointPixel = map.project(northEast)
-  //   const southWestPointPixel = map.project(southWest)
-  //   const features = map.queryRenderedFeatures(
-  //     [southWestPointPixel, northEastPointPixel],
-  //     { layers: ["buildings-layer"] }
-  //   )
+    const northEastPointPixel = map.project(northEast)
+    const southWestPointPixel = map.project(southWest)
+    const features = map.queryRenderedFeatures(
+      [southWestPointPixel, northEastPointPixel],
+      { layers: ["buildings-layer"] }
+    )
 
-  //   const intersections = useAoiSearch(
-  //     features,
-  //     aoi.feature.geometry.coordinates
-  //   )
-  //   console.log({ intersections })
-  //   getIntersectingFeatures(intersections)
-  // }, [aoi.feature])
+    const intersections = getAoiFeatures(
+      features,
+      aoi.feature.geometry.coordinates
+    )
+    console.log({ intersections })
+    updateIntersectingFeatures(intersections)
+  }, [aoi.feature, aoi.bbox, map])
 
-  // const getIntersectingFeatures = featureIDsToUpdate => {
-  //   featureIDsToUpdate.forEach(featureID => {
-  //     // Update the paint properties of specific features by ID
-  //     map.setFeatureState(
-  //       {
-  //         source: "buildings",
-  //         sourceLayer: "lx_buildings_augmented",
-  //         id: featureID,
-  //       },
-  //       { selected: true }
-  //     )
-  //   })
-  // }
+  const updateIntersectingFeatures = featureIDsToUpdate => {
+    featureIDsToUpdate.forEach(featureID => {
+      // Update the paint properties of specific features by ID
+      map.setFeatureState(
+        {
+          source: "building-footprints",
+          sourceLayer: "default",
+          id: featureID,
+        },
+        { selected: true }
+      )
+    })
+  }
 
   const drawUpdate = () => {
     console.log("draw update fired")
@@ -105,14 +104,6 @@ const MapView = ({
     }
   }, [map])
 
-  // useEffect(() => {
-  //   if (fitTo && map.current) {
-  //     map.current.fitBounds(fitTo, {
-  //       padding: { top: 100, bottom: 100, left: 100, right: 100 },
-  //     })
-  //   }
-  // }, [fitTo])
-
   return (
     <div ref={mapContainer} className="h-full w-full">
       <Map
@@ -126,7 +117,6 @@ const MapView = ({
         mapLib={maplibregl}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
       >
-        {/* <BackgroundTiles /> */}
         <ScenarioControl />
         <DrawBboxControl
           map={map}

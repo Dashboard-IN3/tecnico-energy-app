@@ -16,6 +16,7 @@
   "dependencies": {
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@prisma/client": "4.13.0",
+    "@turf/boolean-intersects": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "@types/node": "^20",
     "@types/react": "^18.2.48",
