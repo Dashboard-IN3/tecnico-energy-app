@@ -56,17 +56,15 @@ While the fine details of the application's interface are still being designed, 
 
 4. **Popularity**: Prisma has gained widespread adoption within the developer community. Its popularity ensures continuous improvements, active maintenance, and a supportive community that can assist with troubleshooting and knowledge sharing.
 
-## Decision 4: PostgreSQL with PostGIS and TimescaleDB
+## Decision 4: PostgreSQL with PostGIS
 
 ### Reasons:
 
 1. **PostGIS**: PostGIS is a spatial database extension for PostgreSQL, providing robust geospatial capabilities. By using PostGIS, we can efficiently store, query, and analyze spatial data, which is essential for our project's requirements involving geolocation and mapping functionality. Additionally, its support for generating vector tiles eliminates the need for a separate tiling service for visualizing spatial information.
 
-2. **TimescaleDB**: TimescaleDB is a time-series database extension for PostgreSQL, optimized for handling large volumes of time-series data efficiently. Its integration with PostgreSQL enables us to store and query time-series data with high performance, making it suitable for scenarios where we need to process and analyze time-stamped data effectively.
+2. **Popularity**: PostgreSQL, along with its extension PostGIS, is widely adopted, well-supported, and trusted by the developer community. Its popularity ensures the availability of extensive documentation, active community support, and frequent security updates.
 
-3. **Popularity**: PostgreSQL, along with its extensions PostGIS and TimescaleDB, is widely adopted, well-supported, and trusted by the developer community. Its popularity ensures the availability of extensive documentation, active community support, and frequent security updates.
-
-4. **Familiarity**: Our team members have prior experience with PostgreSQL, making it a familiar choice. This familiarity reduces the learning curve, facilitates efficient development, and allows us to leverage existing expertise in database management and optimization.
+3. **Familiarity**: Our team members have prior experience with PostgreSQL, making it a familiar choice. This familiarity reduces the learning curve, facilitates efficient development, and allows us to leverage existing expertise in database management and optimization.
 
 ## Consequences
 
@@ -85,10 +83,7 @@ While the fine details of the application's interface are still being designed, 
 
    1. Migrate database service to an alternative always-on Postgresql provider. This would come with consequence of increased monthly costs and adding another expense account to manage.
   
-1. **TimescaleDB License**: As stipulated by the TimescaleDB License Agreement ([3]), database-as-a-service (DBaaS) providers (e.g. Vercel Database, Neon, AWS RDS) are only permitted to provide the Apache 2 version of TimescaleDB while self-hosted deployments and Timescale (a DBaaS solution provided by the creators of TimescaleDB) can run the Timescale Community Edition version. The Apache 2 version of TimescaleDB offers a subset of the features included in the Community Edition version ([4]). Missing features that could be of interest to this project include compression and certain advanced hypertable functions. In the event that this functionality is considered highly-desired, possible solutions include:
-
    1. Migrate database service to a self-hosted solution, such as running the database within AWS EC2. Attention should be given to also ensuring that a connection pooling service such as pgBouncer is available to avoid exhausting connections by the serverless Vercel Functions. This would come with consequence of a possible increase monthly costs, increased system architecture complexity, and adding another expense account to manage.
-   2. Migrate database to Timescale. This would come with consequence of a likely increase monthly costs and adding another expense account to manage.
 
 ### Vercel Functions
 
@@ -124,7 +119,5 @@ Estimated monthly costs [[5], [6]] (calculated in USD):
 
 [1]: https://vercel.com/docs/storage/vercel-postgres/limits#vercel-postgres-cold-starts "Vercel Postgres: Cold Starts"
 [2]: https://vercel.com/guides/how-to-allowlist-deployment-ip-address#allow-all-ip-addresses
-[3]: https://www.timescale.com/legal/licenses
-[4]: https://docs.timescale.com/about/latest/timescaledb-editions/
 [5]: https://vercel.com/pricing "Vercel Pricing"
 [6]: https://vercel.com/docs/storage/vercel-postgres/usage-and-pricing#pricing "Vercel Postgres: Pricing"
