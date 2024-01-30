@@ -33,7 +33,7 @@ export default async function ExplorePage({
       themes: metaData.themes,
       description: "",
       selectedTheme: {
-        [metaData.id]: metaData.themes[0],
+        [metaData.id]: metaData?.themes[0],
       },
     } as Studies.Study,
   }

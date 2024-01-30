@@ -18,7 +18,7 @@ export const useStore = create<InitialState>(set => ({
         [study.id]: {
           ...study,
           selectedThemeId: state.studies[study.id]?.selectedThemeId
-            ? state.studies[study.id].selectedThemeId
+            ? state.studies[study.id]?.selectedThemeId
             : themes[0].id,
         },
       },
@@ -42,7 +42,7 @@ export const useStore = create<InitialState>(set => ({
         ...state.studies,
         [state.selectedStudyId]: {
           ...state.studies[state.selectedStudyId],
-          themes: state.studies[state.selectedStudyId].themes.map(theme =>
+          themes: state.studies[state.selectedStudyId]?.themes?.map(theme =>
             theme.id === themeId
               ? { ...theme, selectedScenarioId: scenarioId }
               : theme

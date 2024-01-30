@@ -5,7 +5,6 @@ import { useState } from "react"
 import trash from "../public/icons/trash.svg"
 import area from "../public/icons/area.svg"
 import { ThemeSelector } from "./theme-selector"
-import { Theme } from "./explore"
 import { useStore } from "../app/lib/store"
 import { InPageLink } from "./in-page-link"
 
@@ -23,7 +22,7 @@ export const SidePane: React.FC<Props> = ({
   study_id,
 }) => {
   const [isChecked, setIsChecked] = useState(false)
-  const title = useStore(state => state.studies[state.selectedStudyId].title)
+  const title = useStore(state => state.studies[state.selectedStudyId]?.title)
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked)

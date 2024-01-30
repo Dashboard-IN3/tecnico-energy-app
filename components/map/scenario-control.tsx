@@ -4,9 +4,9 @@ export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
 
   const selectedTheme = useStore(state => {
-    const themeId = state.studies[state.selectedStudyId].selectedThemeId
-    const allThemes = state.studies[state.selectedStudyId].themes
-    const selectedTheme = allThemes.find(theme => theme.id === themeId)
+    const themeId = state.studies[state.selectedStudyId]?.selectedThemeId
+    const allThemes = state.studies[state.selectedStudyId]?.themes
+    const selectedTheme = allThemes?.find(theme => theme.id === themeId)
     return selectedTheme
   }) as Studies.Theme
 
