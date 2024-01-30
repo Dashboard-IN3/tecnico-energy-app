@@ -35,6 +35,9 @@ dependencies:
   eslint-config-next:
     specifier: 13.3.0
     version: 13.3.0(eslint@8.38.0)(typescript@5.3.3)
+  lodash-es:
+    specifier: ^4.17.21
+    version: 4.17.21
   maplibre-gl:
     specifier: ^3.1.0
     version: 3.1.0
@@ -3485,6 +3488,10 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       p-locate: 5.0.0
+    dev: false
+
+  /lodash-es@4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
     dev: false
 
   /lodash.isequal@4.5.0:

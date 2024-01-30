@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState, ReactNode, useEffect } from "react"
+import React, { useRef, useState, ReactNode, useEffect, useMemo } from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl, { LngLatLike } from "maplibre-gl"
@@ -10,6 +10,7 @@ import { bbox } from "@turf/turf"
 import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
+import { round, memoize } from "lodash-es"
 
 type MapViewProps = {
   children?: ReactNode
@@ -29,6 +30,7 @@ const MapView = ({
   isDrawing,
 }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
+  const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
 
@@ -68,7 +70,7 @@ const MapView = ({
     )
 
     updateIntersectingFeatures(intersections)
-  }, [aoi.feature, aoi.bbox, map])
+  }, [aoi.feature, aoi.bbox, map, roundedZoom])
 
   const updateIntersectingFeatures = featureIDsToUpdate => {
     featureIDsToUpdate.forEach(featureID => {
@@ -94,9 +96,8 @@ const MapView = ({
   // zoom event listener
   useEffect(() => {
     if (!map) return
-
     const zoomHandler = () => {
-      console.log(map.getZoom())
+      setRoundedZoom(round(map.getZoom()))
     }
     map.on("zoomend", zoomHandler)
     return () => {
