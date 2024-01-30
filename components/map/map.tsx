@@ -66,7 +66,7 @@ const MapView = ({
       features,
       aoi.feature.geometry.coordinates
     )
-    console.log({ intersections })
+
     updateIntersectingFeatures(intersections)
   }, [aoi.feature, aoi.bbox, map])
 

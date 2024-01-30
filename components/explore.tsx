@@ -6,7 +6,7 @@ import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
-import { usePathname } from "next/navigation"
+import { globalVariables } from "../global-config"
 
 interface Props {
   params: { uuid: string }
@@ -14,9 +14,6 @@ interface Props {
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
-  const pathname = usePathname()
-  console.log({ pathname })
-
   const [isDrawing, setIsDrawing] = useState(false)
   // TODO make this driven by studies inventory
   const whiteList = [
@@ -63,7 +60,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             id="building-footprints"
             promoteId={"name"}
             type="vector"
-            tiles={[`${window.location.origin}/api/tiles/{z}/{x}/{y}`]}
+            tiles={[`${globalVariables.basePath}/api/tiles/{z}/{x}/{y}`]}
             minzoom={6}
             maxzoom={14}
           >
