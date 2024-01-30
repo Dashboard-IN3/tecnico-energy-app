@@ -1,16 +1,16 @@
-import './globals.css'
-import { Inter } from 'next/font/google'
+import "./globals.css"
+import { Inter } from "next/font/google"
 
 export const metadata = {
   title: "Técnico",
   description:
     "A simple Next.js app with Vercel Postgres as the database and Prisma as the ORM",
-};
+}
 
 const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-  display: 'swap',
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
 })
 
 export default function RootLayout({
@@ -20,7 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.variable}>{children}</body>
+      <body className={inter.variable}>
+        <main className="h-screen w-screen">{children}</main>
+      </body>
     </html>
   )
 }
