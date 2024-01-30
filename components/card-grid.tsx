@@ -1,17 +1,11 @@
 import Card from "./card"
-import { promises as fs } from "fs"
-import { StudyWithThemes as Study } from "./explore"
 
-const CardGrid = async () => {
-  const file = await fs.readFile(
-    process.cwd() + "/app/data/studies.json",
-    "utf8"
-  )
-  const studies = JSON.parse(file).data as Study[]
+export default function CardGrid() {
+  // TODO: Get studies data from /api/studies endpoint
 
-  return await (
+  return (
     <div className="container pr-4 md:pr-0 md:mx-auto py-8 md:max-w-max">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {studies &&
           Object.values(studies).map((study, key) => (
             <Card
@@ -22,9 +16,7 @@ const CardGrid = async () => {
               src={study.image_src}
             />
           ))}
-      </div>
+      </div> */}
     </div>
   )
 }
-
-export default CardGrid

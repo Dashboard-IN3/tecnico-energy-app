@@ -1,14 +1,12 @@
 import { Header } from "../components/header"
 import CardGrid from "../components/card-grid"
 
-// TODO: Do we still need the following lines here?
-// If yes, how can we make this play nice with SSR components?
 // Prisma does not support Edge without the Data Proxy currently
 export const runtime = "edge"
 export const preferredRegion = "home"
 export const dynamic = "force-dynamic"
 
-export default function Home() {
+export default async function Home() {
   return (
     <div className="bg-slate-100 h-full overflow-x-hidden">
       <Header />
