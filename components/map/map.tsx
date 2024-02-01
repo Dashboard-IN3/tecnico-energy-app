@@ -25,18 +25,8 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
   const { setAoi, aoi, isDrawing, setIsDrawing } = useStore()
-
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
 
-  const handleDrawComplete = (feature: GeoJSONFeature) => {
-    setIsDrawing(false)
-
-    setAoi({
-      bbox: bbox(feature.geometry),
-      feature,
-    })
-  }
-  console.log({ aoi })
   useEffect(() => {
     if (selectedFeatureIds && !aoi.feature) {
       updateIntersectingFeatures([])
@@ -97,8 +87,20 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
     setSelectedFeatureIds(featureIdsToUpdate)
   }
 
-  const drawUpdate = () => {
-    console.log("draw update fired")
+  // map event handlers
+  const handleDrawComplete = (feature: GeoJSONFeature) => {
+    setIsDrawing(false)
+    setAoi({
+      bbox: bbox(feature.geometry),
+      feature,
+    })
+  }
+
+  const drawUpdate = (feature: GeoJSONFeature) => {
+    setAoi({
+      bbox: bbox(feature.geometry),
+      feature,
+    })
   }
   const drawSelectionChange = () => {
     console.log("draw selection fired")

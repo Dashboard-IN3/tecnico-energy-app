@@ -88,10 +88,8 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
         </div>
         <button
           onClick={() => {
-            if (!isDrawing) {
-              setIsDrawing(true)
-              setAoi({ feature: undefined, bbox: [] })
-            }
+            setIsDrawing(!isDrawing)
+            setAoi({ feature: undefined, bbox: [] })
           }}
           className={`hover:shadow-lg py-2 px-4 rounded-md border border-slate-800 ${
             isDrawing && "bg-slate-300"
@@ -103,7 +101,9 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
           onClick={() => {
             setAoi({ feature: undefined, bbox: [] })
           }}
-          className="hover:shadow-lg py-2 px-4 rounded-md border border-slate-800 "
+          className={`py-2 px-4 rounded-md border border-slate-800  ${
+            aoi.feature ? "hover:shadow-lg" : "opacity-30 hover:cursor-default"
+          }`}
         >
           <Image src={trash} alt="trash logo" width={16} height={16} />
         </button>

@@ -91,16 +91,23 @@ function DrawBboxControl({
         handleSelection
       )
     }
-  }, [map, handleDraw])
+  }, [map, handleDraw, handleSelection, handleUpdate])
+
+  const resetMapFeatures = useCallback(() => {
+    drawControlRef.current.deleteAll()
+    drawControlRef.current.changeMode("draw_polygon")
+    map.getCanvas().style.cursor = "crosshair"
+  }, [map])
 
   // set map drawing to on when drawing state is on
   useEffect(() => {
-    if (isEnabled && drawControlRef.current) {
-      drawControlRef.current.deleteAll()
-      drawControlRef.current.changeMode("draw_polygon")
-      map.getCanvas().style.cursor = "crosshair"
+    if (!drawControlRef.current) return
+    if (isEnabled) {
+      resetMapFeatures()
+    } else {
+      map.getCanvas().style.cursor = "grab"
     }
-  }, [isEnabled, map])
+  }, [isEnabled, map, resetMapFeatures])
 
   // control map feature selection with state
   useEffect(() => {
@@ -108,15 +115,13 @@ function DrawBboxControl({
     if (aoi.feature) {
       drawControlRef.current.set({
         type: "FeatureCollection",
-        // TODO fix type issue
+        // TODO add proper GeoJSON type
         features: [aoi.feature as any],
       })
     } else {
-      console.log("removing all features")
-      drawControlRef.current.deleteAll()
-      drawControlRef.current.changeMode("draw_polygon")
+      resetMapFeatures()
     }
-  }, [aoi.feature])
+  }, [aoi.feature, resetMapFeatures])
 
   return null
 }
