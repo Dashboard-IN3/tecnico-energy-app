@@ -1,16 +1,19 @@
 import Image from "next/image"
 import chevron from "../../../../public/icons/chevron-left.svg"
+import Link from "next/link"
 
-const StudyDetails: React.FC = () => {
+const StudyDetails: React.FC = ({ params }: { params: { uuid: string } }) => {
   return (
-    <>
-      <div className="text-2xl font-light flex ml-10 mt-8 grid-col-1 ">
+    <div className="flex h-full w-full bg-slate-100 p-12">
+      <div className="text-2xl font-light flex ml-10 min-w-[300px]">
         <div className="mr-6 hover:bg-slate-100 h-[32px] min-w-[32px] p-1 rounded cursor-pointer">
-          <Image src={chevron} alt="trash logo" width={24} height={24} />
+          <Link href={`/explore/${params.uuid}`}>
+            <Image src={chevron} alt="chevron" width={22} height={22} />
+          </Link>
         </div>
-        <div className="min-w-[70vw] md:min-w-full">About This Study</div>
+        <div>About This Study</div>
       </div>
-      <div className="pl-6 md:pl-0 pr-6 pt-6 pb-6 mt-24 md:mt-48 max-w-[100%]">
+      <div className="pl-6 md:pl-0 pr-6 pt-6 pb-6 mt-4 md:mt-10 h-full">
         <div className="text-lg font-black my-4">Overview</div>
         <div>
           Aliquip labore incididunt deserunt nisi dolor mollit amet est
@@ -40,7 +43,7 @@ const StudyDetails: React.FC = () => {
           pariatur fugiat. Eiusmod duis veniam consequat dolore culpa enim sint
           dolor id officia eu dolor.
         </div>
-        <div className="text-lg font-black my-4">Refereences and citations</div>
+        <div className="text-lg font-black my-4">References and citations</div>
         <div>
           Officia qui sit laborum proident sunt eu dolore tempor exercitation
           ullamco id pariatur eu ea. Aute dolore pariatur quis aliqua ea ex
@@ -61,7 +64,7 @@ const StudyDetails: React.FC = () => {
           laboris id magna culpa. Velit minim proident amet aliquip eu.
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

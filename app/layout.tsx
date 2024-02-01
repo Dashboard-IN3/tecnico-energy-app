@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.variable}>
-        <main className="h-screen w-screen">{children}</main>
+        <main className="h-full w-full min-h-screen">{children}</main>
       </body>
     </html>
   )

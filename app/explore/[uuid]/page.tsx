@@ -3,6 +3,7 @@ import { promises as fs } from "fs"
 import Explore from "../../../components/explore"
 import { useStore } from "../../lib/store"
 import StoreInitialize from "../../../components/store-initialize"
+import { Header } from "../../../components/header"
 
 export default async function ExplorePage({
   params,
@@ -41,8 +42,13 @@ export default async function ExplorePage({
 
   return (
     <>
-      {metaData && <StoreInitialize {...stateObject} />}
-      <Explore params={params} metaData={metaData} />
+      {metaData && <StoreInitialize {...stateObject} />}{" "}
+      <div className="grid grid-cols-1 grid-rows-[auto,1fr,1fr] md:grid-cols-[350px,1fr] md:grid-rows-[auto,1fr] h-screen w-full overflow-x-hidden">
+        <div className="row-span-1 col-span-2 relative border-b border-gray-200">
+          <Header />
+        </div>
+        <Explore params={params} metaData={metaData} />
+      </div>
     </>
   )
 }

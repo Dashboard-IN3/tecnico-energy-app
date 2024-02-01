@@ -25,7 +25,7 @@ export const ThemeSelector: React.FC = () => {
 
   return (
     <div className="">
-      <div className="text-black text-sm font-semibold font-['Inter'] leading-tight pb-2">
+      <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
         Theme:
       </div>
       <Select
