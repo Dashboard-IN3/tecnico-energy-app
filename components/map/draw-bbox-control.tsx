@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
-import { GeoJSONFeature, GeoJSONPolygon } from "./types"
+import { GeoJSONFeature } from "./types"
 import { MapRef } from "react-map-gl"
 
 const addDrawControl = (
@@ -26,8 +26,14 @@ const addDrawControl = (
     const feature = features[0]
     map.getCanvas().style.cursor = ""
     setTimeout(() => draw.changeMode("simple_select"), 0)
-    console.log("setting feature to state")
+
     drawingCompleted(feature)
+  })
+
+  map.on("draw.update", e => {
+    const { features } = e
+    const feature = features[0]
+    handleUpdate(feature)
   })
   return draw
 }
@@ -54,7 +60,7 @@ function DrawBboxControl({
   // Callback when drawing is finished
   const handleDraw = useCallback(
     (feature: GeoJSONFeature) => {
-      console.log("On level up draw complete")
+      console.log("On handle draw complete")
       handleDrawComplete(feature)
     },
     [handleDrawComplete]
@@ -81,7 +87,7 @@ function DrawBboxControl({
       drawControlRef.current = addDrawControl(
         map,
         handleDraw,
-        drawUpdate,
+        handleUpdate,
         handleSelection
       )
     }
@@ -98,16 +104,17 @@ function DrawBboxControl({
 
   // control map feature selection with state
   useEffect(() => {
-    if (aoi.feature && drawControlRef.current) {
+    if (!drawControlRef.current) return
+    if (aoi.feature) {
       drawControlRef.current.set({
         type: "FeatureCollection",
         // TODO fix type issue
         features: [aoi.feature as any],
       })
     } else {
-      if (drawControlRef.current) {
-        drawControlRef.current.deleteAll()
-      }
+      console.log("removing all features")
+      drawControlRef.current.deleteAll()
+      drawControlRef.current.changeMode("draw_polygon")
     }
   }, [aoi.feature])
 

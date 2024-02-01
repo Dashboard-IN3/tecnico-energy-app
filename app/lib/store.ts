@@ -1,14 +1,30 @@
+import { GeoJSONFeature } from "maplibre-gl"
 import { create } from "zustand"
 
 interface InitialState {
   studies: Record<string, Studies.Study>
   selectedStudyId: string
+  isDrawing: boolean
+  setIsDrawing: (isDrawing: boolean) => void
+  aoi: MapState.aoi
+  setAoi: (aoi: MapState.aoi) => void
   setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
   setSelectedTheme: (studyId: string, themeId: string) => void
   setSelectedScenario: (themeId: string, scenarioId: string) => void
 }
 
 export const useStore = create<InitialState>(set => ({
+  isDrawing: false,
+  setIsDrawing: (isDrawing: boolean) => {
+    set({ isDrawing })
+  },
+  aoi: {
+    feature: undefined,
+    bbox: [],
+  },
+  setAoi: (aoi: { feature: GeoJSONFeature; bbox: number[] }) => {
+    set({ aoi })
+  },
   studies: {},
   selectedStudyId: "",
   setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => {

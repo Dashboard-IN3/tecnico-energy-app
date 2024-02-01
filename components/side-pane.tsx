@@ -10,18 +10,12 @@ import { InPageLink } from "./in-page-link"
 
 interface Props {
   src: string
-  setIsDrawing: (arg: any) => void
-  isDrawing: boolean
   study_id: string
 }
 
-export const SidePane: React.FC<Props> = ({
-  src,
-  setIsDrawing,
-  isDrawing,
-  study_id,
-}) => {
+export const SidePane: React.FC<Props> = ({ src, study_id }) => {
   const [isChecked, setIsChecked] = useState(false)
+  const { isDrawing, setIsDrawing, setAoi, aoi } = useStore()
   const title = useStore(state => state.studies[state.selectedStudyId]?.title)
 
   const handleCheckboxChange = () => {
@@ -94,7 +88,10 @@ export const SidePane: React.FC<Props> = ({
         </div>
         <button
           onClick={() => {
-            setIsDrawing(true)
+            if (!isDrawing) {
+              setIsDrawing(true)
+              setAoi({ feature: undefined, bbox: [] })
+            }
           }}
           className={`hover:shadow-lg py-2 px-4 rounded-md border border-slate-800 ${
             isDrawing && "bg-slate-300"
@@ -104,7 +101,7 @@ export const SidePane: React.FC<Props> = ({
         </button>
         <button
           onClick={() => {
-            setIsDrawing(true)
+            setAoi({ feature: undefined, bbox: [] })
           }}
           className="hover:shadow-lg py-2 px-4 rounded-md border border-slate-800 "
         >

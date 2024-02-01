@@ -16,7 +16,7 @@ export const ScenarioControl: React.FC = () => {
   }))
 
   return (
-    <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md">
+    <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
       <div className="text-base font-medium mb-2 ">Study Scenarios</div>
       <div>
         {options.map((option: any, key: number) => (

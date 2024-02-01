@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { redirect } from "next/navigation"
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
@@ -14,7 +13,6 @@ interface Props {
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
-  const [isDrawing, setIsDrawing] = useState(false)
   // TODO make this driven by studies inventory
   const whiteList = [
     "portugal-municipal-energy",
@@ -40,8 +38,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
       <SidePane
         {...{
           src: metaData.image_src,
-          setIsDrawing,
-          isDrawing,
+
           study_id: params.uuid,
         }}
       />
@@ -52,8 +49,6 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             zoom: mapZoom,
             center: mapCenter,
             layerType,
-            setIsDrawing,
-            isDrawing,
           }}
         >
           <Source

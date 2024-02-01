@@ -10,53 +10,43 @@ import { bbox } from "@turf/turf"
 import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
-import { round, memoize } from "lodash-es"
+import { round, difference } from "lodash-es"
 
 type MapViewProps = {
   children?: ReactNode
   center: number[]
   zoom: number
   id: string
-  setIsDrawing: (arg: any) => void
-  isDrawing: boolean
 }
 
-const MapView = ({
-  id,
-  center,
-  zoom,
-  children,
-  setIsDrawing,
-  isDrawing,
-}: MapViewProps) => {
+const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
+  const { setAoi, aoi, isDrawing, setIsDrawing } = useStore()
 
-  const [aoi, setAoi] = useState<{
-    feature: GeoJSONFeature
-    bbox: number[]
-  }>({
-    feature: {} as GeoJSONFeature,
-    bbox: [],
-  })
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
 
   const handleDrawComplete = (feature: GeoJSONFeature) => {
     setIsDrawing(false)
 
-    setAoi(() => ({
+    setAoi({
       bbox: bbox(feature.geometry),
       feature,
-    }))
+    })
   }
-
+  console.log({ aoi })
   useEffect(() => {
+    if (selectedFeatureIds && !aoi.feature) {
+      updateIntersectingFeatures([])
+    }
     if (!map || !aoi.feature || !aoi.bbox[0]) return
 
     const southWest = [aoi.bbox[0], aoi.bbox[1]] as LngLatLike
     const northEast = [aoi.bbox[2], aoi.bbox[3]] as LngLatLike
 
+    // query rendered features within bounding box
     const northEastPointPixel = map.project(northEast)
     const southWestPointPixel = map.project(southWest)
     const features = map.queryRenderedFeatures(
@@ -64,16 +54,35 @@ const MapView = ({
       { layers: ["buildings-layer"] }
     )
 
-    const intersections = getAoiFeatures(
+    // calculate intersections between features and aoi
+    const intersectingFeatures = getAoiFeatures(
       features,
       aoi.feature.geometry.coordinates
     )
 
-    updateIntersectingFeatures(intersections)
+    updateIntersectingFeatures(intersectingFeatures)
   }, [aoi.feature, aoi.bbox, map, roundedZoom])
 
-  const updateIntersectingFeatures = featureIDsToUpdate => {
-    featureIDsToUpdate.forEach(featureID => {
+  const updateIntersectingFeatures = featureIdsToUpdate => {
+    // remove Ids that are no longer in new array of ids
+    const toRemove = difference(selectedFeatureIds, featureIdsToUpdate)
+
+    toRemove.forEach(featureID => {
+      // Update the paint properties of specific features by ID
+      map.setFeatureState(
+        {
+          source: "building-footprints",
+          sourceLayer: "default",
+          id: featureID,
+        },
+        { selected: undefined }
+      )
+    })
+
+    // add Ids that are in new selection but not in previous yet
+    const toAdd = difference(featureIdsToUpdate, selectedFeatureIds)
+
+    toAdd.forEach(featureID => {
       // Update the paint properties of specific features by ID
       map.setFeatureState(
         {
@@ -84,6 +93,8 @@ const MapView = ({
         { selected: true }
       )
     })
+
+    setSelectedFeatureIds(featureIdsToUpdate)
   }
 
   const drawUpdate = () => {
