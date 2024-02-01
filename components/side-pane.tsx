@@ -2,8 +2,6 @@
 
 import Image from "next/image"
 import { useState } from "react"
-import trash from "../public/icons/trash.svg"
-import area from "../public/icons/area.svg"
 import { ThemeSelector } from "./theme-selector"
 import { useStore } from "../app/lib/store"
 import { InPageLink } from "./in-page-link"
@@ -14,13 +12,7 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ src, study_id }) => {
-  const [isChecked, setIsChecked] = useState(false)
-  const { isDrawing, setIsDrawing, setAoi, aoi } = useStore()
   const title = useStore(state => state.studies[state.selectedStudyId]?.title)
-
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked)
-  }
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -67,46 +59,7 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
       </div>
       <div className="justify-start items-center gap-6 inline-flex">
-        <div className="justify-start items-start gap-3 flex">
-          <div className="justify-start items-center gap-[13px] flex">
-            <div
-              className={`w-[50px] h-7 p-0.5 bg-slate-300 rounded-full justify-start items-center flex ${
-                isChecked ? "bg-blue-500" : ""
-              }`}
-              onClick={handleCheckboxChange}
-            >
-              <div
-                className={`w-6 h-6 bg-white rounded-full transform transition-transform ${
-                  isChecked ? "translate-x-[23px]" : "translate-x-0"
-                }`}
-              ></div>
-            </div>
-          </div>
-          <div className="text-black text-base font-normal font-['Inter'] leading-normal">
-            Show 3D Buildings
-          </div>
-        </div>
-        <button
-          onClick={() => {
-            setIsDrawing(!isDrawing)
-            setAoi({ feature: undefined, bbox: [] })
-          }}
-          className={`hover:shadow-lg py-2 px-4 rounded-md border border-slate-800 ${
-            isDrawing && "bg-slate-300"
-          }`}
-        >
-          <Image src={area} alt="area logo" width={16} height={16} />
-        </button>
-        <button
-          onClick={() => {
-            setAoi({ feature: undefined, bbox: [] })
-          }}
-          className={`py-2 px-4 rounded-md border border-slate-800  ${
-            aoi.feature ? "hover:shadow-lg" : "opacity-30 hover:cursor-default"
-          }`}
-        >
-          <Image src={trash} alt="trash logo" width={16} height={16} />
-        </button>
+        <div className="justify-start items-start gap-3 flex"></div>
       </div>
     </div>
   )

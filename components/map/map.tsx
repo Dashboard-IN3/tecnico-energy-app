@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState, ReactNode, useEffect, useMemo } from "react"
+import React, { useRef, useState, ReactNode, useEffect } from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl, { LngLatLike } from "maplibre-gl"
@@ -11,6 +11,7 @@ import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
+import { DrawControlPane } from "./draw-control-pane"
 
 type MapViewProps = {
   children?: ReactNode
@@ -118,6 +119,21 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
     }
   }, [map])
 
+  // footprint loading event listener
+  useEffect(() => {
+    if (!map) return
+
+    const dataHandler = () => {
+      console.log("All data loaded")
+    }
+
+    map.once("data", dataHandler)
+
+    return () => {
+      map.off("data", dataHandler)
+    }
+  }, [map])
+
   return (
     <div ref={mapContainer} className="h-full w-full">
       <Map
@@ -132,6 +148,7 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
       >
         <ScenarioControl />
+        <DrawControlPane />
         <DrawBboxControl
           map={map}
           isEnabled={isDrawing}

@@ -6,6 +6,7 @@ import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
 import { globalVariables } from "../global-config"
+import { useState } from "react"
 
 interface Props {
   params: { uuid: string }
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
+  const [tilesLoaded, setTilesLoaded] = useState()
   // TODO make this driven by studies inventory
   const whiteList = [
     "portugal-municipal-energy",
