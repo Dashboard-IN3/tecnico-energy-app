@@ -27,6 +27,7 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   const setMapRef = (m: MapRef) => setMap(m)
   const { setAoi, aoi, isDrawing, setIsDrawing } = useStore()
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
+  const { setTotalSelectedFeatures } = useStore()
 
   useEffect(() => {
     if (selectedFeatureIds && !aoi.feature) {
@@ -86,6 +87,7 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
     })
 
     setSelectedFeatureIds(featureIdsToUpdate)
+    setTotalSelectedFeatures(featureIdsToUpdate.length)
   }
 
   // map event handlers

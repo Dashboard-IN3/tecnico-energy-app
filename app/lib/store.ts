@@ -4,6 +4,7 @@ import { create } from "zustand"
 interface InitialState {
   studies: Record<string, Studies.Study>
   selectedStudyId: string
+  totalSelectedFeatures: number
   isDrawing: boolean
   setIsDrawing: (isDrawing: boolean) => void
   aoi: MapState.aoi
@@ -11,9 +12,14 @@ interface InitialState {
   setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
   setSelectedTheme: (studyId: string, themeId: string) => void
   setSelectedScenario: (themeId: string, scenarioId: string) => void
+  setTotalSelectedFeatures: (total: number) => void
 }
 
 export const useStore = create<InitialState>(set => ({
+  totalSelectedFeatures: 0,
+  setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
+    set({ totalSelectedFeatures })
+  },
   isDrawing: false,
   setIsDrawing: (isDrawing: boolean) => {
     set({ isDrawing })

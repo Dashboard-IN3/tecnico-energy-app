@@ -1,10 +1,9 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
 import { ThemeSelector } from "./theme-selector"
-import { useStore } from "../app/lib/store"
 import { InPageLink } from "./in-page-link"
+import { useStore } from "../app/lib/store"
 
 interface Props {
   src: string
@@ -13,6 +12,7 @@ interface Props {
 
 export const SidePane: React.FC<Props> = ({ src, study_id }) => {
   const title = useStore(state => state.studies[state.selectedStudyId]?.title)
+  const { totalSelectedFeatures } = useStore()
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -34,7 +34,7 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
         <InPageLink href={`${study_id}/details`} label="Study Details" />
         <InPageLink href={`${study_id}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
-          X buildings
+          {totalSelectedFeatures} Features
         </div>
       </div>
       <ThemeSelector />
