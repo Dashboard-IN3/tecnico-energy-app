@@ -9,7 +9,6 @@ export default async function ExplorePage({
 }: {
   params: { uuid: string }
 }) {
-  console.log("test from explore page")
   // TODO make this driven by studies inventory
   const whiteList = [
     "portugal-municipal-energy",

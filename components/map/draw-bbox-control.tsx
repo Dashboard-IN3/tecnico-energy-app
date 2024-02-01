@@ -60,7 +60,6 @@ function DrawBboxControl({
   // Callback when drawing is finished
   const handleDraw = useCallback(
     (feature: GeoJSONFeature) => {
-      console.log("On handle draw complete")
       handleDrawComplete(feature)
     },
     [handleDrawComplete]
