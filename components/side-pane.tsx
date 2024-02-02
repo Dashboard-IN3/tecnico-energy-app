@@ -40,26 +40,10 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
       <ThemeSelector />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-
         <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
-          <div className="text-sky-800 text-xl font-medium font-['Inter'] leading-7">
-            Number of selected Buildings
-          </div>
-          <div className="self-stretch justify-start items-end gap-3 inline-flex">
-            <div>
-              {/* <span className="text-black text-xl font-normal font-['Inter'] leading-7">
-                €
-              </span> */}
-              <span className="text-black text-xl font-semibold font-['Inter'] leading-7">
-                0
-              </span>
-            </div>
-          </div>
+          Number of Features in Spatial DB Query
         </div>
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-      </div>
-      <div className="justify-start items-center gap-6 inline-flex">
-        <div className="justify-start items-start gap-3 flex"></div>
       </div>
     </div>
   )
