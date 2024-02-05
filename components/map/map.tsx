@@ -12,6 +12,7 @@ import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
+import { globalVariables } from "../../global-config"
 
 type MapViewProps = {
   children?: ReactNode
@@ -28,6 +29,18 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   const { setAoi, aoi, isDrawing, setIsDrawing } = useStore()
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const { setTotalSelectedFeatures } = useStore()
+
+  const getDbIntersectingFeatures = async coordinates => {
+    const linestring = encodeURI(
+      coordinates.map(pair => pair.join(" ")).join(",")
+    )
+
+    const promise2 = await fetch(
+      `${globalVariables.basePath}/api/search/${linestring}`
+    )
+    const buildings = await promise2.json()
+    console.log({ buildings })
+  }
 
   useEffect(() => {
     if (selectedFeatureIds && !aoi.feature) {
@@ -53,6 +66,8 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
     )
 
     updateIntersectingFeatures(intersectingFeatures)
+
+    getDbIntersectingFeatures(aoi.feature.geometry.coordinates[0])
   }, [aoi.feature, aoi.bbox, map, roundedZoom])
 
   const updateIntersectingFeatures = featureIdsToUpdate => {
