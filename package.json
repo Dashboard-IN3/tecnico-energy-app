@@ -39,6 +39,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.14",
     "@types/mapbox-gl": "^2.7.20",
     "@types/mapbox__mapbox-gl-draw": "^1.4.6",
     "@types/ms": "^0.7.31",

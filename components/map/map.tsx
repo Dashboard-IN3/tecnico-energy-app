@@ -5,7 +5,6 @@ import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl, { LngLatLike } from "maplibre-gl"
 import DrawBboxControl from "./draw-bbox-control"
-import { GeoJSONFeature } from "./types"
 import { bbox } from "@turf/turf"
 import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
@@ -106,7 +105,7 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   }
 
   // map event handlers
-  const handleDrawComplete = (feature: GeoJSONFeature) => {
+  const handleDrawComplete = (feature: GeoJSON.Feature) => {
     setIsDrawing(false)
     setAoi({
       bbox: bbox(feature.geometry),
@@ -114,7 +113,7 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
     })
   }
 
-  const drawUpdate = (feature: GeoJSONFeature) => {
+  const drawUpdate = (feature: GeoJSON.Feature) => {
     setAoi({
       bbox: bbox(feature.geometry),
       feature,
