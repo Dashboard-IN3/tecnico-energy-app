@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgis/postgis:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+volumes:
+  postgres:
