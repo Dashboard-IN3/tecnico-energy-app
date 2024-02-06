@@ -34,8 +34,8 @@ model Theme {
   id        Int        @id @default(autoincrement())
   slug      String     @unique
   name      String
-  Study     Study?     @relation(fields: [studyId], references: [id])
-  studyId   Int?
+  Study     Study      @relation(fields: [studyId], references: [id])
+  studyId   Int
   scenarios Scenario[]
 
   @@map("theme")
@@ -46,8 +46,8 @@ model Scenario {
   slug        String @unique
   name        String
   description String
-  Theme       Theme? @relation(fields: [themeId], references: [id])
-  themeId     Int?
+  Theme       Theme  @relation(fields: [themeId], references: [id])
+  themeId     Int
 
   @@map("scenario")
 }
