@@ -1,10 +1,12 @@
 import { Header } from "../components/header"
 import CardGrid from "../components/card-grid"
-import prisma from "@/lib/prisma"
-import { studies } from "@prisma/client"
+import { Study } from "@prisma/client"
+import { getStudies } from "./lib/data"
+
+export const revalidate = 3600 // revalidate the data at most every hour
 
 export default async function Home({}: Props) {
-  const studies = await prisma.studies.findMany()
+  const studies = await getStudies()
   return (
     <div className="bg-slate-100 h-full flex flex-col overflow-x-hidden">
       <Header />
@@ -17,5 +19,5 @@ export default async function Home({}: Props) {
 }
 
 interface Props {
-  studies: studies[]
+  studies: Study[]
 }
