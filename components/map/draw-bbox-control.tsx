@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef } from "react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
-import { GeoJSONFeature } from "./types"
 import { MapRef } from "react-map-gl"
 
 const addDrawControl = (
   map: MapRef,
-  drawingCompleted: (feature: GeoJSONFeature) => void,
-  handleUpdate: (feature: GeoJSONFeature) => void,
+  drawingCompleted: (feature: GeoJSON.Feature) => void,
+  handleUpdate: (feature: GeoJSON.Feature) => void,
   handleSelection: (isSelected: boolean) => void
 ) => {
   const { modes } = MapboxDraw
@@ -39,11 +38,11 @@ const addDrawControl = (
 }
 
 type DrawBboxControlProps = {
-  handleDrawComplete: (feature: GeoJSONFeature) => void
-  drawUpdate: (feature: GeoJSONFeature) => void
+  handleDrawComplete: (feature: GeoJSON.Feature) => void
+  drawUpdate: (feature: GeoJSON.Feature) => void
   drawSelectionChange: (isSelected: boolean) => void
   isEnabled: boolean
-  aoi: { feature: GeoJSONFeature; bbox: number[] }
+  aoi: { feature: GeoJSON.Feature; bbox: number[] }
   map: MapRef
 }
 
@@ -59,7 +58,7 @@ function DrawBboxControl({
 
   // Callback when drawing is finished
   const handleDraw = useCallback(
-    (feature: GeoJSONFeature) => {
+    (feature: GeoJSON.Feature) => {
       handleDrawComplete(feature)
     },
     [handleDrawComplete]
@@ -67,7 +66,7 @@ function DrawBboxControl({
 
   // Callback when feature properties are updated
   const handleUpdate = useCallback(
-    (feature: GeoJSONFeature) => {
+    (feature: GeoJSON.Feature) => {
       drawUpdate(feature)
     },
     [drawUpdate]
