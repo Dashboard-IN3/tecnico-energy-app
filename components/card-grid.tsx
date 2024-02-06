@@ -7,7 +7,7 @@ export default async function CardGrid({ studies }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {studies?.map(study => (
           <Card
-            key={study.id}
+            key={study.slug}
             description={study.description}
             title={study.name}
             href={`explore/${study.slug}`}

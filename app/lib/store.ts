@@ -37,14 +37,14 @@ export const useStore = create<InitialState>(set => ({
     set(state => ({
       studies: {
         ...state.studies,
-        [study.id]: {
+        [study.slug]: {
           ...study,
-          selectedThemeId: state.studies[study.id]?.selectedThemeId
-            ? state.studies[study.id]?.selectedThemeId
-            : themes[0].id,
+          selectedThemeId: state.studies[study.slug]?.selectedThemeId
+            ? state.studies[study.slug]?.selectedThemeId
+            : themes[0].slug,
         },
       },
-      selectedStudyId: study.id,
+      selectedStudyId: study.slug,
     }))
   },
   setSelectedTheme: (studyId: string, themeId: string) => {
@@ -65,7 +65,7 @@ export const useStore = create<InitialState>(set => ({
         [state.selectedStudyId]: {
           ...state.studies[state.selectedStudyId],
           themes: state.studies[state.selectedStudyId]?.themes?.map(theme =>
-            theme.id === themeId
+            theme.slug === themeId
               ? { ...theme, selectedScenarioId: scenarioId }
               : theme
           ),

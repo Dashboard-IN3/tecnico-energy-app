@@ -11,15 +11,15 @@ export const ThemeSelector: React.FC = () => {
   const selectedTheme = useStore(s => {
     const themeId = s.studies[s.selectedStudyId]?.selectedThemeId
     const allThemes = s.studies[s.selectedStudyId]?.themes
-    return allThemes?.find(theme => theme.id === themeId)
+    return allThemes?.find(theme => theme.slug === themeId)
   })
   const selectedOption = {
-    value: selectedTheme?.id,
+    value: selectedTheme?.slug,
     label: selectedTheme?.name,
   } as Option
 
   const options = themes?.map(theme => ({
-    value: theme.id,
+    value: theme.slug,
     label: theme.name,
   })) as Option[]
 

@@ -1,7 +1,7 @@
 declare namespace Studies {
   export type Study = {
-    themes: Studies.Theme[]
-    id: string
+    themes: Theme[]
+    slug: string
     name: string
     description: string
     imageSrc: string
@@ -11,13 +11,13 @@ declare namespace Studies {
 
   export type Theme = {
     name: string
-    id: string
+    slug: string
     scenarios: Scenario[]
     selectedScenarioId?: string
   }
 
   export type Scenario = {
-    id: string
+    slug: string
     description: string
     name: string
   }
