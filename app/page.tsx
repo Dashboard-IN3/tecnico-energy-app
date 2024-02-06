@@ -1,6 +1,5 @@
 import CardGrid from "@/components/card-grid"
 import { Header } from "@/components/header"
-import { Study } from "@prisma/client"
 
 export const revalidate = 3600 // revalidate the data at most every hour
 
