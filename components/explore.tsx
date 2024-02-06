@@ -1,6 +1,5 @@
 "use client"
 
-import { redirect } from "next/navigation"
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
@@ -15,15 +14,6 @@ interface Props {
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const [tilesLoaded, setTilesLoaded] = useState()
-  // TODO make this driven by studies inventory
-  const whiteList = [
-    "portugal-municipal-energy",
-    "fpo",
-    "lisbon-building-energy",
-  ]
-  if (!whiteList.includes(params.slug)) {
-    return redirect("/404")
-  }
 
   const layerType =
     params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
@@ -41,7 +31,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
         {...{
           src: metaData.imageSrc,
 
-          study_id: params.slug,
+          studyId: params.slug,
         }}
       />
       <div className="row-span-1 col-span-2 md:col-span-1">
