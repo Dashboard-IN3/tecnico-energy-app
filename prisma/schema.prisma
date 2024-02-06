@@ -19,6 +19,7 @@ model buildings {
 
 model studies {
   id          Int    @id @default(autoincrement())
+  slug        String @unique
   name        String
   title       String
   description String

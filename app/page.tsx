@@ -1,7 +1,7 @@
 import { Header } from "../components/header"
 import CardGrid from "../components/card-grid"
 import prisma from "@/lib/prisma"
-import { Studies } from "@prisma/client"
+import { studies } from "@prisma/client"
 
 export default async function Home({}: Props) {
   const studies = await prisma.studies.findMany()
@@ -17,5 +17,5 @@ export default async function Home({}: Props) {
 }
 
 interface Props {
-  studies: Studies[]
+  studies: studies[]
 }

@@ -1,4 +1,4 @@
-import { Studies } from "@prisma/client"
+import { studies } from "@prisma/client"
 import Card from "./card"
 
 export default async function CardGrid({ studies }: Props) {
@@ -10,7 +10,7 @@ export default async function CardGrid({ studies }: Props) {
             key={study.id}
             description={study.description}
             title={study.title}
-            href={`explore/${study.id}`}
+            href={`explore/${study.slug}`}
             src={study.image_src}
           />
         ))}
@@ -20,5 +20,5 @@ export default async function CardGrid({ studies }: Props) {
 }
 
 interface Props {
-  studies: Studies[]
+  studies: studies[]
 }
