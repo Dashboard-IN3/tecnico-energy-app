@@ -9,7 +9,6 @@ async function main() {
     id: idx + 1,
     name,
     slug: name.toLowerCase().replaceAll(" ", "-"),
-    title: `Study ${name}`,
     description: name,
     image_src: `https://fakeimg.pl/600x400?text=${name}`,
   }))

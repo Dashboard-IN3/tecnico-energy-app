@@ -21,22 +21,19 @@ model studies {
   id          Int    @id @default(autoincrement())
   slug        String @unique
   name        String
-  title       String
   description String
   image_src   String
 }
 
 model themes {
   id    Int    @id @default(autoincrement())
+  slug  String @unique
   name  String
-  slug  String
-  title String
 }
 
 model scenarios {
   id          Int    @id @default(autoincrement())
+  slug        String @unique
   name        String
-  slug        String
-  title       String
   description String
 }

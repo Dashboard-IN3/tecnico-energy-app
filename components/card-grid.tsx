@@ -9,7 +9,7 @@ export default async function CardGrid({ studies }: Props) {
           <Card
             key={study.id}
             description={study.description}
-            title={study.title}
+            title={study.name}
             href={`explore/${study.slug}`}
             src={study.image_src}
           />

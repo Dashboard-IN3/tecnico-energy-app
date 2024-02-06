@@ -12,7 +12,7 @@ export const ScenarioControl: React.FC = () => {
 
   const options = selectedTheme.scenarios.map((scenario: Studies.Scenario) => ({
     value: scenario.id,
-    label: scenario.title,
+    label: scenario.name,
   }))
 
   return (
