@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Buildings": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "properties": {
+          "type": ["number", "string", "boolean", "object", "array", "null"]
+        }
+      }
+    },
+    "Study": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "imageSrc": {
+          "type": "string"
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Theme"
+          }
+        }
+      }
+    },
+    "Theme": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "Study": {
+          "$ref": "#/definitions/Study"
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Scenario"
+          }
+        }
+      }
+    },
+    "Scenario": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "Theme": {
+          "$ref": "#/definitions/Theme"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "buildings": {
+      "$ref": "#/definitions/Buildings"
+    },
+    "study": {
+      "$ref": "#/definitions/Study"
+    },
+    "theme": {
+      "$ref": "#/definitions/Theme"
+    },
+    "scenario": {
+      "$ref": "#/definitions/Scenario"
+    },
+    "studies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Study"
+      }
+    }
+  }
+}
