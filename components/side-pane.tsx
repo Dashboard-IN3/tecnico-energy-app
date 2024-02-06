@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ src, study_id }) => {
-  const title = useStore(state => state.studies[state.selectedStudyId]?.title)
+  const title = useStore(state => state.studies[state.selectedStudyId]?.name)
   const { totalSelectedFeatures } = useStore()
 
   return (

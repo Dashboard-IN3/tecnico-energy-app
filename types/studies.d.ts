@@ -2,10 +2,9 @@ declare namespace Studies {
   export type Study = {
     themes: Studies.Theme[]
     id: string
-    title: string
+    name: string
     description: string
-    href: string
-    image_src: string
+    imageSrc: string
     selectedTheme?: Theme
     selectedThemeId: string
   }
@@ -20,6 +19,6 @@ declare namespace Studies {
   export type Scenario = {
     id: string
     description: string
-    title: string
+    name: string
   }
 }

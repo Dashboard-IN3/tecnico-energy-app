@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "jsonProtocol"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -11,29 +11,43 @@ datasource db {
   extensions        = [postgis]
 }
 
-model buildings {
+model Buildings {
   name       String                                 @id
   geom       Unsupported("geometry(Polygon, 4326)")
   properties Json
+
+  @@map("buildings")
 }
 
-model studies {
+model Study {
+  id          Int     @id @default(autoincrement())
+  slug        String  @unique
+  name        String
+  description String
+  imageSrc    String
+  themes      Theme[]
+
+  @@map("study")
+}
+
+model Theme {
+  id        Int        @id @default(autoincrement())
+  slug      String     @unique
+  name      String
+  Study     Study?     @relation(fields: [studyId], references: [id])
+  studyId   Int?
+  scenarios Scenario[]
+
+  @@map("theme")
+}
+
+model Scenario {
   id          Int    @id @default(autoincrement())
   slug        String @unique
   name        String
   description String
-  image_src   String
-}
+  Theme       Theme? @relation(fields: [themeId], references: [id])
+  themeId     Int?
 
-model themes {
-  id    Int    @id @default(autoincrement())
-  slug  String @unique
-  name  String
-}
-
-model scenarios {
-  id          Int    @id @default(autoincrement())
-  slug        String @unique
-  name        String
-  description String
+  @@map("scenario")
 }

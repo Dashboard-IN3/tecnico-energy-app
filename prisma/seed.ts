@@ -6,15 +6,14 @@ async function main() {
     "Lisbon Building Energy",
     "FPO",
   ].map((name, idx) => ({
-    id: idx + 1,
     name,
     slug: name.toLowerCase().replaceAll(" ", "-"),
     description: name,
-    image_src: `https://fakeimg.pl/600x400?text=${name}`,
+    imageSrc: `https://fakeimg.pl/600x400?text=${name}`,
   }))
   for (const study of studies) {
-    await prisma.studies.upsert({
-      where: { id: study.id },
+    await prisma.study.upsert({
+      where: { slug: study.slug },
       update: study,
       create: study,
     })
