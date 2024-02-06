@@ -14,17 +14,6 @@ export default async function ExplorePage({
   const study = await getStudy(params.slug)
   if (!study) notFound()
 
-  // const response = await fs.readFile(
-  //   process.cwd() + `/app/data/studies/${params.slug}/meta-data.json`,
-  //   "utf8"
-  // )
-  // const metaData = JSON.parse(response)
-  // const selectedStudy: Studies.Study = {
-  //   ...study,
-  //   selectedTheme: {
-  //     [metaData.id]: metaData?.themes[0],
-  //   },
-  // }
 
   const selectedStudy = {
     ...study,
