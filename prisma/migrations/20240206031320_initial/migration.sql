@@ -15,7 +15,6 @@ CREATE TABLE "studies" (
     "id" SERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "image_src" TEXT NOT NULL,
 
@@ -25,9 +24,8 @@ CREATE TABLE "studies" (
 -- CreateTable
 CREATE TABLE "themes" (
     "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
 
     CONSTRAINT "themes_pkey" PRIMARY KEY ("id")
 );
@@ -35,9 +33,8 @@ CREATE TABLE "themes" (
 -- CreateTable
 CREATE TABLE "scenarios" (
     "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
 
     CONSTRAINT "scenarios_pkey" PRIMARY KEY ("id")
@@ -45,3 +42,9 @@ CREATE TABLE "scenarios" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "studies_slug_key" ON "studies"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "themes_slug_key" ON "themes"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "scenarios_slug_key" ON "scenarios"("slug");
