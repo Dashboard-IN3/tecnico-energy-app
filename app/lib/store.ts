@@ -41,7 +41,7 @@ export const useStore = create<InitialState>(set => ({
           ...study,
           selectedThemeId: state.studies[study.slug]?.selectedThemeId
             ? state.studies[study.slug]?.selectedThemeId
-            : themes[0].slug,
+            : themes[0]?.slug,
         },
       },
       selectedStudyId: study.slug,
