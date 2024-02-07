@@ -8,15 +8,14 @@ import prisma from "@/lib/prisma"
 
 AdminJS.registerAdapter({ Database, Resource })
 
-console.log("running expressjs")
-
 const options: AdminJSOptions = {
-  rootPath: "/admin",
+  rootPath: "/admin/",
   branding: {
-    companyName: "My Company",
+    companyName: "Tecníco Admin",
     withMadeWithLove: false,
   },
   locale: {
+    // TODO: https://docs.adminjs.co/tutorials/internationalization-i18n
     language: "en", // default language
     availableLanguages: ["en"],
     localeDetection: true,
@@ -26,11 +25,20 @@ const options: AdminJSOptions = {
       resource: { model: getModelByName("Study"), client: prisma },
       options: {},
     },
+    {
+      resource: { model: getModelByName("Theme"), client: prisma },
+      options: {},
+    },
+    {
+      resource: { model: getModelByName("Scenario"), client: prisma },
+      options: {},
+    },
   ],
 }
 
 const adminJs = new AdminJS(options)
 const app = express()
+
 app.use(adminJs.options.rootPath, AdminJSExpress.buildRouter(adminJs))
 
 // adminJs.watch()

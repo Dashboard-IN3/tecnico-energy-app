@@ -6,7 +6,11 @@ const nextConfig = {
   },
   rewrites: () => [
     {
-      source: "/:admin*",
+      source: "/admin/",
+      destination: "/api/admin/",
+    },
+    {
+      source: "/admin/:admin*",
       destination: "/api/admin/:admin*",
     },
   ],
