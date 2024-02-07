@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
+  reactStrictMode: false,
   images: {
-    domains: ['pbs.twimg.com'],
+    domains: ["pbs.twimg.com", "fakeimg.pl"],
   },
 }
 
