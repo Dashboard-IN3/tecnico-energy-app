@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions", "jsonProtocol"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -11,62 +11,43 @@ datasource db {
   extensions        = [postgis]
 }
 
-model buildings {
-  name       String                                      @id
+model Buildings {
+  name       String                                 @id
   geom       Unsupported("geometry(Polygon, 4326)")
   properties Json
-  metrics    metrics[]                                   @ignore
+
+  @@map("buildings")
 }
 
-model studies {
-  id            Int         @id @default(autoincrement())
-  name          String
-  title         String
-  description   String
-  href          String
-  image_src     String
+model Study {
+  id          Int     @id @default(autoincrement())
+  slug        String  @unique
+  name        String
+  description String
+  imageSrc    String
+  themes      Theme[]
+
+  @@map("study")
 }
 
-model themes {
-  id            Int         @id @default(autoincrement())
-  name          String
-  slug          String
-  title         String
-}
-
-model scenarios {
-  id            Int         @id @default(autoincrement())
-  name          String
-  slug          String
-  title         String
-  description   String
-}
-
-/// This table has subclasses and requires additional setup for migrations. Visit https://pris.ly/d/table-inheritance for more info.
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
-model metrics {
-  building_name String
-  metric        String
-  value         Float
-  dt            DateTime
-  buildings     buildings @relation(fields: [building_name], references: [name])
-
-  @@index([dt(sort: Desc)])
-  @@ignore
-}
-
-model spatial_ref_sys {
-  srid      Int     @id
-  auth_name String? @db.VarChar(256)
-  auth_srid Int?
-  srtext    String? @db.VarChar(2048)
-  proj4text String? @db.VarChar(2048)
-}
-
-model users {
-  id        Int      @id @default(autoincrement())
+model Theme {
+  id        Int        @id @default(autoincrement())
+  slug      String     @unique
   name      String
-  email     String   @unique
-  image     String
-  createdAt DateTime @default(now())
+  Study     Study      @relation(fields: [studyId], references: [id])
+  studyId   Int
+  scenarios Scenario[]
+
+  @@map("theme")
+}
+
+model Scenario {
+  id          Int    @id @default(autoincrement())
+  slug        String @unique
+  name        String
+  description String
+  Theme       Theme  @relation(fields: [themeId], references: [id])
+  themeId     Int
+
+  @@map("scenario")
 }

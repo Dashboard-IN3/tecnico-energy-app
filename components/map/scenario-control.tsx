@@ -6,20 +6,22 @@ export const ScenarioControl: React.FC = () => {
   const selectedTheme = useStore(state => {
     const themeId = state.studies[state.selectedStudyId]?.selectedThemeId
     const allThemes = state.studies[state.selectedStudyId]?.themes
-    const selectedTheme = allThemes?.find(theme => theme.id === themeId)
+    const selectedTheme = allThemes?.find(theme => theme.slug === themeId)
     return selectedTheme
   }) as Studies.Theme
 
-  const options = selectedTheme.scenarios.map((scenario: Studies.Scenario) => ({
-    value: scenario.id,
-    label: scenario.title,
-  }))
+  const options = selectedTheme?.scenarios.map(
+    (scenario: Studies.Scenario) => ({
+      value: scenario.slug,
+      label: scenario.name,
+    })
+  )
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
       <div className="text-sm font-medium mb-2 ">Study Scenarios</div>
       <div>
-        {options.map((option: any, key: number) => (
+        {options?.map((option: any, key: number) => (
           <div key={key} className="mb-2">
             <label className="flex items-center cursor-pointer">
               <input
@@ -30,7 +32,7 @@ export const ScenarioControl: React.FC = () => {
                 className="hidden"
                 onClick={() => {
                   setSelectedScenario(
-                    selectedTheme.id,
+                    selectedTheme.slug,
 
                     option.value === selectedTheme.selectedScenarioId
                       ? null

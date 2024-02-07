@@ -1,6 +1,5 @@
 "use client"
 
-import { redirect } from "next/navigation"
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
@@ -9,39 +8,30 @@ import { globalVariables } from "../global-config"
 import { useState } from "react"
 
 interface Props {
-  params: { uuid: string }
+  params: { slug: string }
   metaData: Studies.Study
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const [tilesLoaded, setTilesLoaded] = useState()
-  // TODO make this driven by studies inventory
-  const whiteList = [
-    "portugal-municipal-energy",
-    "fpo",
-    "lisbon-building-energy",
-  ]
-  if (!whiteList.includes(params.uuid)) {
-    return redirect("/404")
-  }
 
   const layerType =
-    params.uuid === "lisbon-building-energy" ? "fill-extrusion" : "line"
+    params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
 
   const mapCenter: LngLatLike =
-    params.uuid === "lisbon-building-energy"
+    params.slug === "lisbon-building-energy"
       ? [-9.142, 38.735]
       : [-9.102, 38.755]
 
-  const mapZoom = params.uuid === "lisbon-building-energy" ? 11 : 6
+  const mapZoom = params.slug === "lisbon-building-energy" ? 11 : 6
 
   return (
     <>
       <SidePane
         {...{
-          src: metaData.image_src,
+          src: metaData.imageSrc,
 
-          study_id: params.uuid,
+          studyId: params.slug,
         }}
       />
       <div className="row-span-1 col-span-2 md:col-span-1">

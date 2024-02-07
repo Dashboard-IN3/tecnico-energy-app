@@ -7,11 +7,11 @@ import { useStore } from "../app/lib/store"
 
 interface Props {
   src: string
-  study_id: string
+  studyId: string
 }
 
-export const SidePane: React.FC<Props> = ({ src, study_id }) => {
-  const title = useStore(state => state.studies[state.selectedStudyId]?.title)
+export const SidePane: React.FC<Props> = ({ src, studyId }) => {
+  const title = useStore(state => state.studies[state.selectedStudyId]?.name)
   const { totalSelectedFeatures } = useStore()
 
   return (
@@ -31,8 +31,8 @@ export const SidePane: React.FC<Props> = ({ src, study_id }) => {
       </div>
 
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
-        <InPageLink href={`${study_id}/details`} label="Study Details" />
-        <InPageLink href={`${study_id}/attributes`} label="Data Attribues" />
+        <InPageLink href={`${studyId}/details`} label="Study Details" />
+        <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
           {totalSelectedFeatures} Features
         </div>
