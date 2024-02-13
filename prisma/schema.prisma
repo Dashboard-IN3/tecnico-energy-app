@@ -11,43 +11,100 @@ datasource db {
   extensions        = [postgis]
 }
 
-model Buildings {
-  name       String                                 @id
-  geom       Unsupported("geometry(Polygon, 4326)")
-  properties Json
+model study {
+  id                   Int                @id @default(autoincrement())
+  name                 String
+  slug                 String             @unique
+  description          String?
+  details              String?
+  image_src            String?
+  study_type           study_scale
+  centroid_coordinates Float[]            @default([0, 0])
+  zoom_level_start     Int                @default(14)
+  bbox                 Float[]            @default([0, 0, 0, 0])
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+  study_geometries     geometries[]
+  metrics              metrics[]
+  metrics_metadata     metrics_metadata[]
 
-  @@map("buildings")
+  @@index([id])
 }
 
-model Study {
-  id          Int     @id @default(autoincrement())
-  slug        String  @unique
+model scenario {
+  id          Int      @id @default(autoincrement())
+  study_id    Int
   name        String
-  description String
-  imageSrc    String
-  themes      Theme[]
+  description String?
+  methodology String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  @@map("study")
+  @@index([id])
 }
 
-model Theme {
-  id        Int        @id @default(autoincrement())
-  slug      String     @unique
-  name      String
-  Study     Study      @relation(fields: [studyId], references: [id])
-  studyId   Int
-  scenarios Scenario[]
-
-  @@map("theme")
+model geometries {
+  name       String                  @id
+  study_id   Int
+  created_at DateTime                @default(now())
+  updated_at DateTime                @updatedAt
+  geom       Unsupported("geometry")
+  study      study                   @relation(fields: [study_id], references: [id])
+  metrics    metrics[]
 }
 
-model Scenario {
-  id          Int    @id @default(autoincrement())
-  slug        String @unique
-  name        String
-  description String
-  Theme       Theme  @relation(fields: [themeId], references: [id])
-  themeId     Int
+model metrics_metadata {
+  id            Int            @id @default(autoincrement())
+  study_id      Int
+  study         study          @relation(fields: [study_id], references: [id])
+  field_name    String
+  description   String
+  units         String
+  usage_type    String?
+  energy_source String?
+  theme_name    theme_type?
+  theme_subtype theme_subtype?
+  scenario_name String?
+  map_display   Boolean        @default(false)
 
-  @@map("scenario")
+  @@index([study_id])
+}
+
+model metrics {
+  id           Int        @id @default(autoincrement())
+  study_id     Int
+  theme_id     Int
+  geometry_key String
+  data         Json
+  geometry     geometries @relation(fields: [geometry_key], references: [name])
+  study        study      @relation(fields: [study_id], references: [id])
+
+  @@index([study_id, theme_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+enum study_scale {
+  Municipality
+  Building
+}
+
+enum theme_type {
+  Buildings
+  Mobility
+  Waste
+}
+
+enum theme_subtype {
+  Energy
+  Impact
+  Cost
+  Savings
 }
