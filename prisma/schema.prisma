@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  previewFeatures = ["postgresqlExtensions", "views"]
 }
 
 datasource db {
@@ -33,12 +33,12 @@ model study {
 
 model scenario {
   id          Int      @id @default(autoincrement())
-  study_id    Int
   name        String
   description String?
   methodology String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+  study_id    Int
 
   @@index([id])
 }
@@ -56,7 +56,6 @@ model geometries {
 model metrics_metadata {
   id            Int            @id @default(autoincrement())
   study_id      Int
-  study         study          @relation(fields: [study_id], references: [id])
   field_name    String
   description   String
   units         String
@@ -66,6 +65,7 @@ model metrics_metadata {
   theme_subtype theme_subtype?
   scenario_name String?
   map_display   Boolean        @default(false)
+  study         study          @relation(fields: [study_id], references: [id])
 
   @@index([study_id])
 }
@@ -89,6 +89,29 @@ model spatial_ref_sys {
   auth_srid Int?
   srtext    String? @db.VarChar(2048)
   proj4text String? @db.VarChar(2048)
+}
+
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view vw_map_fields {
+  id            BigInt         @unique
+  study_id      Int?
+  theme_name    theme_type?
+  theme_subtype theme_subtype?
+  scenario_name String?
+  field_name    String?
+
+  @@index([study_id])
+}
+
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view vw_themes {
+  id         BigInt          @unique
+  study_id   Int?
+  theme_name theme_type?
+  subtypes   theme_subtype[]
+  scenarios  String[]
+
+  @@index([study_id])
 }
 
 enum study_scale {
