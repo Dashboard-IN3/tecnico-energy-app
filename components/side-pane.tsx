@@ -11,13 +11,17 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ src, studyId }) => {
-  const title = useStore(state => state.studies[state.selectedStudyId]?.name)
+  const allStudies = useStore(state => state.studies)
+  const selectedStudy = Object.values(allStudies).find(
+    study => study.slug === studyId
+  )
+  console.log({ selectedStudy })
   const { totalSelectedFeatures } = useStore()
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
-        {title}
+        {selectedStudy.name}
       </div>
       <div className="relative w-full min-h-[150px]">
         <Image

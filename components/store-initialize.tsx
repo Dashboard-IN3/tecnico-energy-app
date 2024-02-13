@@ -4,15 +4,13 @@
 import { useStore } from "../app/lib/store"
 import { useRef } from "react"
 
-type Props = { selectedStudy: Studies.Study }
+type Props = { stateObject: { studies: any; selectedStudy: Studies.Study } }
 
-function StoreInitialize({ selectedStudy }: Props) {
-  const { setSelectedStudy } = useStore()
-  const study = useStore(state => state.studies[state.selectedStudyId])
+function StoreInitialize({ stateObject }: Props) {
   const initialized = useRef(false)
 
-  if (!initialized.current && !study) {
-    setSelectedStudy(selectedStudy, selectedStudy?.themes)
+  if (!initialized.current) {
+    useStore.setState(stateObject)
     initialized.current = true
   }
   return null

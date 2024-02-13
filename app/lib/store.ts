@@ -15,7 +15,7 @@ interface InitialState {
   setTotalSelectedFeatures: (total: number) => void
 }
 
-export const useStore = create<InitialState>(set => ({
+export const useStore = create<InitialState>((set, get) => ({
   totalSelectedFeatures: 0,
   setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
     set({ totalSelectedFeatures })
