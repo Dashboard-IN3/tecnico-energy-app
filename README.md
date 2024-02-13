@@ -57,7 +57,7 @@ You should see something like `COPY 5193` as output.
 Prisma ships with a [Prisma Studio](https://www.prisma.io/studio). It can be run via:
 
 ```
-pnmp prisma studio
+pnpm prisma studio
 ```
 
 ### Running the Application
