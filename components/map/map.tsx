@@ -25,7 +25,9 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
-  const { setAoi, aoi, isDrawing, setIsDrawing } = useStore()
+  const { setAoi, setIsDrawing } = useStore()
+  const selectedStudy = useStore(state => state.selectedStudy)
+  const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const { setTotalSelectedFeatures } = useStore()
 
@@ -38,7 +40,6 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
       `${globalVariables.basePath}/api/search/${linestring}`
     )
     const buildings = await promise2.json()
-    console.log({ buildings })
   }
 
   useEffect(() => {
@@ -136,19 +137,19 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
   }, [map])
 
   // footprint loading event listener
-  useEffect(() => {
-    if (!map) return
+  // useEffect(() => {
+  //   if (!map) return
 
-    const dataHandler = () => {
-      console.log("All data loaded")
-    }
+  //   const dataHandler = () => {
+  //     console.log("All data loaded")
+  //   }
 
-    map.once("data", dataHandler)
+  //   map.once("data", dataHandler)
 
-    return () => {
-      map.off("data", dataHandler)
-    }
-  }, [map])
+  //   return () => {
+  //     map.off("data", dataHandler)
+  //   }
+  // }, [map])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

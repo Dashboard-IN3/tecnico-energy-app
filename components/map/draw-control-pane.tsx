@@ -6,7 +6,9 @@ import trash from "../../public/icons/trash.svg"
 import area from "../../public/icons/area.svg"
 
 export const DrawControlPane: React.FC = () => {
-  const { isDrawing, setIsDrawing, setAoi, aoi } = useStore()
+  const { setIsDrawing, setAoi } = useStore()
+  const isDrawing = useStore(state => state.selectedStudy.isDrawing)
+  const aoi = useStore(state => state.selectedStudy.aoi)
   const [isChecked, setIsChecked] = useState(false)
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked)

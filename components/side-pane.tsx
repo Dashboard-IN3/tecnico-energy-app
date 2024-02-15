@@ -11,12 +11,7 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ src, studyId }) => {
-  const allStudies = useStore(state => state.studies)
-  const selectedStudy = Object.values(allStudies).find(
-    study => study.slug === studyId
-  )
-  console.log({ selectedStudy })
-  const { totalSelectedFeatures } = useStore()
+  const { selectedStudy } = useStore()
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -38,7 +33,7 @@ export const SidePane: React.FC<Props> = ({ src, studyId }) => {
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
-          {totalSelectedFeatures} Features
+          {selectedStudy.totalSelectedFeatures} Features
         </div>
       </div>
       <ThemeSelector />

@@ -11,17 +11,33 @@ export default async function ExplorePage({
   params: { slug: string }
 }) {
   const study = await getStudy(params.slug)
-  const allStudies = await getStudies()
   if (!study) notFound()
 
   const selectedStudy = {
     ...study,
-    selectedTheme: study.themes[0],
+    // store themes and scenarios as dictionaries for easier lookup
+    themes: study?.themes.reduce((acc, theme) => {
+      acc[theme.slug] = {
+        ...theme,
+        selectedScenario: null,
+        scenarios: theme.scenarios.reduce((acc, scenario) => {
+          acc[scenario.slug] = scenario
+          return acc
+        }, {}),
+      }
+      return acc
+    }, {}),
+    selectedTheme: {
+      ...study.themes[0],
+      scenarios: study.themes[0].scenarios.reduce((acc, scenario) => {
+        acc[scenario.slug] = scenario
+        return acc
+      }, {}),
+    },
     selectedThemeId: study.themes[0]?.slug,
+    aoi: {},
   }
   const stateObject = {
-    studies: allStudies,
-    selectedStudyId: study.slug,
     selectedStudy,
   }
 

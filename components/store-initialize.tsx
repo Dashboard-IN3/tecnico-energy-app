@@ -4,7 +4,7 @@
 import { useStore } from "../app/lib/store"
 import { useRef } from "react"
 
-type Props = { stateObject: { studies: any; selectedStudy: Studies.Study } }
+type Props = { stateObject: { selectedStudy: Studies.Study } }
 
 function StoreInitialize({ stateObject }: Props) {
   const initialized = useRef(false)
