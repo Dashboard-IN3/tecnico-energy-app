@@ -33,6 +33,7 @@ model study {
   study_geometries     geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
+  scenario             scenario[]
 
   @@index([id])
 }
@@ -45,6 +46,7 @@ model scenario {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
   study_id    Int
+  study       study    @relation(fields: [study_id], references: [id])
 
   @@index([id])
 }
