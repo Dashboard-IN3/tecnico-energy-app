@@ -35,6 +35,10 @@ Seeding the database is the conventional entry to loading data into our applicat
 pnpm prisma db seed
 ```
 
+### Data Model
+
+![entity relationsip diagram](./prisma/ERD.svg)
+
 #### Buildings
 
 To turn our Shapefile of buildings (`shapefile.shp`) in EPSG:32729 into a GeoJSON in EPSG:4326:
