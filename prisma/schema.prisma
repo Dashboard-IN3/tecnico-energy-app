@@ -35,8 +35,6 @@ model study {
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
   scenarios            scenario[]
-
-  @@index([id])
 }
 
 model theme {
