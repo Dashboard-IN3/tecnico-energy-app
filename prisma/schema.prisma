@@ -89,7 +89,6 @@ model geometries {
 }
 
 model metrics_metadata {
-  id                  Int               @id @default(autoincrement())
   study_id            Int
   field_name          String
   description         String
@@ -102,7 +101,8 @@ model metrics_metadata {
   scenario_subtype    scenario_subtype? @relation(fields: [scenario_subtype_id], references: [id])
   study               study             @relation(fields: [study_id], references: [id])
 
-  @@index([study_id])
+  @@id([study_id, field_name])
+  @@index([map_display])
 }
 
 model metrics {
