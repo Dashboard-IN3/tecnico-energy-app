@@ -18,124 +18,124 @@ datasource db {
 }
 
 model study {
-  id                   Int                @id @default(autoincrement())
+  id                   Int         @id @default(autoincrement())
   name                 String
-  slug                 String             @unique
+  slug                 String      @unique
   description          String?
   details              String?
   image_src            String?
-  study_type           study_scale
-  centroid_coordinates Float[]            @default([0, 0])
-  zoom_level_start     Int                @default(14)
-  bbox                 Float[]            @default([0, 0, 0, 0])
-  created_at           DateTime           @default(now())
-  updated_at           DateTime           @updatedAt
-  study_geometries     geometries[]
-  metrics              metrics[]
-  metrics_metadata     metrics_metadata[]
-  scenario             scenario[]
+  centroid_coordinates Float[]     @default([0, 0])
+  zoom_level_start     Int         @default(14)
+  bbox                 Float[]     @default([0, 0, 0, 0])
+  created_at           DateTime    @default(now())
+  updated_at           DateTime    @updatedAt
+  scale                study_scale
 
-  @@index([id])
+  // metrics              metrics[]
+  // metrics_metadata     metrics_metadata[]
+  // scenario             scenario[]
+  geometries shape[]
 }
 
-model scenario {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  methodology String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  study_id    Int
-  study       study    @relation(fields: [study_id], references: [id])
+// model scenario {
+//   id          Int      @id @default(autoincrement())
+//   name        String
+//   description String?
+//   methodology String?
+//   created_at  DateTime @default(now())
+//   updated_at  DateTime @updatedAt
+//   study_id    Int
+//   study       study    @relation(fields: [study_id], references: [id])
 
-  @@index([id])
-}
+//   @@index([id])
+// }
 
-model geometries {
+model shape {
   name       String                  @id
   study_id   Int
   created_at DateTime                @default(now())
   updated_at DateTime                @updatedAt
   geom       Unsupported("geometry")
-  study      study                   @relation(fields: [study_id], references: [id])
-  metrics    metrics[]
+
+  study study @relation(fields: [study_id], references: [id])
+  // metrics    metrics[]
 }
 
-model metrics_metadata {
-  id            Int            @id @default(autoincrement())
-  study_id      Int
-  field_name    String
-  description   String
-  units         String
-  usage_type    String?
-  energy_source String?
-  theme_name    theme_type?
-  theme_subtype theme_subtype?
-  scenario_name String?
-  map_display   Boolean        @default(false)
-  study         study          @relation(fields: [study_id], references: [id])
+// model metrics_metadata {
+//   id            Int            @id @default(autoincrement())
+//   study_id      Int
+//   field_name    String
+//   description   String
+//   units         String
+//   usage_type    String?
+//   energy_source String?
+//   theme_name    theme_type?
+//   theme_subtype theme_subtype?
+//   scenario_name String?
+//   map_display   Boolean        @default(false)
+//   study         study          @relation(fields: [study_id], references: [id])
 
-  @@index([study_id])
-}
+//   @@index([study_id])
+// }
 
-model metrics {
-  id           Int        @id @default(autoincrement())
-  study_id     Int
-  theme_id     Int
-  geometry_key String
-  data         Json
-  geometry     geometries @relation(fields: [geometry_key], references: [name])
-  study        study      @relation(fields: [study_id], references: [id])
+// model metrics {
+//   id           Int        @id @default(autoincrement())
+//   study_id     Int
+//   theme_id     Int
+//   geometry_key String
+//   data         Json
+//   geometry     geometries @relation(fields: [geometry_key], references: [name])
+//   study        study      @relation(fields: [study_id], references: [id])
 
-  @@index([study_id, theme_id])
-}
+//   @@index([study_id, theme_id])
+// }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model spatial_ref_sys {
-  srid      Int     @id
-  auth_name String? @db.VarChar(256)
-  auth_srid Int?
-  srtext    String? @db.VarChar(2048)
-  proj4text String? @db.VarChar(2048)
-}
+// /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+// model spatial_ref_sys {
+//   srid      Int     @id
+//   auth_name String? @db.VarChar(256)
+//   auth_srid Int?
+//   srtext    String? @db.VarChar(2048)
+//   proj4text String? @db.VarChar(2048)
+// }
 
-/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-view vw_map_fields {
-  id            BigInt         @unique
-  study_id      Int?
-  theme_name    theme_type?
-  theme_subtype theme_subtype?
-  scenario_name String?
-  field_name    String?
+// /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+// view vw_map_fields {
+//   id            BigInt         @unique
+//   study_id      Int?
+//   theme_name    theme_type?
+//   theme_subtype theme_subtype?
+//   scenario_name String?
+//   field_name    String?
 
-  @@index([study_id])
-}
+//   @@index([study_id])
+// }
 
-/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-view vw_themes {
-  id         BigInt          @unique
-  study_id   Int?
-  theme_name theme_type?
-  subtypes   theme_subtype[]
-  scenarios  String[]
+// /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+// view vw_themes {
+//   id         BigInt          @unique
+//   study_id   Int?
+//   theme_name theme_type?
+//   subtypes   theme_subtype[]
+//   scenarios  String[]
 
-  @@index([study_id])
-}
+//   @@index([study_id])
+// }
 
 enum study_scale {
   Municipality
   Building
 }
 
-enum theme_type {
-  Buildings
-  Mobility
-  Waste
-}
+// enum theme_type {
+//   Buildings
+//   Mobility
+//   Waste
+// }
 
-enum theme_subtype {
-  Energy
-  Impact
-  Cost
-  Savings
-}
+// enum theme_subtype {
+//   Energy
+//   Impact
+//   Cost
+//   Savings
+// }

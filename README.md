@@ -6,6 +6,31 @@ Based off of the [Vercel Postgres + Prisma Next.js Starter](https://vercel.com/t
 - [Prisma](https://www.prisma.io/) - database modeling/ORM
 - [Tailwind](https://tailwindcss.com/) - CSS framework
 
+## Data Submission
+
+Data is modeled with the following concepts:
+
+- Study
+- Theme: Belongs to study, represents a field of research for a given study.
+- Scenario: A way that would modify the outcome of a theme.
+
+To provide data, two files must be provided:
+
+1. A XLSX spreadsheet file for a study, named `{study_identifier}.xlsx`
+1. A GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson`
+
+### Study Spreadsheet
+
+The study spreadsheet must contain the following worksheets:
+
+- `data`:
+  - `id`
+
+### Study Geometries
+
+- `FeatureCollection` of `Polygon` or `MultiPolygon` values.
+- Each `Feature` must contain a unique `id` property of either a string or integer.
+
 ## Development
 
 ### Install
@@ -34,8 +59,6 @@ Seeding the database is the conventional entry to loading data into our applicat
 ```
 pnpm prisma db seed
 ```
-
-### Data Model
 
 ![entity relationsip diagram](./prisma/ERD.svg)
 

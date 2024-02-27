@@ -1,0 +1,8 @@
+.adrs
+.env
+.gitignore
+.next
+.turbo
+.vercel
+.vscode
+node_modules

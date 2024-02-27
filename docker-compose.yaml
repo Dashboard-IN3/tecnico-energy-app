@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        - POSTGRES_PRISMA_URL=postgres://postgres:postgres@db:5432/appdb
+    environment:
+      - POSTGRES_PRISMA_URL=postgres://postgres:postgres@db:5432/appdb
+      - POSTGRES_URL_NON_POOLING=postgres://postgres:postgres@db:5432/appdb
+    depends_on:
+      - db
+    restart: unless-stopped
+    ports:
+      - "3009:3000"
+  db:
+    platform: linux/amd64
+    image: timescale/timescaledb-ha:pg16-all
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:

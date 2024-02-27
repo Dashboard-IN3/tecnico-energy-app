@@ -44,8 +44,11 @@
     "@types/mapbox__mapbox-gl-draw": "^1.4.6",
     "@types/ms": "^0.7.31",
     "csv": "^6.3.1",
+    "fp-ts": "^2.16.2",
+    "io-ts": "^2.2.21",
     "prisma": "^4.13.0",
     "prisma-erd-generator": "^1.11.2",
-    "turbo": "^1.9.3"
+    "turbo": "^1.9.3",
+    "xlsx": "^0.18.5"
   }
 }
