@@ -106,14 +106,13 @@ model metrics_metadata {
 }
 
 model metrics {
-  id           Int        @id @default(autoincrement())
   study_id     Int
   geometry_key String
   data         Json
   geometry     geometries @relation(fields: [geometry_key], references: [name])
   study        study      @relation(fields: [study_id], references: [id])
 
-  @@index([study_id, geometry_key])
+  @@id([study_id, geometry_key])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
