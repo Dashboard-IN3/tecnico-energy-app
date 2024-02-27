@@ -84,6 +84,8 @@ model geometries {
   geom       Unsupported("geometry")
   study      study                   @relation(fields: [study_id], references: [id])
   metrics    metrics[]
+
+  @@index([study_id])
 }
 
 model metrics_metadata {
