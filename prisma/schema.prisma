@@ -17,6 +17,11 @@ datasource db {
   extensions        = [postgis]
 }
 
+// Each project study is meant to represent the output results of a specific research project.
+// Each study should have one scale and theme, as well as metadata details that describe said study and
+// multiple geometries, metrics and metrics metadata for the front-end to decipher the study's schema.
+
+// This data is DERIVED (based on ... TBD)
 model study {
   id                   Int                @id @default(autoincrement())
   name                 String
@@ -24,7 +29,8 @@ model study {
   description          String?
   details              String?
   image_src            String?
-  study_type           study_scale
+  study_scale          study_scale?
+  study_theme          study_theme?
   centroid_coordinates Float[]            @default([0, 0])
   zoom_level_start     Int                @default(14)
   bbox                 Float[]            @default([0, 0, 0, 0])
@@ -33,24 +39,58 @@ model study {
   study_geometries     geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
+  scenarios            scenario[]
 
   @@index([id])
 }
 
+// Each study should have one 'Baseline' scenario (name),
+// as well as any additional scenarios per the results of their research methods
+
+// This data is DERIVED (querying unique `scenario` values from the metrics metadata table)
 model scenario {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  methodology String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  study_id    Int
+  id               Int                @id @default(autoincrement())
+  name             String
+  slug             String?            @unique
+  description      String?
+  methodology      String?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  study_id         Int
+  study            study              @relation(fields: [study_id], references: [id])
+  metrics_metadata metrics_metadata[]
+  scenario_subtype scenario_subtype[]
 
   @@index([id])
 }
 
+// Each scenario can be broken down into multiple subtype categories (i.e. Energy, Cost, Impact, Savings)
+// Each study can submit scenarios that are broken down into unique subtypes
+
+// This data is DERIVED (querying unique `scenario_subtype` values from the metrics metadata table)
+model scenario_subtype {
+  id               Int                @id @default(autoincrement())
+  name             String
+  slug             String             @unique
+  description      String?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  scenario_id      Int
+  scenario         scenario           @relation(fields: [scenario_id], references: [id])
+  metrics_metadata metrics_metadata[]
+  // vw_map_fields    vw_map_fields[]
+
+  @@index([id])
+}
+
+// Each study should submit a set of geometries (shapes) meant to represent buildings or municipalities
+// according to their study `scale`
+
+// This dataset is INGESTED AS-IS
+// as long as a `name` field is included (to be used as a key to join buildings and their metrics by `geometry_key`)
+// and the dataset is tagged with the `study_id` with which the geometries should be associated with
 model geometries {
-  name       String                  @id
+  name       String                  @id @unique
   study_id   Int
   created_at DateTime                @default(now())
   updated_at DateTime                @updatedAt
@@ -59,33 +99,39 @@ model geometries {
   metrics    metrics[]
 }
 
+// This dataset is INGESTED AS-IS,
+// with `scenario_subtype_id` values substituted in place of their raw `scenario` names
+// the `map_display` property is meant to identify fields within a scenario that can be used for render map symbology
 model metrics_metadata {
-  id            Int            @id @default(autoincrement())
-  study_id      Int
-  field_name    String
-  description   String
-  units         String
-  usage_type    String?
-  energy_source String?
-  theme_name    theme_type?
-  theme_subtype theme_subtype?
-  scenario_name String?
-  map_display   Boolean        @default(false)
-  study         study          @relation(fields: [study_id], references: [id])
+  id                  Int               @id @default(autoincrement())
+  field_name          String
+  description         String
+  units               String
+  usage_type          String?
+  energy_source       String?
+  scenario_id         Int
+  map_display         Boolean           @default(false)
+  study_id            Int
+  scenario_subtype_id Int?
+  study               study             @relation(fields: [study_id], references: [id])
+  scenario            scenario          @relation(fields: [scenario_id], references: [id])
+  scenario_subtype    scenario_subtype? @relation(fields: [scenario_subtype_id], references: [id])
 
   @@index([study_id])
 }
 
+// This dataset is INGESTED AS-IS
+// as long as a `geometry_key` field is included (to be used as a key to join metrics to their buildings by `name`)
+// and the dataset is tagged with the `study_id` with which the geometries should be associated with
 model metrics {
   id           Int        @id @default(autoincrement())
   study_id     Int
-  theme_id     Int
   geometry_key String
   data         Json
   geometry     geometries @relation(fields: [geometry_key], references: [name])
   study        study      @relation(fields: [study_id], references: [id])
 
-  @@index([study_id, theme_id])
+  @@index([study_id, geometry_key])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -98,42 +144,25 @@ model spatial_ref_sys {
 }
 
 /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-view vw_map_fields {
-  id            BigInt         @unique
-  study_id      Int?
-  theme_name    theme_type?
-  theme_subtype theme_subtype?
-  scenario_name String?
-  field_name    String?
+// view vw_map_fields {
+//   id            BigInt       @unique
+//   study_id      Int?
+//   theme_name    study_theme?
+//   theme_type    theme_type?  @relation(fields: [theme_typeId], references: [id])
+//   scenario_name String?
+//   field_name    String?
+//   theme_typeId  Int?
 
-  @@index([study_id])
-}
-
-/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-view vw_themes {
-  id         BigInt          @unique
-  study_id   Int?
-  theme_name theme_type?
-  subtypes   theme_subtype[]
-  scenarios  String[]
-
-  @@index([study_id])
-}
+//   @@index([study_id])
+// }
 
 enum study_scale {
   Municipality
   Building
 }
 
-enum theme_type {
+enum study_theme {
   Buildings
   Mobility
   Waste
-}
-
-enum theme_subtype {
-  Energy
-  Impact
-  Cost
-  Savings
 }
