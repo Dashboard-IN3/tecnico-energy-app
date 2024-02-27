@@ -38,13 +38,12 @@ model study {
 }
 
 model theme {
-  id         Int      @id @default(autoincrement())
   name       String
   study_id   Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@index([id])
+  @@id([study_id, name])
 }
 
 model scenario {
@@ -58,8 +57,6 @@ model scenario {
   slug             String             @unique
   study            study              @relation(fields: [study_id], references: [id])
   scenario_subtype scenario_subtype[]
-
-  @@index([id])
 }
 
 model scenario_subtype {
@@ -72,8 +69,6 @@ model scenario_subtype {
   scenario_id      Int
   metrics_metadata metrics_metadata[]
   scenario         scenario           @relation(fields: [scenario_id], references: [id])
-
-  @@index([id])
 }
 
 model geometries {
