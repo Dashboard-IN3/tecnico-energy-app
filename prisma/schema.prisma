@@ -21,7 +21,7 @@ model study {
   id                   Int                @id @default(autoincrement())
   name                 String
   slug                 String             @unique
-  description          String?
+  description          String
   details              String?
   image_src            String?
   centroid_coordinates Float[]            @default([0, 0])
@@ -29,12 +29,22 @@ model study {
   bbox                 Float[]            @default([0, 0, 0, 0])
   created_at           DateTime           @default(now())
   updated_at           DateTime           @updatedAt
-  study_scale          study_scale?
-  study_theme          study_theme?
+  study_scale          study_scale
+  study_theme          study_theme
   study_geometries     geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
   scenarios            scenario[]
+
+  @@index([id])
+}
+
+model theme {
+  id         Int      @id @default(autoincrement())
+  name       String
+  study_id   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([id])
 }
@@ -47,7 +57,7 @@ model scenario {
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
   study_id         Int
-  slug             String?            @unique
+  slug             String             @unique
   study            study              @relation(fields: [study_id], references: [id])
   scenario_subtype scenario_subtype[]
 
