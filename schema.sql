@@ -208,3 +208,112 @@ ON CONFLICT (study_slug, geometry_key)
     DO UPDATE SET
         data = EXCLUDED.data;
 
+-- Demo of building metrics mappings, specifying the source and destination of every relevant metric
+SELECT
+    field_name AS src,
+    category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
+FROM
+    metrics_metadata
+WHERE
+    study_slug = 'lisbon-building-energy'
+    AND theme_slug = 'Building'
+    AND scenario_slug IS NULL;
+
+-- Demo of taking metrics mapping and using that to retrieve pertinent records from metrics table and generating output objects
+WITH mappings AS (
+    SELECT
+        field_name AS src,
+        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
+    FROM
+        metrics_metadata
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND theme_slug = 'Building'
+        AND scenario_slug IS NULL
+),
+transformed_data AS (
+    SELECT
+        geometry_key,
+        jsonb_object_agg(m.dst, data -> m.src) AS transformed_json
+    FROM
+        metrics,
+        mappings m
+    WHERE
+        study_slug = 'lisbon-building-energy'
+    GROUP BY
+        geometry_key
+)
+SELECT
+    *
+FROM
+    transformed_data;
+
+-- Demo of taking metrics mapping and using that to retrieve pertinent records from metrics table and generating more rich output objects
+WITH mappings AS (
+    SELECT
+        field_name AS src,
+        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
+    FROM
+        metrics_metadata
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND theme_slug = 'Building'
+        AND scenario_slug IS NULL
+),
+pre_transformed_data AS (
+    SELECT
+        geometry_key,
+        m.dst,
+        -- HERE WE'RE BUILDING A JSON OBJECT WITH THE VALUE AND THE SOURCE FIELD. WE COULD INJECT ANY METADATA DESIRED.
+        -- HOWEVER, I THINK IT MAY BE BETTER TO DO THIS AT THE END OF THE QUERY WITH ANOTHER JOIN TO `mappings``
+        jsonb_build_object('value', data -> m.src, 'src_field', m.src) AS value_details
+    FROM
+        metrics,
+        mappings m
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND data ? m.src
+),
+transformed_data AS (
+    SELECT
+        geometry_key,
+        jsonb_object_agg(dst, value_details) AS transformed_json
+    FROM
+        pre_transformed_data
+    GROUP BY
+        geometry_key
+)
+SELECT
+    *
+FROM
+    transformed_data;
+
+-- Let's demonstrate adding a scenario
+WITH all_mappings AS (
+    SELECT
+        field_name AS src,
+        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst,
+        scenario_slug
+    FROM
+        metrics_metadata
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND theme_slug = 'Building'
+        AND scenario_slug IS NULL
+        OR scenario_slug = 'lightbulbs'
+),
+ranked_mappings AS (
+    SELECT
+        m.*,
+        rank() OVER (PARTITION BY m.dst ORDER BY scenario_slug DESC NULLS LAST) AS pos
+    FROM
+        all_mappings m
+)
+SELECT
+    src,
+    dst
+FROM
+    ranked_mappings
+WHERE
+    pos = 1;
+
