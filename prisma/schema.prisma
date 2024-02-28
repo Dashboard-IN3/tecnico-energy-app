@@ -18,32 +18,33 @@ datasource db {
 }
 
 model study {
-  id                   Int                @id @default(autoincrement())
+  slug                 String
   name                 String
-  slug                 String             @unique
   description          String
   details              String?
   image_src            String?
   centroid_coordinates Float[]            @default([0, 0])
   zoom_level_start     Int                @default(14)
   bbox                 Float[]            @default([0, 0, 0, 0])
-  created_at           DateTime           @default(now())
-  updated_at           DateTime           @updatedAt
   study_scale          study_scale
-  study_theme          study_theme
   study_geometries     geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
   scenarios            scenario[]
+  theme                theme[]
+
+  @@id([slug])
 }
 
 model theme {
-  name       String
-  study_id   Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  slug             String
+  name             String
+  study            study              @relation(fields: [study_slug], references: [slug])
+  study_slug       String
+  metrics_metadata metrics_metadata[]
 
-  @@id([study_id, name])
+  @@id([study_slug, slug])
+  @@index([study_slug])
 }
 
 model scenario {
@@ -51,63 +52,52 @@ model scenario {
   name             String
   description      String?
   methodology      String?
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
-  study_id         Int
+  study            study              @relation(fields: [study_slug], references: [slug])
+  study_slug       String
   slug             String             @unique
-  study            study              @relation(fields: [study_id], references: [id])
-  scenario_subtype scenario_subtype[]
-}
-
-model scenario_subtype {
-  id               Int                @id @default(autoincrement())
-  name             String
-  slug             String             @unique
-  description      String?
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
-  scenario_id      Int
   metrics_metadata metrics_metadata[]
-  scenario         scenario           @relation(fields: [scenario_id], references: [id])
 }
 
 model geometries {
   name       String                  @id @unique
-  study_id   Int
-  created_at DateTime                @default(now())
-  updated_at DateTime                @updatedAt
+  study      study                   @relation(fields: [study_slug], references: [slug])
+  study_slug String
   geom       Unsupported("geometry")
-  study      study                   @relation(fields: [study_id], references: [id])
-  metrics    metrics[]
 
-  @@index([study_id])
+  metrics metrics[] // TODO: Make it clear that this is 1:1
+
+  @@index([study_slug])
 }
 
 model metrics_metadata {
-  study_id            Int
-  field_name          String
-  description         String
-  units               String
-  usage_type          String?
-  energy_source       String?
-  map_display         Boolean           @default(false)
-  scenario_id         Int?
-  scenario_subtype_id Int?
-  scenario_subtype    scenario_subtype? @relation(fields: [scenario_subtype_id], references: [id])
-  study               study             @relation(fields: [study_id], references: [id])
+  field_name  String
+  description String
+  units       String
+  // map_display   Boolean @default(false)  // TODO: Figure out what to do with this...
 
-  @@id([study_id, field_name])
-  @@index([map_display])
+  study      study  @relation(fields: [study_slug], references: [slug])
+  study_slug String
+  theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
+  theme_slug String
+
+  category    String?
+  usage       String?
+  source      String?
+  scenario    scenario? @relation(fields: [scenario_id], references: [id])
+  scenario_id Int?
+  // @@index([map_display])
+
+  @@id([study_slug, field_name])
 }
 
 model metrics {
-  study_id     Int
+  study        study      @relation(fields: [study_slug], references: [slug])
+  study_slug   String
   geometry_key String
   data         Json
   geometry     geometries @relation(fields: [geometry_key], references: [name])
-  study        study      @relation(fields: [study_id], references: [id])
 
-  @@id([study_id, geometry_key])
+  @@id([study_slug, geometry_key])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -117,17 +107,6 @@ model spatial_ref_sys {
   auth_srid Int?
   srtext    String? @db.VarChar(2048)
   proj4text String? @db.VarChar(2048)
-}
-
-/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-view vw_map_fields {
-  id                  BigInt?
-  study_id            Int?
-  scenario_id         Int?
-  scenario_subtype_id Int?
-  field_name          String?
-
-  @@ignore
 }
 
 /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -159,10 +138,4 @@ view geometry_columns {
 enum study_scale {
   Municipality
   Building
-}
-
-enum study_theme {
-  Buildings
-  Mobility
-  Waste
 }
