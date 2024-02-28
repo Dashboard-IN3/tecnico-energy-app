@@ -234,7 +234,7 @@ WITH mappings AS (
 transformed_data AS (
     SELECT
         geometry_key,
-        jsonb_object_agg(m.dst, data -> m.src) AS transformed_json
+        jsonb_object_agg(m.dst, data -> m.src) AS data
     FROM
         metrics,
         mappings m
@@ -277,7 +277,7 @@ pre_transformed_data AS (
 transformed_data AS (
     SELECT
         geometry_key,
-        jsonb_object_agg(dst, value_details) AS transformed_json
+        jsonb_object_agg(dst, value_details) AS data
     FROM
         pre_transformed_data
     GROUP BY
@@ -289,31 +289,129 @@ FROM
     transformed_data;
 
 -- Let's demonstrate adding a scenario
-WITH all_mappings AS (
+WITH ranked_mappings AS (
     SELECT
-        field_name AS src,
-        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst,
-        scenario_slug
+        *,
+        rank() OVER (PARTITION BY category,
+            usage,
+            source ORDER BY scenario_slug DESC NULLS LAST) AS pos
     FROM
         metrics_metadata
     WHERE
         study_slug = 'lisbon-building-energy'
         AND theme_slug = 'Building'
-        AND scenario_slug IS NULL
-        OR scenario_slug = 'lightbulbs'
-),
-ranked_mappings AS (
-    SELECT
-        m.*,
-        rank() OVER (PARTITION BY m.dst ORDER BY scenario_slug DESC NULLS LAST) AS pos
-    FROM
-        all_mappings m
-)
+        AND (scenario_slug IS NULL
+            OR scenario_slug = 'lightbulbs'))
 SELECT
-    src,
-    dst
+    field_name AS src,
+    category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
 FROM
     ranked_mappings
 WHERE
     pos = 1;
 
+-- So bringing it all together, we can now generate the output objects for the lightbulbs scenario
+WITH ranked_mappings AS (
+    SELECT
+        *,
+        rank() OVER (PARTITION BY category,
+            usage,
+            source ORDER BY scenario_slug DESC NULLS LAST) AS pos
+    FROM
+        metrics_metadata
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND theme_slug = 'Building'
+        AND (scenario_slug IS NULL
+            OR scenario_slug = 'lightbulbs')
+),
+mappings AS (
+    SELECT
+        field_name AS src,
+        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
+    FROM
+        ranked_mappings
+    WHERE
+        pos = 1
+),
+pre_transformed_data AS (
+    SELECT
+        geometry_key,
+        m.dst,
+        jsonb_build_object('value', data -> m.src, 'src_field', m.src) AS value_details
+    FROM
+        metrics,
+        mappings m
+    WHERE
+        study_slug = 'lisbon-building-energy'
+),
+transformed_data AS (
+    SELECT
+        geometry_key,
+        jsonb_object_agg(dst, value_details) AS data
+    FROM
+        pre_transformed_data
+    GROUP BY
+        geometry_key
+)
+SELECT
+    *
+FROM
+    transformed_data;
+
+-- Finally, adding geometry to the output
+WITH ranked_mappings AS (
+    SELECT
+        *,
+        rank() OVER (PARTITION BY category,
+            usage,
+            source ORDER BY scenario_slug DESC NULLS LAST) AS pos
+    FROM
+        metrics_metadata
+    WHERE
+        study_slug = 'lisbon-building-energy'
+        AND theme_slug = 'Building'
+        AND (scenario_slug IS NULL
+            OR scenario_slug = 'lightbulbs')
+),
+mappings AS (
+    SELECT
+        field_name AS src,
+        category || '/' || coalesce(usage, 'ALL') || '/' || coalesce(source, 'ALL') AS dst
+    FROM
+        ranked_mappings
+    WHERE
+        pos = 1
+),
+pre_transformed_data AS (
+    SELECT
+        geometry_key,
+        m.dst,
+        jsonb_build_object('value', data -> m.src, 'src_field', m.src) AS value_details
+    FROM
+        metrics,
+        mappings m
+    WHERE
+        study_slug = 'lisbon-building-energy'
+),
+transformed_data AS (
+    SELECT
+        geometry_key,
+        jsonb_object_agg(dst, value_details) AS data
+    FROM
+        pre_transformed_data
+    GROUP BY
+        geometry_key
+)
+SELECT
+    g.name,
+    g.geom,
+    d.data
+FROM
+    transformed_data d,
+    geometries g
+WHERE
+    d.geometry_key = g.name
+    AND g.study_slug = 'lisbon-building-energy';
+
+-- TODO: Select values not as JSON objects, but as columns to make summing easier
