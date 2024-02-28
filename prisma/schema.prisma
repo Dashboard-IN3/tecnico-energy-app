@@ -17,6 +17,7 @@ datasource db {
   extensions        = [postgis]
 }
 
+/// Retrieved from the `metadata` worksheet of a study spreadsheet
 model study {
   slug                 String
   name                 String
@@ -36,6 +37,7 @@ model study {
   @@id([slug])
 }
 
+/// Generated dynamically from the `metrics_metadata` worksheet of a study spreadsheet
 model theme {
   slug             String
   name             String
@@ -47,25 +49,25 @@ model theme {
   @@index([study_slug])
 }
 
+/// 
 model scenario {
-  id               Int                @id @default(autoincrement())
+  slug             String             @id
   name             String
   description      String?
   methodology      String?
   study            study              @relation(fields: [study_slug], references: [slug])
   study_slug       String
-  slug             String             @unique
   metrics_metadata metrics_metadata[]
 }
 
 model geometries {
-  name       String                  @id @unique
+  name       String
   study      study                   @relation(fields: [study_slug], references: [slug])
   study_slug String
   geom       Unsupported("geometry")
+  metrics    metrics?
 
-  metrics metrics[] // TODO: Make it clear that this is 1:1
-
+  @@id([study_slug, name])
   @@index([study_slug])
 }
 
@@ -80,11 +82,11 @@ model metrics_metadata {
   theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
   theme_slug String
 
-  category    String?
-  usage       String?
-  source      String?
-  scenario    scenario? @relation(fields: [scenario_id], references: [id])
-  scenario_id Int?
+  category      String?
+  usage         String?
+  source        String?
+  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario_slug String?
   // @@index([map_display])
 
   @@id([study_slug, field_name])
@@ -94,10 +96,12 @@ model metrics {
   study        study      @relation(fields: [study_slug], references: [slug])
   study_slug   String
   geometry_key String
+  // TODO: Consider validating that keys are valid fields as per fields metric_metadata
   data         Json
-  geometry     geometries @relation(fields: [geometry_key], references: [name])
+  geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
 
   @@id([study_slug, geometry_key])
+  @@unique([study_slug, geometry_key])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
