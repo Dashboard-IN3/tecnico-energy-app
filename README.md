@@ -37,6 +37,8 @@ pnpm prisma db seed
 
 ### Data Model
 
+![terminology](./.docs/terminology.png)
+
 ![entity relationsip diagram](./prisma/ERD.svg)
 
 #### Buildings
