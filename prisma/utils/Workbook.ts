@@ -4,7 +4,6 @@ import {
   scenario,
   study_scale,
 } from "@prisma/client"
-import { Metric } from "@prisma/client/runtime"
 import fs from "fs/promises"
 import xlsx from "xlsx"
 
@@ -132,9 +131,9 @@ interface ScenariosMetadataInput {
   description: string
 }
 
-function slugify(text: string): string {
+function slugify(text?: string): string {
   return text
-    .toLowerCase()
+    ?.toLowerCase()
     .replace(/ /g, "-")
     .replace(/[^\w-]+/g, "")
 }
