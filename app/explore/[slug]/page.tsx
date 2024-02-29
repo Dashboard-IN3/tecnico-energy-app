@@ -29,13 +29,13 @@ export default async function ExplorePage({
     }, {}),
     selectedTheme: {
       ...study.themes[0],
-      scenarios: study.themes[0].scenarios.reduce((acc, scenario) => {
-        acc[scenario.slug] = scenario
-        return acc
-      }, {}),
+      selectedScenario: { slug: "", name: "", description: "" },
+      scenarios: study.themes[0].scenarios,
     },
     selectedThemeId: study.themes[0]?.slug,
-    aoi: {},
+    totalSelectedFeatures: 0,
+    isDrawing: false,
+    aoi: { feature: null, bbox: null },
   }
   const stateObject = {
     selectedStudy,

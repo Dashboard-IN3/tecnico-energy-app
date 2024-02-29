@@ -70,33 +70,4 @@ export const useStore = create<InitialState>((set, get) => ({
       },
     }))
   },
-
-  // setSelectedTheme: (theme: Studies.Theme) => {
-  //   set(state => ({
-  //     selectedStudy: {
-  //       ...state.selectedStudy,
-  //       themes: {
-  //         ...state.selectedStudy.themes,
-  //         [theme.slug]: {}
-  //         ...state.studies[studyId],
-  //         selectedThemeId: themeId,
-  //       },
-  //     },
-  //   }))
-  // },
-
-  // setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => {
-  //   set(state => ({
-  //     studies: {
-  //       ...state.studies,
-  //       [study.slug]: {
-  //         ...study,
-  //         selectedThemeId: state.studies[study.slug]?.selectedThemeId
-  //           ? state.studies[study.slug]?.selectedThemeId
-  //           : themes[0]?.slug,
-  //       },
-  //     },
-  //     selectedStudyId: study.slug,
-  //   }))
-  // },
 }))
