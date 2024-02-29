@@ -12,7 +12,7 @@
   - You are about to drop the column `studyId` on the `theme` table. All the data in the column will be lost.
   - You are about to drop the `buildings` table. If the table is not empty, all the data it contains will be lost.
   - Added the required column `study_slug` to the `scenario` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `study_scale` to the `study` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `scale` to the `study` table without a default value. This is not possible if the table is not empty.
   - Added the required column `study_slug` to the `theme` table without a default value. This is not possible if the table is not empty.
 
 */
@@ -70,6 +70,8 @@ CREATE TABLE "geometries" (
     "name" TEXT NOT NULL,
     "study_slug" TEXT NOT NULL,
     "geom" geometry NOT NULL,
+    "metricsStudy_slug" TEXT,
+    "metricsGeometry_key" TEXT,
 
     CONSTRAINT "geometries_pkey" PRIMARY KEY ("study_slug","name")
 );
@@ -108,25 +110,22 @@ CREATE UNIQUE INDEX "metrics_study_slug_geometry_key_key" ON "metrics"("study_sl
 CREATE INDEX "theme_study_slug_idx" ON "theme"("study_slug");
 
 -- AddForeignKey
-ALTER TABLE "theme" ADD CONSTRAINT "theme_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "theme" ADD CONSTRAINT "theme_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "scenario" ADD CONSTRAINT "scenario_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "scenario" ADD CONSTRAINT "scenario_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "geometries" ADD CONSTRAINT "geometries_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "geometries" ADD CONSTRAINT "geometries_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "metrics_metadata" ADD CONSTRAINT "metrics_metadata_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "geometries" ADD CONSTRAINT "geometries_metricsStudy_slug_metricsGeometry_key_fkey" FOREIGN KEY ("metricsStudy_slug", "metricsGeometry_key") REFERENCES "metrics"("study_slug", "geometry_key") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "metrics_metadata" ADD CONSTRAINT "metrics_metadata_study_slug_theme_slug_fkey" FOREIGN KEY ("study_slug", "theme_slug") REFERENCES "theme"("study_slug", "slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "metrics_metadata" ADD CONSTRAINT "metrics_metadata_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "metrics_metadata" ADD CONSTRAINT "metrics_metadata_scenario_slug_fkey" FOREIGN KEY ("scenario_slug") REFERENCES "scenario"("slug") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "metrics" ADD CONSTRAINT "metrics_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "metrics" ADD CONSTRAINT "metrics_study_slug_geometry_key_fkey" FOREIGN KEY ("study_slug", "geometry_key") REFERENCES "geometries"("study_slug", "name") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "metrics" ADD CONSTRAINT "metrics_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
