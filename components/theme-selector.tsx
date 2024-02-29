@@ -5,20 +5,16 @@ const Select = dynamic(() => import("react-select"), { ssr: false })
 export type Option = { value: string; label: string }
 
 export const ThemeSelector: React.FC = () => {
+  const selectedStudy = useStore(state => state.selectedStudy)
+  const { selectedTheme, themes } = selectedStudy
   const { setSelectedTheme } = useStore()
-  const selectedStudyId = useStore(state => state.selectedStudyId)
-  const themes = useStore(s => s.studies[s.selectedStudyId]?.themes)
-  const selectedTheme = useStore(s => {
-    const themeId = s.studies[s.selectedStudyId]?.selectedThemeId
-    const allThemes = s.studies[s.selectedStudyId]?.themes
-    return allThemes?.find(theme => theme.slug === themeId)
-  })
+
   const selectedOption = {
     value: selectedTheme?.slug,
     label: selectedTheme?.name,
   } as Option
 
-  const options = themes?.map(theme => ({
+  const options = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as Option[]
@@ -32,7 +28,8 @@ export const ThemeSelector: React.FC = () => {
         id="react-selector"
         value={selectedOption}
         onChange={(option: any) => {
-          setSelectedTheme(selectedStudyId, option.value)
+          // TODO check if this doesn need to be a Theme
+          setSelectedTheme(themes[option.value])
         }}
         options={options}
         styles={{
