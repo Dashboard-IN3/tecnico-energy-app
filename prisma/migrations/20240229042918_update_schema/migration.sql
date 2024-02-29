@@ -51,7 +51,7 @@ ADD COLUMN     "bbox" DOUBLE PRECISION[] DEFAULT ARRAY[0, 0, 0, 0]::DOUBLE PRECI
 ADD COLUMN     "centroid_coordinates" DOUBLE PRECISION[] DEFAULT ARRAY[0, 0]::DOUBLE PRECISION[],
 ADD COLUMN     "details" TEXT,
 ADD COLUMN     "image_src" TEXT,
-ADD COLUMN     "study_scale" "study_scale" NOT NULL,
+ADD COLUMN     "scale" "study_scale" NOT NULL,
 ADD COLUMN     "zoom_level_start" INTEGER NOT NULL DEFAULT 14,
 ADD CONSTRAINT "study_pkey" PRIMARY KEY ("slug");
 

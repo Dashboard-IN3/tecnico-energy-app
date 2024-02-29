@@ -10,10 +10,10 @@ generator erd {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("POSTGRES_PRISMA_URL")
-  directUrl         = env("POSTGRES_URL_NON_POOLING")
-  extensions        = [postgis]
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [postgis]
 }
 
 /// Retrieved from the `metadata` worksheet of a study spreadsheet
@@ -26,8 +26,8 @@ model study {
   centroid_coordinates Float[]            @default([0, 0])
   zoom_level_start     Int                @default(14)
   bbox                 Float[]            @default([0, 0, 0, 0])
-  study_scale          study_scale
-  study_geometries     geometries[]
+  scale                study_scale
+  geometries           geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
   scenarios            scenario[]
@@ -36,13 +36,13 @@ model study {
   @@id([slug])
 }
 
-/// Generated dynamically from the `metrics_metadata` worksheet of a study spreadsheet
+// TODO: Verify that we'll want to display info about a theme
 model theme {
-  slug             String
-  name             String
-  study            study              @relation(fields: [study_slug], references: [slug])
-  study_slug       String
-  metrics_metadata metrics_metadata[]
+  slug       String
+  name       String
+  study      study  @relation(fields: [study_slug], references: [slug])
+  study_slug String
+  // metrics_metadata metrics_metadata[]
 
   @@id([study_slug, slug])
   @@index([study_slug])
@@ -60,11 +60,13 @@ model scenario {
 }
 
 model geometries {
-  name       String
-  study      study                   @relation(fields: [study_slug], references: [slug])
-  study_slug String
-  geom       Unsupported("geometry")
-  metrics    metrics?
+  name                String
+  study               study                   @relation(fields: [study_slug], references: [slug])
+  study_slug          String
+  geom                Unsupported("geometry")
+  metrics             metrics?                @relation(fields: [metricsStudy_slug, metricsGeometry_key], references: [study_slug, geometry_key])
+  metricsStudy_slug   String?
+  metricsGeometry_key String?
 
   @@id([study_slug, name])
   @@index([study_slug])
@@ -78,7 +80,7 @@ model metrics_metadata {
 
   study      study  @relation(fields: [study_slug], references: [slug])
   study_slug String
-  theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
+  // theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
   theme_slug String
 
   category      String?
@@ -92,12 +94,13 @@ model metrics_metadata {
 }
 
 model metrics {
-  study        study      @relation(fields: [study_slug], references: [slug])
+  study        study        @relation(fields: [study_slug], references: [slug])
   study_slug   String
+  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   geometry_key String
   // TODO: Consider validating that keys are valid fields as per fields metric_metadata
   data         Json
-  geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
+  geometries   geometries[]
 
   @@id([study_slug, geometry_key])
   @@unique([study_slug, geometry_key])

@@ -6,6 +6,32 @@ Based off of the [Vercel Postgres + Prisma Next.js Starter](https://vercel.com/t
 - [Prisma](https://www.prisma.io/) - database modeling/ORM
 - [Tailwind](https://tailwindcss.com/) - CSS framework
 
+## Data Submission
+
+Data is modeled with the following concepts:
+
+- Study
+- Theme: Belongs to study, represents a field of research for a given study.
+- Scenario: A way that would modify the outcome of a theme.
+
+To provide data, two files must be provided:
+
+1. A XLSX spreadsheet file for a study, named `{study_identifier}.xlsx`
+1. A GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson`
+
+### Study Spreadsheet
+
+The study spreadsheet must contain the following worksheets:
+
+- `study`: metadata about the study. Column names are case insensitive and asterisks are removed prior to ingestion.
+- `metrics`: raw data. the first column is expected to be the value used for matching geometries
+- `metrics_metadata`
+
+### Study Geometries
+
+- `FeatureCollection` of `Polygon` or `MultiPolygon` values.
+- Each `Feature` must contain a unique `id` property of either a string or integer.
+
 ## Development
 
 ### Install
