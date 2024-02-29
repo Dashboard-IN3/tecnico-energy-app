@@ -4,8 +4,8 @@ export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
   const themes = useStore(state => state.selectedStudy.themes)
   const selectedTheme = useStore(state => state.selectedStudy?.selectedTheme)
-  if (!selectedTheme) {
-    return <div></div>
+  if (!selectedTheme || !Object.values(themes).length) {
+    return <></>
   }
 
   const options = Object.values(selectedTheme?.scenarios).map(

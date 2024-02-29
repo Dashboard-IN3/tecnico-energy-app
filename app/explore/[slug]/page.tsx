@@ -20,7 +20,7 @@ export default async function ExplorePage({
       acc[theme.slug] = {
         ...theme,
         selectedScenario: null,
-        scenarios: theme.scenarios.reduce((acc, scenario) => {
+        scenarios: theme?.scenarios.reduce((acc, scenario) => {
           acc[scenario.slug] = scenario
           return acc
         }, {}),
@@ -30,7 +30,7 @@ export default async function ExplorePage({
     selectedTheme: {
       ...study.themes[0],
       selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0].scenarios,
+      scenarios: study.themes[0]?.scenarios,
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
