@@ -37,7 +37,7 @@ async function main() {
       } catch (e) {
         switch (e.code) {
           case "P2025":
-            log(`no existing study found: ${study_slug}`)
+            log(`no existing study found, nothing to delete: ${study_slug}`)
             break
           default:
             throw e
