@@ -1,8 +1,10 @@
 import fs from "fs/promises"
+import path from "path"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
-
-import { metrics } from "@prisma/client"
+import { Prisma, PrismaClient, metrics } from "@prisma/client"
+import { DefaultArgs } from "@prisma/client/runtime/library"
+import { Dirent } from "fs"
 
 /**
  * TODO: Run each file ingestion as a single transaction, first clearing out any existing data matching the study slug
@@ -11,52 +13,64 @@ import { metrics } from "@prisma/client"
 async function main() {
   const files = await fs.readdir("data", { withFileTypes: true })
   for (const file of files) {
-    if (!file.isFile || !file.name.endsWith(".xlsx")) continue
+    const log = msg =>
+      console.log(`${new Date().toISOString()} | ${file.name} | ${msg}`)
 
-    const fullPath = `${file.path}/${file.name}`
-    console.log(`\n${fullPath}`)
-    const workbook = await Workbook.load(fullPath)
+    const filename = path.parse(file.name)
 
-    const metadata = {
-      slug: file.name.split(".")[0],
-      ...workbook.loadMetadata(),
+    if (!file.isFile || filename.ext !== ".xlsx") {
+      log("Ignoring.")
+      continue
     }
 
-    const studyResult = await prisma.study.upsert({
-      where: { slug: metadata.slug },
-      update: metadata,
-      create: metadata,
-    })
-    console.log(`... created study record: ${studyResult.slug}`)
+    const worksheetPath = `${file.path}/${file.name}`
+    const geojsonPath = `${file.path}/${filename.name}.geojson`
 
-    const metricsResult = await prisma.metrics.createMany({
-      data: workbook
-        .loadMetrics()
-        .map((m): metrics => ({ ...m, study_slug: metadata.slug })),
-      skipDuplicates: true,
-    })
-    console.log(`... ingested ${metricsResult.count} new metrics records`)
+    await prisma.$transaction(async tx => {
+      const workbook = await Workbook.load(worksheetPath)
 
-    const scenarioResult = await prisma.scenario.createMany({
-      data: workbook.loadScenariosMetadata().map(scenario => ({
-        ...scenario,
-        study_slug: metadata.slug,
-      })),
-      skipDuplicates: true,
-    })
-    console.log(
-      `... ingested ${scenarioResult.count} new scenario metadata records`
-    )
+      const study_slug = filename.name
 
-    const metricsMetadataResult = await prisma.metrics_metadata.createMany({
-      data: workbook
-        .loadMetricsMetadata()
-        .map(m => ({ ...m, study_slug: metadata.slug })),
-      skipDuplicates: true,
+      try {
+        await tx.study.delete({ where: { slug: study_slug } })
+        log(`deleted existing study record: ${study_slug}`)
+      } catch (e) {
+        switch (e.code) {
+          case "P2025":
+            log(`no existing study found: ${study_slug}`)
+            break
+          default:
+            throw e
+        }
+      }
+
+      const studyResult = await tx.study.create({
+        data: { ...workbook.loadMetadata(), slug: study_slug },
+      })
+      log(`created study record: ${studyResult.slug}`)
+
+      const metricsResult = await tx.metrics.createMany({
+        data: workbook
+          .loadMetrics()
+          .map((m): metrics => ({ ...m, study_slug })),
+        skipDuplicates: true,
+      })
+      log(`ingested ${metricsResult.count} metrics records`)
+
+      const scenarioResult = await tx.scenario.createMany({
+        data: workbook
+          .loadScenariosMetadata()
+          .map(scenario => ({ ...scenario, study_slug })),
+        skipDuplicates: true,
+      })
+      log(`ingested ${scenarioResult.count} scenario metadata records`)
+
+      const metricsMetadataResult = await tx.metrics_metadata.createMany({
+        data: workbook.loadMetricsMetadata().map(m => ({ ...m, study_slug })),
+        skipDuplicates: true,
+      })
+      log(`ingested ${metricsMetadataResult.count} metrics metadata records`)
     })
-    console.log(
-      `... ingested ${metricsMetadataResult.count} new metrics metadata records`
-    )
   }
 }
 

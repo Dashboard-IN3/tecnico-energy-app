@@ -40,7 +40,7 @@ model study {
 model theme {
   slug       String
   name       String
-  study      study  @relation(fields: [study_slug], references: [slug])
+  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug String
   // metrics_metadata metrics_metadata[]
 
@@ -54,14 +54,14 @@ model scenario {
   name             String
   description      String?
   methodology      String?
-  study            study              @relation(fields: [study_slug], references: [slug])
+  study            study              @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug       String
   metrics_metadata metrics_metadata[]
 }
 
 model geometries {
   name                String
-  study               study                   @relation(fields: [study_slug], references: [slug])
+  study               study                   @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug          String
   geom                Unsupported("geometry")
   metrics             metrics?                @relation(fields: [metricsStudy_slug, metricsGeometry_key], references: [study_slug, geometry_key])
@@ -78,7 +78,7 @@ model metrics_metadata {
   units       String
   // map_display   Boolean @default(false)  // TODO: Figure out what to do with this...
 
-  study      study  @relation(fields: [study_slug], references: [slug])
+  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug String
   // theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
   theme_slug String
@@ -94,7 +94,7 @@ model metrics_metadata {
 }
 
 model metrics {
-  study        study        @relation(fields: [study_slug], references: [slug])
+  study        study        @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug   String
   // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   geometry_key String
