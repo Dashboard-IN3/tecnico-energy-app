@@ -4,12 +4,6 @@ const nextConfig = {
   images: {
     domains: ["pbs.twimg.com", "fakeimg.pl"],
   },
-  rewrites: () => [
-    {
-      source: "/:admin*",
-      destination: "/api/admin/:admin*",
-    },
-  ],
 }
 
 module.exports = nextConfig
