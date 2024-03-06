@@ -4,9 +4,11 @@ export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
   const themes = useStore(state => state.selectedStudy.themes)
   const selectedTheme = useStore(state => state.selectedStudy?.selectedTheme)
+
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
   }
+  const { selectedScenario } = selectedTheme
 
   const options = Object.values(selectedTheme?.scenarios).map(
     (scenario: Studies.Scenario) => ({
@@ -20,8 +22,6 @@ export const ScenarioControl: React.FC = () => {
       <div className="text-sm font-medium mb-2 ">Study Scenarios</div>
       <div>
         {options?.map((option: any, key: number) => {
-          const { selectedScenario } = themes[selectedTheme.slug]
-
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">
@@ -32,11 +32,7 @@ export const ScenarioControl: React.FC = () => {
                   readOnly
                   className="hidden"
                   onClick={() => {
-                    setSelectedScenario(
-                      option.value === selectedScenario?.slug
-                        ? null
-                        : themes[selectedTheme.slug].scenarios[option.value]
-                    )
+                    setSelectedScenario(option.value)
                   }}
                 />
                 <div className="flex items-center">

@@ -7,9 +7,10 @@ interface InitialState {
   setTotalSelectedFeatures: (total: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
-  setSelectedScenario: (scenarioId: Studies.Scenario) => void
-  // setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
+  setSelectedScenario: (slug: string) => void
 }
+
+const initialScenarioState = { slug: "", name: "", description: "" }
 
 export const useStore = create<InitialState>((set, get) => ({
   selectedStudy: {
@@ -28,7 +29,7 @@ export const useStore = create<InitialState>((set, get) => ({
     selectedTheme: {
       name: "",
       slug: "",
-      selectedScenario: { slug: "", name: "", description: "" },
+      selectedScenario: initialScenarioState,
       scenarios: [],
     },
   },
@@ -56,18 +57,31 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedScenario: (scenario: Studies.Scenario) => {
-    set(state => ({
-      selectedStudy: {
-        ...state.selectedStudy,
-        themes: {
-          ...state.selectedStudy.themes,
-          [state.selectedStudy.selectedTheme.slug]: {
+  setSelectedScenario: (slug: string) => {
+    set(state => {
+      const newScenario = state.selectedStudy.selectedTheme.scenarios.find(
+        scenario => scenario.slug == slug
+      )
+      const oldScenario = state.selectedStudy.selectedTheme.selectedScenario
+
+      return {
+        selectedStudy: {
+          ...state.selectedStudy,
+          themes: {
+            ...state.selectedStudy.themes,
+            [state.selectedStudy.selectedTheme.slug]: {
+              ...state.selectedStudy.selectedTheme,
+              selectedScenario:
+                slug === oldScenario.slug ? initialScenarioState : newScenario,
+            },
+          },
+          selectedTheme: {
             ...state.selectedStudy.selectedTheme,
-            selectedScenario: scenario,
+            selectedScenario:
+              slug === oldScenario.slug ? initialScenarioState : newScenario,
           },
         },
-      },
-    }))
+      }
+    })
   },
 }))

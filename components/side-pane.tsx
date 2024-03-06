@@ -12,6 +12,8 @@ interface Props {
 
 export const SidePane: React.FC<Props> = ({ src, studyId }) => {
   const { selectedStudy } = useStore()
+  const { selectedTheme } = selectedStudy
+  const { selectedScenario } = selectedTheme
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -40,7 +42,10 @@ export const SidePane: React.FC<Props> = ({ src, studyId }) => {
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
         <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
-          Number of Features in Spatial DB Query
+          {selectedTheme?.name} with Scenario{" "}
+          {selectedScenario?.name?.length > 0
+            ? selectedScenario?.name
+            : "baseline"}
         </div>
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
       </div>
