@@ -28,8 +28,7 @@ export const ThemeSelector: React.FC = () => {
         id="react-selector"
         value={selectedOption}
         onChange={(option: any) => {
-          // TODO check if this doesn need to be a Theme
-          setSelectedTheme(themes[option.value])
+          setSelectedTheme(option.value)
         }}
         options={options}
         styles={{

@@ -6,11 +6,11 @@ interface InitialState {
   setAoi: (aoi: MapState.aoi) => void
   setTotalSelectedFeatures: (total: number) => void
   setIsDrawing: (isDrawing: boolean) => void
-  setSelectedTheme: (theme: Studies.Theme) => void
+  setSelectedTheme: (slug: string) => void
   setSelectedScenario: (slug: string) => void
 }
 
-const initialScenarioState = { slug: "", name: "", description: "" }
+export const initialScenarioState = { slug: "", name: "", description: "" }
 
 export const useStore = create<InitialState>((set, get) => ({
   selectedStudy: {
@@ -48,22 +48,19 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedTheme: (theme: Studies.Theme) => {
+  setSelectedTheme: (slug: string) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
-        selectedTheme: theme,
+        selectedTheme: state.selectedStudy.themes[slug],
       },
     }))
   },
 
   setSelectedScenario: (slug: string) => {
     set(state => {
-      const newScenario = state.selectedStudy.selectedTheme.scenarios.find(
-        scenario => scenario.slug == slug
-      )
+      const newScenario = state.selectedStudy.selectedTheme.scenarios[slug]
       const oldScenario = state.selectedStudy.selectedTheme.selectedScenario
-
       return {
         selectedStudy: {
           ...state.selectedStudy,
@@ -72,13 +69,13 @@ export const useStore = create<InitialState>((set, get) => ({
             [state.selectedStudy.selectedTheme.slug]: {
               ...state.selectedStudy.selectedTheme,
               selectedScenario:
-                slug === oldScenario.slug ? initialScenarioState : newScenario,
+                slug === oldScenario?.slug ? initialScenarioState : newScenario,
             },
           },
           selectedTheme: {
             ...state.selectedStudy.selectedTheme,
             selectedScenario:
-              slug === oldScenario.slug ? initialScenarioState : newScenario,
+              slug === oldScenario?.slug ? initialScenarioState : newScenario,
           },
         },
       }

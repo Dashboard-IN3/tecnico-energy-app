@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { useStore } from "@/app/lib/store"
+import { initialScenarioState, useStore } from "@/app/lib/store"
 import { getStudies, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
@@ -29,8 +29,11 @@ export default async function ExplorePage({
     }, {}),
     selectedTheme: {
       ...study.themes[0],
-      selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0]?.scenarios,
+      selectedScenario: initialScenarioState,
+      scenarios: study.themes[0]?.scenarios.reduce((acc, scenario) => {
+        acc[scenario.slug] = scenario
+        return acc
+      }, {}),
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
