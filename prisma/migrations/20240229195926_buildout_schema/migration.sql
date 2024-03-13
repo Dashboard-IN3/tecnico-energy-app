@@ -52,7 +52,10 @@ ADD COLUMN     "centroid_coordinates" DOUBLE PRECISION[] DEFAULT ARRAY[0, 0]::DO
 ADD COLUMN     "details" TEXT,
 ADD COLUMN     "image_src" TEXT,
 ADD COLUMN     "scale" "study_scale" NOT NULL,
-ADD COLUMN     "zoom_level_start" INTEGER NOT NULL DEFAULT 14,
+ADD COLUMN     "zoom_level_start" INTEGER NOT NULL DEFAULT 14, 
+ADD COLUMN     "highlight" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "key_field" TEXT NOT NULL,
+ADD COLUMN     "name_field" TEXT NOT NULL,
 ADD CONSTRAINT "study_pkey" PRIMARY KEY ("slug");
 
 -- AlterTable
@@ -83,7 +86,7 @@ CREATE TABLE "metrics_metadata" (
     "units" TEXT NOT NULL,
     "study_slug" TEXT NOT NULL,
     "theme_slug" TEXT NOT NULL,
-    "category" TEXT,
+    "category" TEXT NOT NULL,
     "usage" TEXT,
     "source" TEXT,
     "scenario_slug" TEXT,

@@ -86,7 +86,7 @@ model metrics_metadata {
   // theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
   theme_slug String
 
-  category      String?
+  category      String
   usage         String?
   source        String?
   scenario      scenario? @relation(fields: [scenario_slug], references: [slug])

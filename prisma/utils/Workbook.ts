@@ -7,6 +7,7 @@ import {
 } from "@prisma/client"
 import fs from "fs/promises"
 import xlsx from "xlsx"
+import { slugify } from "./slugify"
 
 export class Workbook {
   readonly WORKSHEET_NAMES = {
@@ -138,13 +139,6 @@ interface MetricsMetadataInput
 interface ScenariosMetadataInput {
   scenario: string
   description: string
-}
-
-function slugify(text?: string): string {
-  return text
-    ?.toLowerCase()
-    .replace(/ /g, "-")
-    .replace(/[^\w-]+/g, "")
 }
 
 /**

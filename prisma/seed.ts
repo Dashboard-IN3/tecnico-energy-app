@@ -3,6 +3,7 @@ import path from "path"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
 import { metrics } from "@prisma/client"
+import { slugify } from "./utils/slugify"
 
 /**
  * TODO: Run each file ingestion as a single transaction, first clearing out any existing data matching the study slug
@@ -80,6 +81,17 @@ async function main() {
         skipDuplicates: true,
       })
       log(`ingested ${metricsMetadataResult.count} metrics metadata records`)
+
+      const themes = new Set(metricsMetadata.map(m => m.theme_slug))
+      const themesResult = await tx.theme.createMany({
+        data: Array.from(themes).map(name => ({
+          name,
+          study_slug,
+          slug: slugify(name),
+        })),
+        skipDuplicates: true,
+      })
+      log(`created ${themesResult.count} themes from metrics metadata`)
     })
   }
 }

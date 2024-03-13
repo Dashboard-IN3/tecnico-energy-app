@@ -1,3 +1,15 @@
+/*
+Function: get_metrics_metadata_for_scenarios
+
+Description: Retrieves metadata for metrics based on study, theme, and scenario slugs.
+
+Parameters:
+- study_slug_arg: The slug of the study.
+- theme_slug_arg: The slug of the theme.
+- scenario_slug_arg: (Optional) The slug of the scenario. If not provided, all scenarios will be considered.
+
+Returns: None
+ */
 CREATE FUNCTION public.get_metrics_metadata_for_scenarios(study_slug_arg text, theme_slug_arg text, scenario_slug_arg text DEFAULT ''::text)
   RETURNS SETOF public.metrics_metadata
   LANGUAGE sql
