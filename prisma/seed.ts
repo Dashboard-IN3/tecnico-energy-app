@@ -94,14 +94,14 @@ async function main() {
           })),
           skipDuplicates: true,
         })
-        log(`created ${themesResult.count} themes from metrics metadata`)
+        log(`derived ${themesResult.count} themes from metrics metadata`)
 
         const scenarioMetricsCount = await tx.$executeRaw`
           INSERT INTO scenario_metrics SELECT ${study_slug} as study_slug, s.* 
           FROM theme t, get_data_for_scenarios(${study_slug}::text, t.name::text) s 
           WHERE t.study_slug = ${study_slug};
         `
-        log(`created ${scenarioMetricsCount} pre-aggregated scenario metrics`)
+        log(`derived ${scenarioMetricsCount} pre-aggregated scenario metrics`)
 
         const scenarioMetricsTotalsCount = await tx.$executeRaw`
           INSERT INTO scenario_metrics_total SELECT ${study_slug} as study_slug, s.* 
@@ -109,7 +109,7 @@ async function main() {
           WHERE t.study_slug = ${study_slug};
         `
         log(
-          `created ${scenarioMetricsTotalsCount} pre-aggregated scenario metrics totals`
+          `derived ${scenarioMetricsTotalsCount} pre-aggregated scenario metrics totals`
         )
       },
       {
