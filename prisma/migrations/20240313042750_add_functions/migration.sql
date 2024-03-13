@@ -1,7 +1,7 @@
 /*
 Function: get_metrics_metadata_for_scenarios
 
-Description: Retrieves metadata for metrics based on study, theme, and scenario slugs.
+Description: Retrieve all of the fields to be used for a given study, theme, and optionally scenario.
 
 Parameters:
 - study_slug_arg: The slug of the study.
@@ -77,14 +77,14 @@ $$;
 
 /**
  * Function: get_data_for_scenarios
- * Description: Retrieves data for scenarios based on study, theme, and scenario slugs.
+ * Description: Retrieve metrics for geometries by selecting appropriate field based on theme and scenario. Metrics are normalized to destination field.
  * Parameters:
  *   - study_slug_arg: The slug of the study.
  *   - theme_slug_arg: The slug of the theme.
  *   - scenario_slug_arg: (Optional) The slug of the scenario. If not provided, all scenarios will be retrieved.
  * Returns: The data for the specified scenarios.
  */
-CREATE FUNCTION public.get_data_for_scenarios(study_slug_arg text, theme_slug_arg text, scenario_slug_arg text DEFAULT ''::text)
+CREATE OR REPLACE FUNCTION public.get_data_for_scenarios(study_slug_arg text, theme_slug_arg text, scenario_slug_arg text DEFAULT ''::text)
   RETURNS TABLE(
     scenario_slug text,
     geometry_key text,
@@ -95,7 +95,7 @@ CREATE FUNCTION public.get_data_for_scenarios(study_slug_arg text, theme_slug_ar
   SELECT
     scenario_slug,
     geometry_key,
-    jsonb_object_agg(category || '.' || coalesce(usage, 'ALL') || '.' || coalesce(source, 'ALL'), data -> m_m.field_name) AS data
+    jsonb_object_agg(category || '.' || coalesce(usage, 'ALL') || '.' || coalesce(source, 'ALL'), jsonb_build_object('value', round((data -> lower(m_m.field_name))::numeric, 2), 'src_field', m_m.field_name)) AS data
   FROM
     metrics m,
     get_metrics_metadata_for_scenarios(study_slug_arg, theme_slug_arg, scenario_slug_arg) m_m
@@ -117,38 +117,35 @@ $$;
  - theme_slug_arg: The slug of the theme.
  - scenario_slug_arg: (Optional) The slug of the scenario. If not provided, all scenarios will be considered.
  */
-CREATE FUNCTION public.get_aggregation_for_scenarios(study_slug_arg text, theme_slug_arg text, scenario_slug_arg text DEFAULT ''::text)
+CREATE OR REPLACE FUNCTION public.get_aggregation_for_scenarios(study_slug_arg text, theme_slug_arg text, scenario_slug_arg text DEFAULT ''::text)
   RETURNS TABLE(
     scenario_slug text,
     data jsonb)
   LANGUAGE sql
   STABLE
   AS $$
-  WITH scenario_metrics AS(
+  WITH aggregated_keys AS(
     SELECT
-      *
+      scenario_slug,
+      key,
+      jsonb_build_object(
+        'value', sum(coalesce((value::jsonb ->> 'value')::numeric, 0)::numeric), 
+        'src_field', value::jsonb -> 'src_field'
+      ) as sum_value
     FROM
-      get_data_for_scenarios(study_slug_arg, theme_slug_arg, scenario_slug_arg)
-),
-aggregated_keys AS(
+      get_data_for_scenarios(study_slug_arg, theme_slug_arg, scenario_slug_arg),
+      LATERAL jsonb_each_text(data) AS each(key, value)
+    GROUP BY
+      scenario_slug,
+      key,
+      value::jsonb->'src_field'
+)
   SELECT
     scenario_slug,
-    key,
-    sum(value::numeric) AS sum_value
+    jsonb_object_agg(key, sum_value)
   FROM
-    scenario_metrics,
-    LATERAL jsonb_each_text(data) AS each(key,
-      value)
+    aggregated_keys
   GROUP BY
-    scenario_slug,
-    key
-)
-SELECT
-  scenario_slug,
-  jsonb_object_agg(key, sum_value)
-FROM
-  aggregated_keys
-GROUP BY
-  scenario_slug
+    scenario_slug
 $$;
 
