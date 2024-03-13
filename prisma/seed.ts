@@ -2,9 +2,7 @@ import fs from "fs/promises"
 import path from "path"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
-import { Prisma, PrismaClient, metrics } from "@prisma/client"
-import { DefaultArgs } from "@prisma/client/runtime/library"
-import { Dirent } from "fs"
+import { metrics } from "@prisma/client"
 
 /**
  * TODO: Run each file ingestion as a single transaction, first clearing out any existing data matching the study slug
@@ -44,29 +42,41 @@ async function main() {
         }
       }
 
+      const study = { ...workbook.loadMetadata(), slug: study_slug }
       const studyResult = await tx.study.create({
-        data: { ...workbook.loadMetadata(), slug: study_slug },
+        data: study,
       })
       log(`created study record: ${studyResult.slug}`)
 
+      const metrics = workbook
+        .loadMetrics()
+        .map((m): metrics => ({ ...m, study_slug }))
       const metricsResult = await tx.metrics.createMany({
-        data: workbook
-          .loadMetrics()
-          .map((m): metrics => ({ ...m, study_slug })),
+        data: metrics,
         skipDuplicates: true,
       })
       log(`ingested ${metricsResult.count} metrics records`)
 
+      const scenarios = workbook
+        .loadScenariosMetadata()
+        .map(scenario => ({ ...scenario, study_slug }))
       const scenarioResult = await tx.scenario.createMany({
-        data: workbook
-          .loadScenariosMetadata()
-          .map(scenario => ({ ...scenario, study_slug })),
+        data: scenarios,
         skipDuplicates: true,
       })
       log(`ingested ${scenarioResult.count} scenario metadata records`)
 
+      const metricsMetadata = workbook
+        .loadMetricsMetadata()
+        .filter(m => {
+          if (scenarios.map(s => s.slug).includes(m.scenario_slug)) return true
+          log(
+            `skipping metrics metadata record for unknown scenario: ${m.scenario_slug}`
+          )
+        })
+        .map(m => ({ ...m, study_slug }))
       const metricsMetadataResult = await tx.metrics_metadata.createMany({
-        data: workbook.loadMetricsMetadata().map(m => ({ ...m, study_slug })),
+        data: metricsMetadata,
         skipDuplicates: true,
       })
       log(`ingested ${metricsMetadataResult.count} metrics metadata records`)

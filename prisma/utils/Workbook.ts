@@ -3,6 +3,7 @@ import {
   metrics_metadata,
   scenario,
   study_scale,
+  Prisma,
 } from "@prisma/client"
 import fs from "fs/promises"
 import xlsx from "xlsx"
@@ -87,16 +88,6 @@ export class Workbook {
     }))
   }
 
-  public loadMetricsMetadata(): Omit<metrics_metadata, "study_slug">[] {
-    return this.loadSheetAsJson<MetricsMetadataInput>(
-      this.WORKSHEET_NAMES.metricsMetadata
-    ).map(({ theme: theme_slug, scenario, ...data }) => ({
-      theme_slug,
-      scenario_slug: slugify(scenario),
-      ...data,
-    }))
-  }
-
   public loadScenariosMetadata(): Omit<scenario, "study_slug">[] {
     return this.loadSheetAsJson<ScenariosMetadataInput>(
       this.WORKSHEET_NAMES.scenariosMetadata
@@ -107,6 +98,21 @@ export class Workbook {
       methodology: null,
     }))
   }
+
+  public loadMetricsMetadata(): Omit<metrics_metadata, "study_slug">[] {
+    return this.loadSheetAsJson<MetricsMetadataInput>(
+      this.WORKSHEET_NAMES.metricsMetadata
+    ).map(({ theme: theme_slug, scenario, ...data }) => {
+      for (const key of ["category", "usage", "source"]) {
+        data[key] = data[key]?.toLowerCase().replace("all", "") || undefined
+      }
+      return {
+        theme_slug,
+        scenario_slug: slugify(scenario),
+        ...trimExtraCols(data, Prisma.Metrics_metadataScalarFieldEnum),
+      }
+    })
+  }
 }
 
 interface StudyMetadataInput {
@@ -115,6 +121,9 @@ interface StudyMetadataInput {
   details?: string
   image?: string
   scale: study_scale
+  highlights: string
+  key_field: string
+  name_field: string
 }
 
 interface MetricsMetadataInput
@@ -136,4 +145,19 @@ function slugify(text?: string): string {
     ?.toLowerCase()
     .replace(/ /g, "-")
     .replace(/[^\w-]+/g, "")
+}
+
+/**
+ * Removes unused columns from an object based on a given schema.
+ * @param obj The object to remove unused columns from.
+ * @param schema The schema defining the columns to keep.
+ * @returns The object with unused columns removed.
+ */
+function trimExtraCols<T extends object, S extends object>(
+  obj: T,
+  schema: S
+): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k, v]) => Object.keys(schema).includes(k))
+  ) as T
 }

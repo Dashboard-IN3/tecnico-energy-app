@@ -26,6 +26,9 @@ model study {
   centroid_coordinates Float[]            @default([0, 0])
   zoom_level_start     Int                @default(14)
   bbox                 Float[]            @default([0, 0, 0, 0])
+  highlight            Boolean            @default(false)
+  key_field            String
+  name_field           String
   scale                study_scale
   geometries           geometries[]
   metrics              metrics[]
