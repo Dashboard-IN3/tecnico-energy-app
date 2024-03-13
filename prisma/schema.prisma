@@ -18,23 +18,25 @@ datasource db {
 
 /// Retrieved from the `metadata` worksheet of a study spreadsheet
 model study {
-  slug                 String
-  name                 String
-  description          String
-  details              String?
-  image_src            String?
-  centroid_coordinates Float[]            @default([0, 0])
-  zoom_level_start     Int                @default(14)
-  bbox                 Float[]            @default([0, 0, 0, 0])
-  highlight            Boolean            @default(false)
-  key_field            String
-  name_field           String
-  scale                study_scale
-  geometries           geometries[]
-  metrics              metrics[]
-  metrics_metadata     metrics_metadata[]
-  scenarios            scenario[]
-  theme                theme[]
+  slug                    String
+  name                    String
+  description             String
+  details                 String?
+  image_src               String?
+  centroid_coordinates    Float[]                  @default([0, 0])
+  zoom_level_start        Int                      @default(14)
+  bbox                    Float[]                  @default([0, 0, 0, 0])
+  highlight               Boolean                  @default(false)
+  key_field               String
+  name_field              String
+  scale                   study_scale
+  geometries              geometries[]
+  metrics                 metrics[]
+  metrics_metadata        metrics_metadata[]
+  scenarios               scenario[]
+  theme                   theme[]
+  scenario_metrics        scenario_metrics[]
+  scenario_metrics_totals scenario_metrics_total[]
 
   @@id([slug])
 }
@@ -53,13 +55,15 @@ model theme {
 
 /// 
 model scenario {
-  slug             String             @id
-  name             String
-  description      String?
-  methodology      String?
-  study            study              @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug       String
-  metrics_metadata metrics_metadata[]
+  slug                    String                   @id
+  name                    String
+  description             String?
+  methodology             String?
+  study                   study                    @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug              String
+  metrics_metadata        metrics_metadata[]
+  scenario_metrics        scenario_metrics[]
+  scenario_metrics_totals scenario_metrics_total[]
 }
 
 model geometries {
@@ -106,7 +110,33 @@ model metrics {
   geometries   geometries[]
 
   @@id([study_slug, geometry_key])
-  @@unique([study_slug, geometry_key])
+}
+
+model scenario_metrics {
+  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug String
+
+  scenario      scenario @relation(fields: [scenario_slug], references: [slug])
+  scenario_slug String
+
+  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
+  geometry_key String
+  data         Json
+
+  @@id([study_slug, scenario_slug, geometry_key])
+}
+
+model scenario_metrics_total {
+  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug String
+
+  scenario      scenario @relation(fields: [scenario_slug], references: [slug])
+  scenario_slug String
+
+  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
+  data Json
+
+  @@id([study_slug, scenario_slug])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.

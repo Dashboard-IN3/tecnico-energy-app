@@ -25,74 +25,98 @@ async function main() {
     const worksheetPath = `${file.path}/${file.name}`
     const geojsonPath = `${file.path}/${filename.name}.geojson`
 
-    await prisma.$transaction(async tx => {
-      const workbook = await Workbook.load(worksheetPath)
+    await prisma.$transaction(
+      async tx => {
+        const workbook = await Workbook.load(worksheetPath)
 
-      const study_slug = filename.name
+        const study_slug = filename.name
 
-      try {
-        await tx.study.delete({ where: { slug: study_slug } })
-        log(`deleted existing study record: ${study_slug}`)
-      } catch (e) {
-        switch (e.code) {
-          case "P2025":
-            log(`no existing study found, nothing to delete: ${study_slug}`)
-            break
-          default:
-            throw e
+        try {
+          await tx.study.delete({ where: { slug: study_slug } })
+          log(`deleted existing study record: ${study_slug}`)
+        } catch (e) {
+          switch (e.code) {
+            case "P2025":
+              log(`no existing study found, nothing to delete: ${study_slug}`)
+              break
+            default:
+              throw e
+          }
         }
-      }
 
-      const study = { ...workbook.loadMetadata(), slug: study_slug }
-      const studyResult = await tx.study.create({
-        data: study,
-      })
-      log(`created study record: ${studyResult.slug}`)
-
-      const metrics = workbook
-        .loadMetrics()
-        .map((m): metrics => ({ ...m, study_slug }))
-      const metricsResult = await tx.metrics.createMany({
-        data: metrics,
-        skipDuplicates: true,
-      })
-      log(`ingested ${metricsResult.count} metrics records`)
-
-      const scenarios = workbook
-        .loadScenariosMetadata()
-        .map(scenario => ({ ...scenario, study_slug }))
-      const scenarioResult = await tx.scenario.createMany({
-        data: scenarios,
-        skipDuplicates: true,
-      })
-      log(`ingested ${scenarioResult.count} scenario metadata records`)
-
-      const metricsMetadata = workbook
-        .loadMetricsMetadata()
-        .filter(m => {
-          if (scenarios.map(s => s.slug).includes(m.scenario_slug)) return true
-          log(
-            `skipping metrics metadata record for unknown scenario: ${m.scenario_slug}`
-          )
+        const study = { ...workbook.loadMetadata(), slug: study_slug }
+        const studyResult = await tx.study.create({
+          data: study,
         })
-        .map(m => ({ ...m, study_slug }))
-      const metricsMetadataResult = await tx.metrics_metadata.createMany({
-        data: metricsMetadata,
-        skipDuplicates: true,
-      })
-      log(`ingested ${metricsMetadataResult.count} metrics metadata records`)
+        log(`created study record: ${studyResult.slug}`)
 
-      const themes = new Set(metricsMetadata.map(m => m.theme_slug))
-      const themesResult = await tx.theme.createMany({
-        data: Array.from(themes).map(name => ({
-          name,
-          study_slug,
-          slug: slugify(name),
-        })),
-        skipDuplicates: true,
-      })
-      log(`created ${themesResult.count} themes from metrics metadata`)
-    })
+        const metrics = workbook
+          .loadMetrics()
+          .map((m): metrics => ({ ...m, study_slug }))
+        const metricsResult = await tx.metrics.createMany({
+          data: metrics,
+          skipDuplicates: true,
+        })
+        log(`ingested ${metricsResult.count} metrics records`)
+
+        const scenarios = workbook
+          .loadScenariosMetadata()
+          .map(scenario => ({ ...scenario, study_slug }))
+        const scenarioResult = await tx.scenario.createMany({
+          data: scenarios,
+          skipDuplicates: true,
+        })
+        log(`ingested ${scenarioResult.count} scenario metadata records`)
+
+        const metricsMetadata = workbook
+          .loadMetricsMetadata()
+          .filter(m => {
+            if (scenarios.map(s => s.slug).includes(m.scenario_slug))
+              return true
+            log(
+              `skipping metrics metadata record for unknown scenario: ${m.scenario_slug}`
+            )
+          })
+          .map(m => ({ ...m, study_slug }))
+        const metricsMetadataResult = await tx.metrics_metadata.createMany({
+          data: metricsMetadata,
+          skipDuplicates: true,
+        })
+        log(`ingested ${metricsMetadataResult.count} metrics metadata records`)
+
+        // Start building derived data
+        const themes = new Set(metricsMetadata.map(m => m.theme_slug))
+        const themesResult = await tx.theme.createMany({
+          data: Array.from(themes).map(name => ({
+            name,
+            study_slug,
+            slug: slugify(name),
+          })),
+          skipDuplicates: true,
+        })
+        log(`created ${themesResult.count} themes from metrics metadata`)
+
+        const scenarioMetricsCount = await tx.$executeRaw`
+          INSERT INTO scenario_metrics SELECT ${study_slug} as study_slug, s.* 
+          FROM theme t, get_data_for_scenarios(${study_slug}::text, t.name::text) s 
+          WHERE t.study_slug = ${study_slug};
+        `
+        log(`created ${scenarioMetricsCount} pre-aggregated scenario metrics`)
+
+        const scenarioMetricsTotalsCount = await tx.$executeRaw`
+          INSERT INTO scenario_metrics_total SELECT ${study_slug} as study_slug, s.* 
+          FROM theme t, get_aggregation_for_scenarios(${study_slug}::text, t.name::text) s 
+          WHERE t.study_slug = ${study_slug};
+        `
+        log(
+          `created ${scenarioMetricsTotalsCount} pre-aggregated scenario metrics totals`
+        )
+      },
+      {
+        maxWait: 15 * 1000, // Max query time
+        timeout: 60 * 1000, // Max time per study
+      }
+    )
   }
 }
 
