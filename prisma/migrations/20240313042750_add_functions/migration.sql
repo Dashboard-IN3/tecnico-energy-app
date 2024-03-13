@@ -95,7 +95,15 @@ CREATE OR REPLACE FUNCTION public.get_data_for_scenarios(study_slug_arg text, th
   SELECT
     scenario_slug,
     geometry_key,
-    jsonb_object_agg(category || '.' || coalesce(usage, 'ALL') || '.' || coalesce(source, 'ALL'), jsonb_build_object('value', round((data -> lower(m_m.field_name))::numeric, 2), 'src_field', m_m.field_name)) AS data
+    jsonb_object_agg(
+      category || '.' || coalesce(usage, 'ALL') || '.' || coalesce(source, 'ALL'), 
+      jsonb_build_object(
+        'value', round((data -> lower(m_m.field_name))::numeric, 2), 
+        'src_field', m_m.field_name,
+        'units', m_m.units,
+        'description', m_m.description
+      )
+    ) AS data
   FROM
     metrics m,
     get_metrics_metadata_for_scenarios(study_slug_arg, theme_slug_arg, scenario_slug_arg) m_m
@@ -130,7 +138,9 @@ CREATE OR REPLACE FUNCTION public.get_aggregation_for_scenarios(study_slug_arg t
       key,
       jsonb_build_object(
         'value', sum(coalesce((value::jsonb ->> 'value')::numeric, 0)::numeric), 
-        'src_field', value::jsonb -> 'src_field'
+        'src_field', value::jsonb -> 'src_field',
+        'units', value::jsonb -> 'units',
+        'description', value::jsonb -> 'description'
       ) as sum_value
     FROM
       get_data_for_scenarios(study_slug_arg, theme_slug_arg, scenario_slug_arg),
@@ -138,7 +148,9 @@ CREATE OR REPLACE FUNCTION public.get_aggregation_for_scenarios(study_slug_arg t
     GROUP BY
       scenario_slug,
       key,
-      value::jsonb->'src_field'
+      value::jsonb->'src_field',
+      value::jsonb->'units',
+      value::jsonb->'description'
 )
   SELECT
     scenario_slug,
