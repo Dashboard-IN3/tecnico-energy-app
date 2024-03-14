@@ -29,7 +29,7 @@ async function main() {
 
     const study_slug = filename.name
     const worksheetPath = `${file.path}/${file.name}`
-    const geojsonPath = `${file.path}/${filename.name}.geojson`
+    const geojsonPath = `${file.path}/${filename.name}.geojson.gz`
 
     try {
       await prisma.$transaction(
@@ -108,7 +108,7 @@ async function main() {
           )
 
           // Insert geometries
-          const compressedData = await fs.readFile(geojsonPath + ".gz")
+          const compressedData = await fs.readFile(geojsonPath)
           const geoJsonStr = await gunzip(compressedData)
           const geoJSON = JSON.parse(geoJsonStr.toString())
           if (
