@@ -13,7 +13,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("POSTGRES_PRISMA_URL")
   directUrl  = env("POSTGRES_URL_NON_POOLING")
-  extensions = [postgis]
+  extensions = [postgis, pg_trgm]
 }
 
 /// Retrieved from the `metadata` worksheet of a study spreadsheet
@@ -27,8 +27,8 @@ model study {
   zoom_level_start        Int                      @default(14)
   bbox                    Float[]                  @default([0, 0, 0, 0])
   highlight               Boolean                  @default(false)
-  key_field               String
-  name_field              String
+  geom_key_field          String
+  metrics_key_field       String
   scale                   study_scale
   geometries              geometries[]
   metrics                 metrics[]
@@ -67,15 +67,13 @@ model scenario {
 }
 
 model geometries {
-  name                String
-  study               study                   @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug          String
-  geom                Unsupported("geometry")
-  metrics             metrics?                @relation(fields: [metricsStudy_slug, metricsGeometry_key], references: [study_slug, geometry_key])
-  metricsStudy_slug   String?
-  metricsGeometry_key String?
+  key        String
+  study      study                   @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug String
+  geom       Unsupported("geometry")
+  metrics    metrics?                @relation(fields: [study_slug, key], references: [study_slug, geometry_key])
 
-  @@id([study_slug, name])
+  @@id([study_slug, key])
   @@index([study_slug])
 }
 
@@ -95,8 +93,8 @@ model metrics_metadata {
   source        String?
   scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
   scenario_slug String?
-  // @@index([map_display])
 
+  // @@index([map_display])
   @@id([study_slug, field_name])
 }
 
@@ -105,9 +103,9 @@ model metrics {
   study_slug   String
   // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   geometry_key String
+  geometries   geometries[]
   // TODO: Consider validating that keys are valid fields as per fields metric_metadata
   data         Json
-  geometries   geometries[]
 
   @@id([study_slug, geometry_key])
 }

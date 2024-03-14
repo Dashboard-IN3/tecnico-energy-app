@@ -16,6 +16,9 @@ export class Workbook {
     metricsMetadata: "metrics_metadata",
     scenariosMetadata: "scenarios_metadata",
   }
+
+  readonly BASELINE_SCENARIO = "Baseline"
+
   constructor(private workbook: xlsx.WorkBook) {}
 
   private fetchSheet(name: string): xlsx.WorkSheet {
@@ -32,10 +35,7 @@ export class Workbook {
           Object.entries(row)
             // Sanitize column names by converting to lowercase, replacing spaces with
             // underscores, and removing asterisks
-            .map(([k, v]) => [
-              k.toLowerCase().replace(" ", "_").replace("*", ""),
-              v,
-            ])
+            .map(([k, v]) => [this.processColumnName(k), v])
             // Ignore columns with "ignore" in the name
             .filter(([k, v]) => !k.includes("ignore"))
         ) as T
@@ -55,8 +55,7 @@ export class Workbook {
       .sheet_to_json<[string, string]>(this.fetchSheet(name), {
         header: 1,
       })
-      .filter(([k, v]) => k && v)
-      .map(([k, v]) => [k.toLowerCase().replace(" ", "_").replace("*", ""), v])
+      .map(([k, v]) => [this.processColumnName(k), v])
   }
 
   /**
@@ -74,30 +73,34 @@ export class Workbook {
    * @returns
    */
   public loadMetadata(): StudyMetadataInput {
-    const keyVals = this.loadSheetAsTuple(this.WORKSHEET_NAMES.metadata)
+    const keyVals = this.loadSheetAsTuple(this.WORKSHEET_NAMES.metadata).map(
+      ([k, v]) => [
+        k,
+        // metrics_key_field value should be normalized
+        k === "metrics_key_field" ? v.toLowerCase() : v,
+      ]
+    )
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
   }
 
   public loadMetrics(): Omit<metrics, "study_slug">[] {
-    const metrics = this.loadSheetAsJson<Record<string, any>>(
-      this.WORKSHEET_NAMES.metrics
-    )
-    const firstKey = Object.keys(metrics[0])[0]
-    return metrics.map(({ [firstKey]: geometry_key, ...data }) => ({
-      geometry_key: `${geometry_key}`,
-      data,
-    }))
+    return this.loadSheetAsJson<MetricsInput>(this.WORKSHEET_NAMES.metrics)
   }
 
   public loadScenariosMetadata(): Omit<scenario, "study_slug">[] {
-    return this.loadSheetAsJson<ScenariosMetadataInput>(
-      this.WORKSHEET_NAMES.scenariosMetadata
-    ).map(({ scenario: name, description }) => ({
-      name,
-      slug: slugify(name),
-      description,
-      methodology: null,
-    }))
+    return (
+      this.loadSheetAsJson<ScenariosMetadataInput>(
+        this.WORKSHEET_NAMES.scenariosMetadata
+      )
+        .map(({ scenario, description }) => ({
+          name: scenario,
+          slug: slugify(this.scrubBaselineScenario(scenario)),
+          description,
+          methodology: null,
+        }))
+        // Remove rows with empty slugs (i.e. baseline scenario)
+        .filter(({ slug }) => slug)
+    )
   }
 
   public loadMetricsMetadata(): Omit<metrics_metadata, "study_slug">[] {
@@ -105,14 +108,47 @@ export class Workbook {
       this.WORKSHEET_NAMES.metricsMetadata
     ).map(({ theme: theme_slug, scenario, ...data }) => {
       for (const key of ["category", "usage", "source"]) {
-        data[key] = data[key]?.toLowerCase().replace("all", "") || undefined
+        data[key] = data[key]?.toLowerCase().replaceAll("all", "") || undefined
       }
       return {
         theme_slug,
-        scenario_slug: slugify(scenario),
-        ...trimExtraCols(data, Prisma.Metrics_metadataScalarFieldEnum),
+        scenario_slug: slugify(this.scrubBaselineScenario(scenario)),
+        ...this.trimExtraCols(data, Prisma.Metrics_metadataScalarFieldEnum),
       }
     })
+  }
+
+  private processColumnName(name: string) {
+    return name.toLowerCase().replaceAll(" ", "_").replaceAll("*", "")
+  }
+
+  /**
+   * Removes unused columns from an object based on a given schema.
+   * @param obj The object to remove unused columns from.
+   * @param schema The schema defining the columns to keep.
+   * @returns The object with unused columns removed.
+   */
+  private trimExtraCols<T extends object, S extends object>(
+    obj: T,
+    schema: S
+  ): T {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([k, v]) => Object.keys(schema).includes(k))
+    ) as T
+  }
+
+  /**
+   * Convert baseline scenario to undefined. It is critical for the baseline scenarios
+   * to be undefined in the database for the rank() operation performed within database
+   * functions when merging scenario data with baseline data.
+   * @param scenario - The scenario to be processed.
+   * @returns The processed scenario value.
+   */
+  private scrubBaselineScenario(scenario?: string) {
+    return scenario?.toLowerCase() ===
+      this.BASELINE_SCENARIO.toLocaleLowerCase()
+      ? undefined
+      : scenario
   }
 }
 
@@ -123,9 +159,11 @@ interface StudyMetadataInput {
   image?: string
   scale: study_scale
   highlights: string
-  key_field: string
-  name_field: string
+  geom_key_field: string
+  metrics_key_field: string
 }
+
+interface MetricsInput extends Omit<metrics, "study_slug"> {}
 
 interface MetricsMetadataInput
   extends Omit<
@@ -139,19 +177,4 @@ interface MetricsMetadataInput
 interface ScenariosMetadataInput {
   scenario: string
   description: string
-}
-
-/**
- * Removes unused columns from an object based on a given schema.
- * @param obj The object to remove unused columns from.
- * @param schema The schema defining the columns to keep.
- * @returns The object with unused columns removed.
- */
-function trimExtraCols<T extends object, S extends object>(
-  obj: T,
-  schema: S
-): T {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([k, v]) => Object.keys(schema).includes(k))
-  ) as T
 }

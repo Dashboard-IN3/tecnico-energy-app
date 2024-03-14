@@ -54,8 +54,8 @@ ADD COLUMN     "image_src" TEXT,
 ADD COLUMN     "scale" "study_scale" NOT NULL,
 ADD COLUMN     "zoom_level_start" INTEGER NOT NULL DEFAULT 14, 
 ADD COLUMN     "highlight" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "key_field" TEXT NOT NULL,
-ADD COLUMN     "name_field" TEXT NOT NULL,
+ADD COLUMN     "geom_key_field" TEXT NOT NULL,
+ADD COLUMN     "metrics_key_field" TEXT NOT NULL,
 ADD CONSTRAINT "study_pkey" PRIMARY KEY ("slug");
 
 -- AlterTable
@@ -70,13 +70,11 @@ DROP TABLE "buildings";
 
 -- CreateTable
 CREATE TABLE "geometries" (
-    "name" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
     "study_slug" TEXT NOT NULL,
     "geom" geometry NOT NULL,
-    "metricsStudy_slug" TEXT,
-    "metricsGeometry_key" TEXT,
 
-    CONSTRAINT "geometries_pkey" PRIMARY KEY ("study_slug","name")
+    CONSTRAINT "geometries_pkey" PRIMARY KEY ("study_slug","key")
 );
 
 -- CreateTable
@@ -122,7 +120,7 @@ ALTER TABLE "scenario" ADD CONSTRAINT "scenario_study_slug_fkey" FOREIGN KEY ("s
 ALTER TABLE "geometries" ADD CONSTRAINT "geometries_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "geometries" ADD CONSTRAINT "geometries_metricsStudy_slug_metricsGeometry_key_fkey" FOREIGN KEY ("metricsStudy_slug", "metricsGeometry_key") REFERENCES "metrics"("study_slug", "geometry_key") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "geometries" ADD CONSTRAINT "geometries_study_slug_key_fkey" FOREIGN KEY ("study_slug", "key") REFERENCES "metrics"("study_slug", "geometry_key") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "metrics_metadata" ADD CONSTRAINT "metrics_metadata_study_slug_fkey" FOREIGN KEY ("study_slug") REFERENCES "study"("slug") ON DELETE CASCADE ON UPDATE CASCADE;
