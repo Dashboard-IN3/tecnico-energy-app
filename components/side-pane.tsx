@@ -18,7 +18,7 @@ export const SidePane: React.FC<Props> = ({ src, studyId }) => {
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
         {selectedStudy.name}
       </div>
-      <div className="relative w-full min-h-[150px]">
+      <div className="relative w-full min-h-[175px] max-w-[250px] md:max-w-lg">
         <Image
           className="w-full h-[200px] object-cover rounded-lg"
           src={src}
