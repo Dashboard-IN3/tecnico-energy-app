@@ -83,16 +83,16 @@ model metrics_metadata {
   units       String
   // map_display   Boolean @default(false)  // TODO: Figure out what to do with this...
 
-  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug String
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
   // theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
-  theme_slug String
-
-  category      String
-  usage         String?
-  source        String?
+  theme_slug    String
   scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
   scenario_slug String?
+
+  category String
+  usage    String?
+  source   String?
 
   // @@index([map_display])
   @@id([study_slug, field_name])
@@ -111,30 +111,33 @@ model metrics {
 }
 
 model scenario_metrics {
-  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug String
+  id Int @id @default(autoincrement())
 
-  scenario      scenario @relation(fields: [scenario_slug], references: [slug])
-  scenario_slug String
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
+  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario_slug String?
 
   // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   geometry_key String
   data         Json
 
-  @@id([study_slug, scenario_slug, geometry_key])
+  @@index([study_slug])
+  @@index([scenario_slug])
 }
 
 model scenario_metrics_total {
-  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug String
+  id Int @id @default(autoincrement())
 
-  scenario      scenario @relation(fields: [scenario_slug], references: [slug])
-  scenario_slug String
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
+  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario_slug String?
 
-  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   data Json
 
-  @@id([study_slug, scenario_slug])
+  @@index([study_slug])
+  @@index([scenario_slug])
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.

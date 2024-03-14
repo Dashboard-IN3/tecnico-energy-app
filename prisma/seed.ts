@@ -119,9 +119,18 @@ async function main() {
           }
 
           // Insert each feature into the database
+          log(
+            `ingesting ${geoJSON.features.length} geometries, joining on "${studyResult.geom_key_field}" field...`
+          )
           let success = true
           for (const feature of geoJSON.features) {
             const geomKey = feature.properties[studyResult.geom_key_field]
+            if (!geomKey)
+              throw new Error(
+                `Encountered geometry without ${
+                  studyResult.geom_key_field
+                } field: ${JSON.stringify(feature)}`
+              )
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
               await tx.$executeRaw`
@@ -129,7 +138,7 @@ async function main() {
                 VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
               `
             } catch (e) {
-              success = false
+              // success = false
               await tx.$executeRaw`ROLLBACK TO SAVEPOINT before_geom_insert`
               switch (e.meta?.code) {
                 case "23503":
@@ -179,15 +188,17 @@ async function main() {
 
           // Create scenario metrics
           const scenarioMetricsCount = await tx.$executeRaw`
-            INSERT INTO scenario_metrics SELECT ${study_slug} as study_slug, s.*
+            INSERT INTO scenario_metrics(study_slug, scenario_slug, geometry_key, data)
+            SELECT ${study_slug} as study_slug, s.*
             FROM theme t, get_data_for_scenarios(${study_slug}::text, t.name::text) s
             WHERE t.study_slug = ${study_slug};
           `
           log(`derived ${scenarioMetricsCount} pre-aggregated scenario metrics`)
 
-          // Create scenario metrics totals
+          // // Create scenario metrics totals
           const scenarioMetricsTotalsCount = await tx.$executeRaw`
-            INSERT INTO scenario_metrics_total SELECT ${study_slug} as study_slug, s.*
+            INSERT INTO scenario_metrics_total(study_slug, scenario_slug, data)
+            SELECT ${study_slug} as study_slug, s.*
             FROM theme t, get_aggregation_for_scenarios(${study_slug}::text, t.name::text) s
             WHERE t.study_slug = ${study_slug};
           `
@@ -201,7 +212,7 @@ async function main() {
         }
       )
     } catch (e) {
-      log(`failed to ingest study: ${study_slug}, ${e.message}`)
+      log(`failure during ingestion of study "${study_slug}": ${e.message}`)
       failures.push(e)
     }
   }
