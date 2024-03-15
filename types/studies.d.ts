@@ -1,6 +1,6 @@
 declare namespace Studies {
   export type Study = {
-    theme: Theme[]
+    themes: Theme[]
     slug: string
     name: string
     description: string

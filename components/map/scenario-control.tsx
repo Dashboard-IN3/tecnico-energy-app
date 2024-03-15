@@ -10,12 +10,13 @@ export const ScenarioControl: React.FC = () => {
     return selectedTheme
   }) as Studies.Theme
 
-  const options = selectedTheme?.scenarios.map(
-    (scenario: Studies.Scenario) => ({
-      value: scenario.slug,
-      label: scenario.name,
-    })
-  )
+  const options = undefined // TODO: Currently we don't allow access to scenarios from a theme
+  // const options = selectedTheme?.scenarios.map(
+  //   (scenario: Studies.Scenario) => ({
+  //     value: scenario.slug,
+  //     label: scenario.name,
+  //   })
+  // )
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">

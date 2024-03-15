@@ -34,7 +34,7 @@ model study {
   metrics                 metrics[]
   metrics_metadata        metrics_metadata[]
   scenarios               scenario[]
-  theme                   theme[]
+  themes                   theme[]
   scenario_metrics        scenario_metrics[]
   scenario_metrics_totals scenario_metrics_total[]
 
