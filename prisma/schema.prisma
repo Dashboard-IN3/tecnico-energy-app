@@ -3,11 +3,11 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
-generator erd {
-  provider                  = "prisma-erd-generator"
-  includeRelationFromFields = "true"
-  theme                     = "neutral"
-}
+// generator erd {
+//   provider                  = "prisma-erd-generator"
+//   includeRelationFromFields = "true"
+//   theme                     = "neutral"
+// }
 
 datasource db {
   provider   = "postgresql"
