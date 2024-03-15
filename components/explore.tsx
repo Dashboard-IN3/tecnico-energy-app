@@ -49,7 +49,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             promoteId={"name"}
             type="vector"
             tiles={[
-              `${globalVariables.basePath}/api/tiles/${params.slug}/{z}/{x}/{y}`,
+              `${window.location.origin}/api/tiles/${params.slug}/{z}/{x}/{y}`,
             ]}
             minzoom={6}
             maxzoom={14}

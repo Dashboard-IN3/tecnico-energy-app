@@ -36,7 +36,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     )
 
     const response = await fetch(
-      `${globalVariables.basePath}/api/search/${studySlug}/${linestring}`
+      `${window.location.origin}/api/search/${studySlug}/${linestring}`
     )
     const buildings = await response.json()
     console.log({ buildings })
