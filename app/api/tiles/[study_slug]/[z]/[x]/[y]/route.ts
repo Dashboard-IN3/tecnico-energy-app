@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   } catch (e) {
     return new Response((e as Error).message, { status: 400 })
   }
-  const sql = tile.asSql("buildings", "geom", ["properties"])
+  const sql = tile.asSql("geometries", "geom")
   const [{ st_asmvt }] = await prisma.$queryRaw<{ st_asmvt: Buffer }[]>(sql)
 
   return new Response(
@@ -28,12 +28,18 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
 }
 
 class Tile {
+  public study_slug: string
   // https://github.com/pramsey/minimal-mvt/blob/8b736e342ada89c5c2c9b1c77bfcbcfde7aa8d82/minimal-mvt.py#L50-L150
   public zoom: number
   public x: number
   public y: number
 
-  constructor({ z, x, y }: Params) {
+  constructor({ z, x, y, study_slug }: Params) {
+    if (!study_slug) {
+      throw new Error("study_slug is required")
+    }
+    this.study_slug = study_slug
+
     if ([z, x, y].map(val => parseInt(val)).some(isNaN)) {
       throw new Error("Coordinates must be numbers")
     }
@@ -76,14 +82,23 @@ class Tile {
     const DENSIFY_FACTOR = 4
     const segSize = (env.xmax - env.xmin) / DENSIFY_FACTOR
     return Prisma.sql`
-      ST_Segmentize(ST_MakeEnvelope(${env.xmin}, ${env.ymin}, ${env.xmax}, ${env.ymax}, 3857), ${segSize})
+      ST_Segmentize(
+        ST_MakeEnvelope(
+          ${env.xmin},
+          ${env.ymin},
+          ${env.xmax},
+          ${env.ymax},
+          3857
+        ),
+        ${segSize}
+      )
     `
   }
 
   public asSql(
     table: string,
     geomColumn: string,
-    attrColumns: string[],
+    attrColumns: string[] = [],
     srid: number = 4326
   ): Sql {
     const envSql = this.asEnvelopeSql()
@@ -93,19 +108,34 @@ class Tile {
       Object.entries({ table, geomColumn }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
-      WITH 
-      bounds AS (
-          SELECT ${envSql} AS geom, 
-                ${envSql}::box2d AS b2d
+      WITH bounds AS (
+        SELECT
+          ${envSql} AS geom,
+          ${envSql}::box2d AS b2d
       ),
       mvtgeom AS (
-          SELECT ST_AsMVTGeom(ST_Transform(t.${rawVals.geomColumn}, 3857), bounds.b2d) AS geom,
-          name,
+        SELECT
+          ST_AsMVTGeom(
+            ST_Transform(t.${rawVals.geomColumn}, 3857),
+            bounds.b2d
+          ) AS geom,
+          key,
           43 AS height
-          FROM ${rawVals.table} t, bounds
-          WHERE ST_Intersects(t.${rawVals.geomColumn}, ST_Transform(bounds.geom, ${srid}::integer))
-      ) 
-      SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
+        FROM
+          ${rawVals.table} t,
+          bounds
+        WHERE
+          ST_Intersects(
+            t.${rawVals.geomColumn},
+            ST_Transform(bounds.geom, ${srid}::integer)
+          )
+          AND
+          study_slug = ${this.study_slug}
+      )
+      SELECT
+        ST_AsMVT(mvtgeom.*)
+      FROM
+        mvtgeom
     `
   }
 }
@@ -114,6 +144,7 @@ interface Params {
   x: string
   y: string
   z: string
+  study_slug: string
 }
 
 interface Envelope {

@@ -18,9 +18,10 @@ type MapViewProps = {
   center: number[]
   zoom: number
   id: string
+  studySlug: string
 }
 
-const MapView = ({ id, center, zoom, children }: MapViewProps) => {
+const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
@@ -34,10 +35,10 @@ const MapView = ({ id, center, zoom, children }: MapViewProps) => {
       coordinates.map(pair => pair.join(" ")).join(",")
     )
 
-    const promise2 = await fetch(
-      `${globalVariables.basePath}/api/search/${linestring}`
+    const response = await fetch(
+      `${globalVariables.basePath}/api/search/${studySlug}/${linestring}`
     )
-    const buildings = await promise2.json()
+    const buildings = await response.json()
     console.log({ buildings })
   }
 

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import { promises as fs } from "fs"
 import { useStore } from "@/app/lib/store"
 import { getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
@@ -13,7 +12,6 @@ export default async function ExplorePage({
 }) {
   const study = await getStudy(params.slug)
   if (!study) notFound()
-
 
   const selectedStudy = {
     ...study,
