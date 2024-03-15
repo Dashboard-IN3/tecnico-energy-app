@@ -12,7 +12,7 @@ export default async function CardGrid() {
             description={study.description}
             title={study.name}
             href={`explore/${study.slug}`}
-            src={study.imageSrc}
+            src={study.image_src}
           />
         ))}
       </div>
