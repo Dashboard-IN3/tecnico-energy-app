@@ -1,10 +1,10 @@
 declare namespace Studies {
   export type Study = {
-    themes: Theme[]
+    theme: Theme[]
     slug: string
     name: string
     description: string
-    imageSrc: string
+    imageSrc?: string
     selectedTheme?: Theme
     selectedThemeId: string
   }
@@ -12,7 +12,6 @@ declare namespace Studies {
   export type Theme = {
     name: string
     slug: string
-    scenarios: Scenario[]
     selectedScenarioId?: string
   }
 

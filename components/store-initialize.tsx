@@ -12,7 +12,7 @@ function StoreInitialize({ selectedStudy }: Props) {
   const initialized = useRef(false)
 
   if (!initialized.current && !study) {
-    setSelectedStudy(selectedStudy, selectedStudy?.themes)
+    setSelectedStudy(selectedStudy, selectedStudy?.theme)
     initialized.current = true
   }
   return null

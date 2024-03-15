@@ -5,6 +5,6 @@ export const getStudies = cache(prisma.study.findMany)
 export const getStudy = cache((slug: string) =>
   prisma.study.findUnique({
     where: { slug },
-    include: { themes: { include: { scenarios: true } } },
+    include: { theme: true },
   })
 )

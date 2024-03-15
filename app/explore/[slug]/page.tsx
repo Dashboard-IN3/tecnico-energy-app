@@ -17,8 +17,8 @@ export default async function ExplorePage({
 
   const selectedStudy = {
     ...study,
-    selectedTheme: study.themes[0],
-    selectedThemeId: study.themes[0]?.slug,
+    selectedTheme: study.theme[0],
+    selectedThemeId: study.theme[0]?.slug,
   }
   const stateObject = {
     studies: {},
