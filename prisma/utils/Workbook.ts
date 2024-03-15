@@ -28,7 +28,7 @@ export class Workbook {
     return this.workbook.Sheets[name]
   }
 
-  private loadSheetAsJson<T>(name: string): T[] {
+  private loadSheetAsJson<T extends Record<string, any>>(name: string): T[] {
     return xlsx.utils.sheet_to_json<T>(this.fetchSheet(name)).map(
       row =>
         Object.fromEntries(
@@ -37,7 +37,7 @@ export class Workbook {
             // underscores, and removing asterisks
             .map(([k, v]) => [this.processColumnName(k), v])
             // Ignore columns with "ignore" in the name
-            .filter(([k, v]) => !k.includes("ignore"))
+            .filter(([k, v]: [string, unknown]) => !k.includes("ignore"))
         ) as T
     )
   }
@@ -92,14 +92,14 @@ export class Workbook {
       this.loadSheetAsJson<ScenariosMetadataInput>(
         this.WORKSHEET_NAMES.scenariosMetadata
       )
+        // Remove baseline scenario
+        .filter(({ scenario }) => !this.isBaselineScenario(scenario))
         .map(({ scenario, description }) => ({
           name: scenario,
-          slug: slugify(this.scrubBaselineScenario(scenario)),
+          slug: slugify(scenario),
           description,
           methodology: null,
         }))
-        // Remove rows with empty slugs (i.e. baseline scenario)
-        .filter(({ slug }) => slug)
     )
   }
 
@@ -112,13 +112,15 @@ export class Workbook {
       }
       return {
         theme_slug,
-        scenario_slug: slugify(this.scrubBaselineScenario(scenario)),
+        scenario_slug: this.isBaselineScenario(scenario)
+          ? null
+          : slugify(scenario),
         ...this.trimExtraCols(data, Prisma.Metrics_metadataScalarFieldEnum),
       }
     })
   }
 
-  private processColumnName(name: string) {
+  private processColumnName(name: string): string {
     return name.toLowerCase().replaceAll(" ", "_").replaceAll("*", "")
   }
 
@@ -144,11 +146,8 @@ export class Workbook {
    * @param scenario - The scenario to be processed.
    * @returns The processed scenario value.
    */
-  private scrubBaselineScenario(scenario?: string) {
-    return scenario?.toLowerCase() ===
-      this.BASELINE_SCENARIO.toLocaleLowerCase()
-      ? undefined
-      : scenario
+  private isBaselineScenario(scenario: string) {
+    return scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
   }
 }
 

@@ -76,7 +76,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     toRemove.forEach(featureID => {
       // Update the paint properties of specific features by ID
-      map.setFeatureState(
+      map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
@@ -91,7 +91,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     toAdd.forEach(featureID => {
       // Update the paint properties of specific features by ID
-      map.setFeatureState(
+      map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
@@ -167,7 +167,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
         <ScenarioControl />
         <DrawControlPane />
         <DrawBboxControl
-          map={map}
+          map={map!}
           isEnabled={isDrawing}
           handleDrawComplete={handleDrawComplete}
           aoi={aoi}

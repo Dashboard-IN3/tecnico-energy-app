@@ -4,7 +4,7 @@ import zlib from "zlib"
 import { promisify } from "util"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
-import { metrics } from "@prisma/client"
+import { metrics, Prisma } from "@prisma/client"
 import { slugify } from "./utils/slugify"
 
 const gunzip = promisify(zlib.gunzip)
@@ -14,10 +14,10 @@ const gunzip = promisify(zlib.gunzip)
  */
 
 async function main() {
-  const failures = []
+  const failures: Error[] = []
   const files = await fs.readdir("data", { withFileTypes: true })
   for (const file of files) {
-    const log = msg =>
+    const log = (msg: string) =>
       console.log(`${new Date().toISOString()} | ${file.name} | ${msg}`)
 
     const filename = path.parse(file.name)
@@ -70,7 +70,7 @@ async function main() {
             })
           )
           const metricsResult = await tx.metrics.createMany({
-            data: metrics,
+            data: metrics as Prisma.metricsCreateManyInput[],
             skipDuplicates: true,
           })
           log(`ingested ${metricsResult.count} metrics records`)
@@ -91,7 +91,7 @@ async function main() {
             .filter(m => {
               // Avoid FK integrity issues by ignor metrics metadata records for scenarios
               // that don't exist
-              if (scenarios.map(s => s.slug).includes(m.scenario_slug))
+              if (scenarios.map(s => s.slug).includes(m.scenario_slug!))
                 return true
               if (m.scenario_slug === undefined) return true
               log(
