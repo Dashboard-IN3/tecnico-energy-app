@@ -78,8 +78,10 @@ model theme_scenario {
   study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   theme_slug    String
   theme         theme     @relation(fields: [study_slug, theme_slug], references: [study_slug, slug], onDelete: Cascade)
-  scenario_slug String
+  scenario_slug String?
   scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
+
+  @@unique([study_slug, theme_slug, scenario_slug])
 }
 
 model geometries {

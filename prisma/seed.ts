@@ -6,6 +6,7 @@ import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
 import { metrics, Prisma } from "@prisma/client"
 import { slugify } from "./utils/slugify"
+import { skip } from "node:test"
 
 const gunzip = promisify(zlib.gunzip)
 
@@ -55,6 +56,7 @@ async function main() {
            */
 
           // Create study
+          log(`ingesting study metadata: ${study_slug}...`)
           const study = { ...workbook.loadMetadata(), slug: study_slug }
           const studyResult = await tx.study.create({
             data: study,
@@ -62,6 +64,7 @@ async function main() {
           log(`created study record: ${studyResult.slug}`)
 
           // Create metrics
+          log(`ingesting metrics for ${study_slug}...`)
           const metrics = workbook.loadMetrics().map(
             (data): metrics => ({
               study_slug,
@@ -76,6 +79,7 @@ async function main() {
           log(`ingested ${metricsResult.count} metrics records`)
 
           // Create scenarios
+          log(`ingesting scenarios for ${study_slug}...`)
           const scenarios = workbook
             .loadScenariosMetadata()
             .map(scenario => ({ ...scenario, study_slug }))
@@ -85,7 +89,19 @@ async function main() {
           })
           log(`ingested ${scenarioResult.count} scenario metadata records`)
 
+          // Create themes
+          log(`ingesting themes from for ${study_slug}...`)
+          const themes = await workbook
+            .loadThemes()
+            .map(theme => ({ study_slug, ...theme }))
+          const themesResult = await tx.theme.createMany({
+            data: themes,
+            skipDuplicates: true,
+          })
+          log(`ingested ${themesResult.count} themes from metrics metadata`)
+
           // Create metrics metadata
+          log(`ingesting metrics metadata for ${study_slug}...`)
           const metricsMetadata = workbook
             .loadMetricsMetadata()
             .filter(m => {
@@ -93,7 +109,8 @@ async function main() {
               // that don't exist
               if (scenarios.map(s => s.slug).includes(m.scenario_slug!))
                 return true
-              if (m.scenario_slug === undefined) return true
+              // Support baseline scenario
+              if (m.scenario_slug === null) return true
               log(
                 `skipping metrics metadata record for unknown scenario: ${m.scenario_slug}`
               )
@@ -107,7 +124,23 @@ async function main() {
             `ingested ${metricsMetadataResult.count} metrics metadata records`
           )
 
+          log(`ingesting theme_scenario records for ${study_slug}...`)
+          const themeScenarioResult = await tx.theme_scenario.createMany({
+            data: Array.from(
+              new Set(
+                metricsMetadata.map(m => ({
+                  study_slug,
+                  theme_slug: m.theme_slug,
+                  scenario_slug: m.scenario_slug,
+                }))
+              )
+            ),
+            skipDuplicates: true,
+          })
+          log(`ingested ${themeScenarioResult.count} theme_scenario records`)
+
           // Insert geometries
+          log(`processing geometries for ${study_slug}...`)
           const compressedData = await fs.readFile(geojsonPath)
           const geoJsonStr = await gunzip(compressedData)
           const geoJSON = JSON.parse(geoJsonStr.toString())
@@ -117,8 +150,6 @@ async function main() {
           ) {
             throw new Error("Invalid GeoJSON FeatureCollection")
           }
-
-          // Insert each feature into the database
           log(
             `ingesting ${geoJSON.features.length} geometries, joining on "${studyResult.geom_key_field}" field...`
           )
@@ -174,32 +205,24 @@ async function main() {
            * Pre-process derived data
            */
 
-          // Create themes
-          const themes = new Set(metricsMetadata.map(m => m.theme_slug))
-          const themesResult = await tx.theme.createMany({
-            data: Array.from(themes).map(name => ({
-              name,
-              study_slug,
-              slug: slugify(name),
-            })),
-            skipDuplicates: true,
-          })
-          log(`derived ${themesResult.count} themes from metrics metadata`)
-
           // Create scenario metrics
+          log(`deriving pre-aggregated scenario metrics for ${study_slug}...`)
           const scenarioMetricsCount = await tx.$executeRaw`
             INSERT INTO scenario_metrics(study_slug, scenario_slug, geometry_key, data)
             SELECT ${study_slug} as study_slug, s.*
-            FROM theme t, get_data_for_scenarios(${study_slug}::text, t.name::text) s
+            FROM theme t, get_data_for_scenarios(${study_slug}::text, t.slug::text) s
             WHERE t.study_slug = ${study_slug};
           `
           log(`derived ${scenarioMetricsCount} pre-aggregated scenario metrics`)
 
-          // // Create scenario metrics totals
+          // Create scenario metrics totals
+          log(
+            `deriving pre-aggregated scenario metrics totals for ${study_slug}...`
+          )
           const scenarioMetricsTotalsCount = await tx.$executeRaw`
             INSERT INTO scenario_metrics_total(study_slug, scenario_slug, data)
             SELECT ${study_slug} as study_slug, s.*
-            FROM theme t, get_aggregation_for_scenarios(${study_slug}::text, t.name::text) s
+            FROM theme t, get_aggregation_for_scenarios(${study_slug}::text, t.slug::text) s
             WHERE t.study_slug = ${study_slug};
           `
           log(

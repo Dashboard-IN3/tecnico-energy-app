@@ -4,6 +4,7 @@ import {
   scenario,
   study_scale,
   Prisma,
+  theme,
 } from "@prisma/client"
 import fs from "fs/promises"
 import xlsx from "xlsx"
@@ -37,7 +38,7 @@ export class Workbook {
             // underscores, and removing asterisks
             .map(([k, v]) => [this.processColumnName(k), v])
             // Ignore columns with "ignore" in the name
-            .filter(([k, v]: [string, unknown]) => !k.includes("ignore"))
+            .filter(([k, v]) => !k.includes("ignore"))
         ) as T
     )
   }
@@ -93,7 +94,7 @@ export class Workbook {
         this.WORKSHEET_NAMES.scenariosMetadata
       )
         // Remove baseline scenario
-        .filter(({ scenario }) => !this.isBaselineScenario(scenario))
+        // .filter(({ scenario }) => !this.isBaselineScenario(scenario))
         .map(({ scenario, description }) => ({
           name: scenario,
           slug: slugify(scenario),
@@ -106,18 +107,31 @@ export class Workbook {
   public loadMetricsMetadata(): Omit<metrics_metadata, "study_slug">[] {
     return this.loadSheetAsJson<MetricsMetadataInput>(
       this.WORKSHEET_NAMES.metricsMetadata
-    ).map(({ theme: theme_slug, scenario, ...data }) => {
+    ).map(({ theme, scenario, ...data }) => {
       for (const key of ["category", "usage", "source"]) {
         data[key] = data[key]?.toLowerCase().replaceAll("all", "") || undefined
       }
       return {
-        theme_slug,
+        theme_slug: slugify(theme),
         scenario_slug: this.isBaselineScenario(scenario)
           ? null
           : slugify(scenario),
         ...this.trimExtraCols(data, Prisma.Metrics_metadataScalarFieldEnum),
       }
     })
+  }
+
+  public loadThemes(): Omit<theme, "study_slug">[] {
+    return Array.from(
+      new Set(
+        this.loadSheetAsJson<MetricsMetadataInput>(
+          this.WORKSHEET_NAMES.metricsMetadata
+        ).map(({ theme, scenario, ...data }) => ({
+          name: theme,
+          slug: slugify(theme),
+        }))
+      )
+    )
   }
 
   private processColumnName(name: string): string {

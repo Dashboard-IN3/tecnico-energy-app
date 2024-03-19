@@ -22,7 +22,7 @@ CREATE TABLE "theme_scenario" (
     "id" SERIAL NOT NULL,
     "study_slug" TEXT NOT NULL,
     "theme_slug" TEXT NOT NULL,
-    "scenario_slug" TEXT NOT NULL,
+    "scenario_slug" TEXT,
 
     CONSTRAINT "theme_scenario_pkey" PRIMARY KEY ("id")
 );
@@ -47,3 +47,6 @@ ALTER TABLE "scenario_metrics" ADD CONSTRAINT "scenario_metrics_study_slug_scena
 
 -- AddForeignKey
 ALTER TABLE "scenario_metrics_total" ADD CONSTRAINT "scenario_metrics_total_study_slug_scenario_slug_fkey" FOREIGN KEY ("study_slug", "scenario_slug") REFERENCES "scenario"("study_slug", "slug") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- CreateIndex
+CREATE UNIQUE INDEX "theme_scenario_study_slug_theme_slug_scenario_slug_key" ON "theme_scenario"("study_slug", "theme_slug", "scenario_slug") NULLS NOT DISTINCT;
