@@ -3,11 +3,11 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
-// generator erd {
-//   provider                  = "prisma-erd-generator"
-//   includeRelationFromFields = "true"
-//   theme                     = "neutral"
-// }
+generator erd {
+  provider                  = "prisma-erd-generator"
+  includeRelationFromFields = "true"
+  theme                     = "neutral"
+}
 
 datasource db {
   provider   = "postgresql"
@@ -34,20 +34,23 @@ model study {
   metrics                 metrics[]
   metrics_metadata        metrics_metadata[]
   scenarios               scenario[]
-  themes                   theme[]
+  themes                  theme[]
   scenario_metrics        scenario_metrics[]
   scenario_metrics_totals scenario_metrics_total[]
+  theme_scenario          theme_scenario[]
 
   @@id([slug])
 }
 
 // TODO: Verify that we'll want to display info about a theme
 model theme {
-  slug       String
-  name       String
-  study      study  @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
-  study_slug String
+  slug             String
+  name             String
+  study            study              @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug       String
   // metrics_metadata metrics_metadata[]
+  theme_scenario   theme_scenario[]
+  metrics_metadata metrics_metadata[]
 
   @@id([study_slug, slug])
   @@index([study_slug])
@@ -55,7 +58,7 @@ model theme {
 
 /// 
 model scenario {
-  slug                    String                   @id
+  slug                    String
   name                    String
   description             String?
   methodology             String?
@@ -64,6 +67,19 @@ model scenario {
   metrics_metadata        metrics_metadata[]
   scenario_metrics        scenario_metrics[]
   scenario_metrics_totals scenario_metrics_total[]
+  theme_scenario          theme_scenario[]
+
+  @@id([study_slug, slug])
+}
+
+model theme_scenario {
+  id            Int       @id @default(autoincrement())
+  study_slug    String
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  theme_slug    String
+  theme         theme     @relation(fields: [study_slug, theme_slug], references: [study_slug, slug], onDelete: Cascade)
+  scenario_slug String
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
 }
 
 model geometries {
@@ -85,9 +101,9 @@ model metrics_metadata {
 
   study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug    String
-  // theme      theme  @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
+  theme         theme     @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
   theme_slug    String
-  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
   scenario_slug String?
 
   category String
@@ -115,7 +131,7 @@ model scenario_metrics {
 
   study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug    String
-  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
   scenario_slug String?
 
   // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
@@ -131,7 +147,7 @@ model scenario_metrics_total {
 
   study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug    String
-  scenario      scenario? @relation(fields: [scenario_slug], references: [slug])
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
   scenario_slug String?
 
   data Json

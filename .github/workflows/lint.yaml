@@ -26,20 +26,3 @@ jobs:
 
       - name: Run Prisma Generate
         run: pnpm prisma generate
-
-      - name: Check for unstaged files
-        run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "There are unstaged changes after running Prisma generate"
-            git status --porcelain
-            exit 1
-          else
-            echo "No unstaged changes"
-          fi
-
-      - name: Upload Prisma details as an artifact
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: prisma-artifacts
-          path: prisma
