@@ -2,73 +2,70 @@ import { GeoJSONFeature } from "maplibre-gl"
 import { create } from "zustand"
 
 interface InitialState {
-  studies: Record<string, Studies.Study>
-  selectedStudyId: string
-  totalSelectedFeatures: number
-  isDrawing: boolean
-  setIsDrawing: (isDrawing: boolean) => void
-  aoi: MapState.aoi
+  selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
-  setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
-  setSelectedTheme: (studyId: string, themeId: string) => void
-  setSelectedScenario: (themeId: string, scenarioId: string) => void
   setTotalSelectedFeatures: (total: number) => void
+  setIsDrawing: (isDrawing: boolean) => void
+  setSelectedTheme: (theme: Studies.Theme) => void
+  setSelectedScenario: (scenarioId: Studies.Scenario) => void
+  // setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
 }
 
-export const useStore = create<InitialState>(set => ({
-  totalSelectedFeatures: 0,
-  setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
-    set({ totalSelectedFeatures })
-  },
-  isDrawing: false,
-  setIsDrawing: (isDrawing: boolean) => {
-    set({ isDrawing })
-  },
-  aoi: {
-    feature: undefined,
-    bbox: [],
+export const useStore = create<InitialState>((set, get) => ({
+  selectedStudy: {
+    slug: "",
+    name: "",
+    description: "",
+    imageSrc: "",
+    totalSelectedFeatures: 0,
+    isDrawing: false,
+    aoi: {
+      feature: undefined,
+      bbox: [],
+    },
+    selectedThemeId: "",
+    themes: {},
+    selectedTheme: {
+      name: "",
+      slug: "",
+      selectedScenario: { slug: "", name: "", description: "" },
+      scenarios: [],
+    },
   },
   setAoi: (aoi: { feature: GeoJSONFeature; bbox: number[] }) => {
-    set({ aoi })
+    set(state => ({ selectedStudy: { ...state.selectedStudy, aoi } }))
   },
-  studies: {},
-  selectedStudyId: "",
-  setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => {
+  setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
     set(state => ({
-      studies: {
-        ...state.studies,
-        [study.slug]: {
-          ...study,
-          selectedThemeId: state.studies[study.slug]?.selectedThemeId
-            ? state.studies[study.slug]?.selectedThemeId
-            : themes[0]?.slug,
-        },
-      },
-      selectedStudyId: study.slug,
+      selectedStudy: { ...state.selectedStudy, totalSelectedFeatures },
     }))
   },
-  setSelectedTheme: (studyId: string, themeId: string) => {
+
+  setIsDrawing: (isDrawing: boolean) => {
     set(state => ({
-      studies: {
-        ...state.studies,
-        [studyId]: {
-          ...state.studies[studyId],
-          selectedThemeId: themeId,
-        },
+      selectedStudy: { ...state.selectedStudy, isDrawing },
+    }))
+  },
+
+  setSelectedTheme: (theme: Studies.Theme) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        selectedTheme: theme,
       },
     }))
   },
-  setSelectedScenario: (themeId: string, scenarioId: string) => {
+
+  setSelectedScenario: (scenario: Studies.Scenario) => {
     set(state => ({
-      studies: {
-        ...state.studies,
-        [state.selectedStudyId]: {
-          ...state.studies[state.selectedStudyId],
-          themes: state.studies[state.selectedStudyId]?.themes?.map(theme =>
-            theme.slug === themeId
-              ? { ...theme, selectedScenarioId: scenarioId }
-              : theme
-          ),
+      selectedStudy: {
+        ...state.selectedStudy,
+        themes: {
+          ...state.selectedStudy.themes,
+          [state.selectedStudy.selectedTheme.slug]: {
+            ...state.selectedStudy.selectedTheme,
+            selectedScenario: scenario,
+          },
         },
       },
     }))

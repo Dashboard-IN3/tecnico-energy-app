@@ -11,13 +11,12 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
-  const title = useStore(state => state.studies[state.selectedStudyId]?.name)
-  const { totalSelectedFeatures } = useStore()
+  const { selectedStudy } = useStore()
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
-        {title}
+        {selectedStudy.name}
       </div>
       {imgSrc && (
         <div className="relative w-full min-h-[150px]">
@@ -36,7 +35,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
-          {totalSelectedFeatures} Features
+          {selectedStudy.totalSelectedFeatures} Features
         </div>
       </div>
       <ThemeSelector />
