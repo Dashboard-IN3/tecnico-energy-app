@@ -128,11 +128,13 @@ async function main() {
           const themeScenarioResult = await tx.theme_scenario.createMany({
             data: Array.from(
               new Set(
-                metricsMetadata.map(m => ({
-                  study_slug,
-                  theme_slug: m.theme_slug,
-                  scenario_slug: m.scenario_slug,
-                }))
+                metricsMetadata
+                  .filter(m => m.scenario_slug) // Ignore baseline scenario
+                  .map(m => ({
+                    study_slug,
+                    theme_slug: m.theme_slug,
+                    scenario_slug: m.scenario_slug,
+                  }))
               )
             ),
             skipDuplicates: true,
