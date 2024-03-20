@@ -26,3 +26,5 @@ jobs:
 
       - name: Run Prisma Generate
         run: pnpm prisma generate
+        env:
+          DISABLE_ERD: true
