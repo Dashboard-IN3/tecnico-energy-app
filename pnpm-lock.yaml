@@ -94,6 +94,9 @@ devDependencies:
   csv:
     specifier: ^6.3.1
     version: 6.3.1
+  mermaid-cli:
+    specifier: 'link: @mermaid-js/mermaid-cli'
+    version: 'link: @mermaid-js/mermaid-cli'
   prisma:
     specifier: ^4.13.0
     version: 4.13.0
