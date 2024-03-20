@@ -48,8 +48,7 @@ model theme {
   name             String
   study            study              @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug       String
-  // metrics_metadata metrics_metadata[]
-  theme_scenario   theme_scenario[]
+  scenarios        theme_scenario[]
   metrics_metadata metrics_metadata[]
 
   @@id([study_slug, slug])
@@ -67,7 +66,7 @@ model scenario {
   metrics_metadata        metrics_metadata[]
   scenario_metrics        scenario_metrics[]
   scenario_metrics_totals scenario_metrics_total[]
-  theme_scenario          theme_scenario[]
+  themes                  theme_scenario[]
 
   @@id([study_slug, slug])
 }

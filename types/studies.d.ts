@@ -5,7 +5,7 @@ declare namespace Studies {
     name: string
     description: string
     imageSrc?: string
-    selectedTheme?: Theme
+    selectedTheme: Theme
     selectedThemeId: string
     totalSelectedFeatures: number
     isDrawing: boolean
@@ -16,12 +16,12 @@ declare namespace Studies {
     name: string
     slug: string
     scenarios: Scenario[]
-    selectedScenario: Scenario
+    selectedScenario: Scenario | null
   }
 
   export type Scenario = {
     slug: string
-    description: string
+    description: string | null
     name: string
   }
 }
