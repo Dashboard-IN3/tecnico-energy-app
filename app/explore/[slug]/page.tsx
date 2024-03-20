@@ -4,7 +4,7 @@ import { getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { Prisma, scenario } from "@prisma/client"
+import { scenario } from "@prisma/client"
 
 export default async function ExplorePage({
   params,
