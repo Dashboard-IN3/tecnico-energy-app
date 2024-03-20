@@ -12,7 +12,7 @@ Data is modeled with the following concepts:
 
 - Study
 - Theme: Belongs to study, represents a field of research for a given study.
-- Scenario: A way that would modify the outcome of a theme.
+- Scenario: A way that would modify the outcome of a study.
 
 To provide data, two files must be provided:
 
