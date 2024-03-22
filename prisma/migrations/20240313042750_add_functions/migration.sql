@@ -24,13 +24,13 @@ CREATE FUNCTION public.get_metrics_metadata_for_scenarios(study_slug_arg text, t
     WHERE
       study_slug = study_slug_arg
       AND theme_slug = theme_slug_arg
-      AND CASE WHEN scenario_slug_arg = '' THEN
-        TRUE
-      WHEN scenario_slug_arg IS NULL THEN
-        scenario_slug IS NULL
-      ELSE
+      AND (
+        scenario_slug_arg = ''
+        OR
+        scenario_slug_arg IS NULL AND scenario_slug IS NULL
+        OR
         scenario_slug = scenario_slug_arg
-      END
+      )
 ),
 -- Rank every field by scenario, category, usage, source. Ranking gives us a preference of use
 -- for each field, ie if a scenario provides an override field, that is first preferred and the
