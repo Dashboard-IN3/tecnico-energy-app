@@ -22,7 +22,6 @@ export default async function ExplorePage({
         ...theme,
         selectedScenario: null,
         scenarios: theme?.scenarios.reduce((acc, themeScenario) => {
-          // TODO: How does a Baseline scenario fit into here?
           if (!themeScenario.scenario_slug) return acc
           acc[themeScenario.scenario_slug] = themeScenario.scenario
           return acc

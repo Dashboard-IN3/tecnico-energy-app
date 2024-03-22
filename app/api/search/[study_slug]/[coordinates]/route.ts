@@ -3,7 +3,6 @@ import { Prisma } from "@prisma/client"
 
 export async function GET(req, { params }) {
   const { coordinates, study_slug } = params
-  // TODO check that this doesn't need more sanitizing
   const lineStringCoords = Prisma.raw(decodeURI(coordinates))
 
   const buildings = await prisma.$queryRaw`
