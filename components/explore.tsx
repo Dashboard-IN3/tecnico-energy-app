@@ -29,7 +29,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
     <>
       <SidePane
         {...{
-          src: metaData.imageSrc,
+          src: metaData.image_src,
 
           studyId: params.slug,
         }}

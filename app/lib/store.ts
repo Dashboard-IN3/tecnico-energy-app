@@ -16,7 +16,7 @@ export const useStore = create<InitialState>((set, get) => ({
     slug: "",
     name: "",
     description: "",
-    imageSrc: "",
+    image_src: "",
     totalSelectedFeatures: 0,
     isDrawing: false,
     aoi: {

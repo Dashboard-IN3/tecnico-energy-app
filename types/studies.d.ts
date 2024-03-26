@@ -4,7 +4,7 @@ declare namespace Studies {
     slug: string
     name: string
     description: string
-    imageSrc: string
+    image_src: string
     selectedTheme?: Theme
     selectedThemeId: string
     totalSelectedFeatures: number
