@@ -16,7 +16,7 @@ export default async function ExplorePage({
   const selectedStudy = {
     ...study,
     // store themes and scenarios as dictionaries for easier lookup
-    themes: study?.themes.reduce((acc, theme) => {
+    study_themes: study?.study_themes.reduce((acc, theme) => {
       acc[theme.slug] = {
         ...theme,
         selectedScenario: null,
@@ -28,11 +28,11 @@ export default async function ExplorePage({
       return acc
     }, {}),
     selectedTheme: {
-      ...study.themes[0],
+      ...study.study_themes[0],
       selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0]?.scenarios,
+      scenarios: study.study_themes[0]?.scenarios,
     },
-    selectedThemeId: study.themes[0]?.slug,
+    selectedThemeId: study.study_themes[0]?.slug,
     totalSelectedFeatures: 0,
     isDrawing: false,
     aoi: { feature: null, bbox: null },

@@ -2,7 +2,7 @@ import { useStore } from "../../app/lib/store"
 
 export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
-  const themes = useStore(state => state.selectedStudy.themes)
+  const themes = useStore(state => state.selectedStudy.study_themes)
   const selectedTheme = useStore(state => state.selectedStudy?.selectedTheme)
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
@@ -35,7 +35,9 @@ export const ScenarioControl: React.FC = () => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
                         ? null
-                        : themes[selectedTheme.slug].scenarios[option.value]
+                        : selectedTheme.scenarios.find(
+                            scenario => scenario.slug === option.value
+                          )
                     )
                   }}
                 />
