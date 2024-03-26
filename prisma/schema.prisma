@@ -3,51 +3,170 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+generator erd {
+  provider                  = "prisma-erd-generator"
+  includeRelationFromFields = "true"
+  theme                     = "neutral"
+}
+
 datasource db {
-  provider          = "postgresql"
-  url               = env("POSTGRES_PRISMA_URL")
-  directUrl         = env("POSTGRES_URL_NON_POOLING")
-  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING")
-  extensions        = [postgis]
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [postgis, pg_trgm]
 }
 
-model Buildings {
-  name       String                                 @id
-  geom       Unsupported("geometry(Polygon, 4326)")
-  properties Json
+/// Retrieved from the `metadata` worksheet of a study spreadsheet
+model study {
+  slug                    String
+  name                    String
+  description             String
+  details                 String?
+  image_src               String?
+  centroid_coordinates    Float[]                  @default([0, 0])
+  zoom_level_start        Int                      @default(14)
+  bbox                    Float[]                  @default([0, 0, 0, 0])
+  highlight               Boolean                  @default(false)
+  geom_key_field          String
+  metrics_key_field       String
+  scale                   study_scale
+  geometries              geometries[]
+  metrics                 metrics[]
+  metrics_metadata        metrics_metadata[]
+  scenarios               scenario[]
+  themes                  theme[]
+  scenario_metrics        scenario_metrics[]
+  scenario_metrics_totals scenario_metrics_total[]
+  theme_scenario          theme_scenario[]
 
-  @@map("buildings")
+  @@id([slug])
 }
 
-model Study {
-  id          Int     @id @default(autoincrement())
-  slug        String  @unique
-  name        String
+// TODO: Verify that we'll want to display info about a theme
+model theme {
+  slug             String
+  name             String
+  study            study              @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug       String
+  scenarios        theme_scenario[]
+  metrics_metadata metrics_metadata[]
+
+  @@id([study_slug, slug])
+  @@index([study_slug])
+}
+
+/// 
+model scenario {
+  slug                    String
+  name                    String
+  description             String?
+  methodology             String?
+  study                   study                    @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug              String
+  metrics_metadata        metrics_metadata[]
+  scenario_metrics        scenario_metrics[]
+  scenario_metrics_totals scenario_metrics_total[]
+  themes                  theme_scenario[]
+
+  @@id([study_slug, slug])
+}
+
+model theme_scenario {
+  id            Int       @id @default(autoincrement())
+  study_slug    String
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  theme_slug    String
+  theme         theme     @relation(fields: [study_slug, theme_slug], references: [study_slug, slug], onDelete: Cascade)
+  scenario_slug String?
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
+
+  @@unique([study_slug, theme_slug, scenario_slug])
+}
+
+model geometries {
+  key        String
+  study      study                   @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug String
+  geom       Unsupported("geometry")
+  metrics    metrics?                @relation(fields: [study_slug, key], references: [study_slug, geometry_key])
+
+  @@id([study_slug, key])
+  @@index([study_slug])
+}
+
+model metrics_metadata {
+  field_name  String
   description String
-  imageSrc    String
-  themes      Theme[]
+  units       String
+  // map_display   Boolean @default(false)  // TODO: Figure out what to do with this...
 
-  @@map("study")
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
+  theme         theme     @relation(fields: [study_slug, theme_slug], references: [study_slug, slug])
+  theme_slug    String
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
+  scenario_slug String?
+
+  category String
+  usage    String?
+  source   String?
+
+  // @@index([map_display])
+  @@id([study_slug, field_name])
 }
 
-model Theme {
-  id        Int        @id @default(autoincrement())
-  slug      String     @unique
-  name      String
-  Study     Study      @relation(fields: [studyId], references: [id])
-  studyId   Int
-  scenarios Scenario[]
+model metrics {
+  study        study        @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug   String
+  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
+  geometry_key String
+  geometries   geometries[]
+  // TODO: Consider validating that keys are valid fields as per fields metric_metadata
+  data         Json
 
-  @@map("theme")
+  @@id([study_slug, geometry_key])
 }
 
-model Scenario {
-  id          Int    @id @default(autoincrement())
-  slug        String @unique
-  name        String
-  description String
-  Theme       Theme  @relation(fields: [themeId], references: [id])
-  themeId     Int
+model scenario_metrics {
+  id Int @id @default(autoincrement())
 
-  @@map("scenario")
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
+  scenario_slug String?
+
+  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
+  geometry_key String
+  data         Json
+
+  @@index([study_slug])
+  @@index([scenario_slug])
+}
+
+model scenario_metrics_total {
+  id Int @id @default(autoincrement())
+
+  study         study     @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
+  study_slug    String
+  scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
+  scenario_slug String?
+
+  data Json
+
+  @@index([study_slug])
+  @@index([scenario_slug])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+enum study_scale {
+  Municipality
+  Building
 }

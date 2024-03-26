@@ -92,8 +92,8 @@ function DrawBboxControl({
   }, [map, handleDraw, handleSelection, handleUpdate])
 
   const resetMapFeatures = useCallback(() => {
-    drawControlRef.current.deleteAll()
-    drawControlRef.current.changeMode("draw_polygon")
+    drawControlRef.current?.deleteAll()
+    drawControlRef.current?.changeMode("draw_polygon")
     map.getCanvas().style.cursor = "crosshair"
   }, [map])
 

@@ -8,18 +8,16 @@ export const ScenarioControl: React.FC = () => {
     return <></>
   }
 
-  const options = Object.values(selectedTheme?.scenarios).map(
-    (scenario: Studies.Scenario) => ({
-      value: scenario.slug,
-      label: scenario.name,
-    })
-  )
+  const options = selectedTheme?.scenarios.map(scenario => ({
+    value: scenario.slug,
+    label: scenario.name,
+  }))
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
       <div className="text-sm font-medium mb-2 ">Study Scenarios</div>
       <div>
-        {options?.map((option: any, key: number) => {
+        {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
 
           return (

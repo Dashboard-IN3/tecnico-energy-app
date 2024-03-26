@@ -1,5 +1,6 @@
 -- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "postgis";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- CreateTable
 CREATE TABLE "buildings" (

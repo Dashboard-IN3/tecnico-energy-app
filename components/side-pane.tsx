@@ -6,11 +6,11 @@ import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 
 interface Props {
-  src: string
+  imgSrc?: string
   studyId: string
 }
 
-export const SidePane: React.FC<Props> = ({ src, studyId }) => {
+export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const { selectedStudy } = useStore()
 
   return (
@@ -18,16 +18,18 @@ export const SidePane: React.FC<Props> = ({ src, studyId }) => {
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
         {selectedStudy.name}
       </div>
-      <div className="relative w-full min-h-[150px]">
-        <Image
-          className="w-full h-[200px] object-cover rounded-lg"
-          src={src}
-          fill={true}
-          alt="Placeholder"
-          sizes="(max-width: 150px) 100vw, (max-width: 150px) 50vw, 150px"
-          priority={true}
-        />
-      </div>
+      {imgSrc && (
+        <div className="relative w-full min-h-[150px]">
+          <Image
+            className="w-full h-[200px] object-cover rounded-lg"
+            src={imgSrc}
+            fill={true}
+            alt="Placeholder"
+            sizes="(max-width: 150px) 100vw, (max-width: 150px) 50vw, 150px"
+            priority={true}
+          />
+        </div>
+      )}
 
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />

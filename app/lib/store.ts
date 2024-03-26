@@ -7,7 +7,7 @@ interface InitialState {
   setTotalSelectedFeatures: (total: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
-  setSelectedScenario: (scenarioId: Studies.Scenario) => void
+  setSelectedScenario: (scenarioId: Studies.Scenario | null) => void
   // setSelectedStudy: (study: Studies.Study, themes: Studies.Theme[]) => void
 }
 
@@ -28,7 +28,7 @@ export const useStore = create<InitialState>((set, get) => ({
     selectedTheme: {
       name: "",
       slug: "",
-      selectedScenario: { slug: "", name: "", description: "" },
+      selectedScenario: null,
       scenarios: [],
     },
   },
@@ -64,7 +64,7 @@ export const useStore = create<InitialState>((set, get) => ({
           ...state.selectedStudy.themes,
           [state.selectedStudy.selectedTheme.slug]: {
             ...state.selectedStudy.selectedTheme,
-            selectedScenario: scenario,
+            selectedScenario: scenario ? scenario : null,
           },
         },
       },
