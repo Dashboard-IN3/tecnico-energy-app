@@ -6,7 +6,7 @@ export type Option = { value: string; label: string }
 
 export const ThemeSelector: React.FC = () => {
   const selectedStudy = useStore(state => state.selectedStudy)
-  const { selectedTheme, themes } = selectedStudy
+  const { selectedTheme, study_themes } = selectedStudy
   const { setSelectedTheme } = useStore()
 
   const selectedOption = {
@@ -14,7 +14,7 @@ export const ThemeSelector: React.FC = () => {
     label: selectedTheme?.name,
   } as Option
 
-  const options = Object.values(themes)?.map(theme => ({
+  const options = Object.values(study_themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as Option[]
@@ -29,7 +29,7 @@ export const ThemeSelector: React.FC = () => {
         value={selectedOption}
         onChange={(option: any) => {
           // TODO check if this doesn need to be a Theme
-          setSelectedTheme(themes[option.value])
+          setSelectedTheme(study_themes[option.value])
         }}
         options={options}
         styles={{

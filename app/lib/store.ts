@@ -24,7 +24,7 @@ export const useStore = create<InitialState>((set, get) => ({
       bbox: [],
     },
     selectedThemeId: "",
-    themes: {},
+    study_themes: {},
     selectedTheme: {
       name: "",
       slug: "",
@@ -61,7 +61,7 @@ export const useStore = create<InitialState>((set, get) => ({
       selectedStudy: {
         ...state.selectedStudy,
         themes: {
-          ...state.selectedStudy.themes,
+          ...state.selectedStudy.study_themes,
           [state.selectedStudy.selectedTheme.slug]: {
             ...state.selectedStudy.selectedTheme,
             selectedScenario: scenario,

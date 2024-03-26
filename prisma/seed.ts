@@ -1,22 +1,19 @@
 import prisma from "../lib/prisma"
-import { study_scale, study_theme } from "@prisma/client"
+import { study_scale } from "@prisma/client"
 
 async function main() {
   const studies = [
     {
       name: "Portugal Municipal Energy",
       scale: study_scale["Municipality"],
-      theme: study_theme["Buildings"],
     },
     {
       name: "Lisbon Building Energy",
       scale: study_scale["Building"],
-      theme: study_theme["Buildings"],
     },
     {
       name: "FPO",
       scale: study_scale["Building"],
-      theme: study_theme["Buildings"],
     },
   ].map((study, idx) => ({
     name: study.name,
@@ -24,7 +21,6 @@ async function main() {
     description: study.name,
     image_src: `https://fakeimg.pl/600x400?text=${study.name}`,
     study_scale: study.scale,
-    study_theme: study.theme,
   }))
   for (const study of studies) {
     await prisma.study.upsert({

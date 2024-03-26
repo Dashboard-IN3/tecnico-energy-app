@@ -30,18 +30,20 @@ model study {
   created_at           DateTime           @default(now())
   updated_at           DateTime           @updatedAt
   study_scale          study_scale
-  study_theme          study_theme
+  study_themes         theme[]
   study_geometries     geometries[]
   metrics              metrics[]
   metrics_metadata     metrics_metadata[]
-  scenarios            scenario[]
 }
 
 model theme {
   name       String
   study_id   Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  scenarios  scenario[]
+  study      study?     @relation(fields: [studyId], references: [id])
+  studyId    Int?
 
   @@id([study_id, name])
 }
@@ -53,10 +55,11 @@ model scenario {
   methodology      String?
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
-  study_id         Int
   slug             String             @unique
-  study            study              @relation(fields: [study_id], references: [id])
   scenario_subtype scenario_subtype[]
+  theme            theme?             @relation(fields: [themeStudy_id, themeName], references: [study_id, name])
+  themeStudy_id    Int?
+  themeName        String?
 }
 
 model scenario_subtype {
