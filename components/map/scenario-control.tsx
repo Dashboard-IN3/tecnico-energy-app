@@ -19,7 +19,10 @@ export const ScenarioControl: React.FC = () => {
       <div>
         {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
-
+          const newScenarioSelection =
+            selectedTheme.scenarios.find(
+              scenario => scenario.slug === option.value
+            ) ?? null
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">
@@ -33,7 +36,7 @@ export const ScenarioControl: React.FC = () => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
                         ? null
-                        : themes[selectedTheme.slug].scenarios[option.value]
+                        : newScenarioSelection
                     )
                   }}
                 />
