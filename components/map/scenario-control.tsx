@@ -35,7 +35,9 @@ export const ScenarioControl: React.FC = () => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
                         ? null
-                        : themes[selectedTheme.slug].scenarios[option.value]
+                        : selectedTheme.scenarios.find(
+                            scenario => scenario.slug === option.value
+                          )
                     )
                   }}
                 />

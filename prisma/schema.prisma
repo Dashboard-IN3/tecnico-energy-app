@@ -38,6 +38,7 @@ model study {
 
 model theme {
   name       String
+  slug       String
   study_id   Int
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
@@ -162,10 +163,4 @@ view geometry_columns {
 enum study_scale {
   Municipality
   Building
-}
-
-enum study_theme {
-  Buildings
-  Mobility
-  Waste
 }

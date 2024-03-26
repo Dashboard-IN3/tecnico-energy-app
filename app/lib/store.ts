@@ -60,7 +60,7 @@ export const useStore = create<InitialState>((set, get) => ({
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
-        themes: {
+        study_themes: {
           ...state.selectedStudy.study_themes,
           [state.selectedStudy.selectedTheme.slug]: {
             ...state.selectedStudy.selectedTheme,
