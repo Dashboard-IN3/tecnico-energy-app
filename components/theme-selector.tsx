@@ -4,6 +4,12 @@ const Select = dynamic(() => import("react-select"), { ssr: false })
 
 export type Option = { value: string; label: string }
 
+const ThemeHeader = () => (
+  <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
+    Theme:
+  </div>
+)
+
 export const ThemeSelector: React.FC = () => {
   const selectedStudy = useStore(state => state.selectedStudy)
   const { selectedTheme, themes } = selectedStudy
@@ -19,11 +25,20 @@ export const ThemeSelector: React.FC = () => {
     label: theme.name,
   })) as Option[]
 
+  if (options.length === 1) {
+    return (
+      <>
+        <ThemeHeader />
+        <div className="flex bg-white p-2 border-2 border-black mt-[-1rem]">
+          <div>{options[0].label}</div>
+        </div>
+      </>
+    )
+  }
+
   return (
-    <div className="">
-      <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
-        Theme:
-      </div>
+    <div>
+      <ThemeHeader />
       <Select
         id="react-selector"
         value={selectedOption}
