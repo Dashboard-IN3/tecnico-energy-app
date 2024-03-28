@@ -43,7 +43,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
         >
           <Source
             id="building-footprints"
-            promoteId={"name"}
+            promoteId={"key"}
             type="vector"
             tiles={[
               `${global.window?.location.origin}/api/tiles/${params.slug}/{z}/{x}/{y}`,
@@ -59,15 +59,20 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               paint={{
                 "fill-extrusion-height": 0,
                 "fill-extrusion-color": [
-                  "interpolate-hcl",
-                  ["linear"],
-                  ["get", "shading_percentage"],
-                  0,
-                  "#ffffff",
-                  25,
-                  "#3c649f",
-                  100,
-                  "#1b2d48",
+                  "case",
+                  ["boolean", ["feature-state", "selected"], false],
+                  "#228C22",
+                  [
+                    "interpolate-hcl",
+                    ["linear"],
+                    ["get", "shading_percentage"],
+                    0,
+                    "#ffffff",
+                    25,
+                    "#3c649f",
+                    100,
+                    "#1b2d48",
+                  ],
                 ],
 
                 "fill-extrusion-opacity": 0.9,
