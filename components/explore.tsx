@@ -60,24 +60,20 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               source={"buildings"}
               source-layer="default"
               paint={{
-                "fill-extrusion-height": ["get", "height"],
+                "fill-extrusion-height": 0,
                 "fill-extrusion-color": [
-                  "case",
-                  ["boolean", ["feature-state", "selected"], false],
-                  "#228C22",
-                  [
-                    "interpolate-hcl",
-                    ["linear"],
-                    ["get", "height"],
-                    0,
-                    "#990000",
-                    3,
-                    "#990000",
-                    15,
-                    "#990000",
-                  ],
+                  "interpolate-hcl",
+                  ["linear"],
+                  ["get", "shading_percentage"],
+                  0,
+                  "#ffffff",
+                  25,
+                  "#3c649f",
+                  100,
+                  "#1b2d48",
                 ],
-                "fill-extrusion-opacity": 0.75,
+
+                "fill-extrusion-opacity": 0.9,
               }}
             />
           </Source>

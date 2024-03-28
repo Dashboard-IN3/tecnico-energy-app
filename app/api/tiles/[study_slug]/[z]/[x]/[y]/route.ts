@@ -120,9 +120,14 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
-          43 AS height
+          0 as height,
+          CAST(ROUND(CAST(m.data->>'sh_energy' AS NUMERIC)) AS INTEGER) AS shading,
+          CAST(ROUND(CAST(m.data->>'sh_energy' AS NUMERIC) / NULLIF(MAX(CAST(m.data->>'sh_energy' AS NUMERIC)) OVER(), 0) * 100) AS INTEGER) AS shading_percentage
         FROM
-          ${rawVals.table} t,
+          ${rawVals.table} t
+        JOIN
+          metrics m ON t.key = m.geometry_key
+        CROSS JOIN
           bounds
         WHERE
           ST_Intersects(
@@ -130,7 +135,7 @@ class Tile {
             ST_Transform(bounds.geom, ${srid}::integer)
           )
           AND
-          study_slug = ${this.study_slug}
+          t.study_slug = ${this.study_slug}
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
