@@ -113,6 +113,16 @@ class Tile {
           ${envSql} AS geom,
           ${envSql}::box2d AS b2d
       ),
+      global_max AS (
+        SELECT
+            MAX(CAST(m.data->>'sh_energy' AS NUMERIC)) AS max_shading
+        FROM
+            ${rawVals.table} t
+        JOIN
+            metrics m ON t.key = m.geometry_key
+        WHERE
+            t.study_slug = ${this.study_slug}
+      ),
       mvtgeom AS (
         SELECT
           ST_AsMVTGeom(
@@ -122,13 +132,15 @@ class Tile {
           key,
           0 as height,
           CAST(ROUND(CAST(m.data->>'sh_energy' AS NUMERIC)) AS INTEGER) AS shading,
-          CAST(ROUND(CAST(m.data->>'sh_energy' AS NUMERIC) / NULLIF(MAX(CAST(m.data->>'sh_energy' AS NUMERIC)) OVER(), 0) * 100) AS INTEGER) AS shading_percentage
+          CAST(ROUND(CAST(m.data->>'sh_energy' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
         FROM
           ${rawVals.table} t
         JOIN
           metrics m ON t.key = m.geometry_key
         CROSS JOIN
           bounds
+        CROSS JOIN
+          global_max gm
         WHERE
           ST_Intersects(
             t.${rawVals.geomColumn},

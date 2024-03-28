@@ -4,7 +4,6 @@ import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
-import { globalVariables } from "../global-config"
 import { useState } from "react"
 
 interface Props {
@@ -13,8 +12,6 @@ interface Props {
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
-  const [tilesLoaded, setTilesLoaded] = useState()
-
   const layerType =
     params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
 
