@@ -21,11 +21,10 @@ export default async function ExplorePage({
       acc[theme.slug] = {
         ...theme,
         selectedScenario: null,
-        scenarios: theme?.scenarios.reduce((acc, themeScenario) => {
-          if (!themeScenario.scenario_slug) return acc
-          acc[themeScenario.scenario_slug] = themeScenario.scenario
-          return acc
-        }, {}),
+        scenarios: theme?.scenarios.map(scenario => ({
+          slug: scenario.scenario_slug,
+          name: scenario.scenario?.name,
+        })),
       }
       return acc
     }, {}),
