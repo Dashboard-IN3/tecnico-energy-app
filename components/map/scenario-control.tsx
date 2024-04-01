@@ -7,7 +7,6 @@ export const ScenarioControl: React.FC = () => {
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
   }
-  console.log({ scenarios: selectedTheme?.scenarios })
   const options = selectedTheme?.scenarios?.map(scenario => ({
     value: scenario.slug,
     label: scenario.name,

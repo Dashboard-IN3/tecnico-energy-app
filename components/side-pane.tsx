@@ -1,7 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import { ThemeSelector } from "./theme-selector"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
@@ -14,12 +13,11 @@ interface Props {
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const { selectedStudy, setSelectedTheme } = useStore()
   const { selectedTheme, themes } = selectedStudy
-  console.log({ themes })
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as DropdownOption[]
-  console.log({ themeDropdownOptions })
+
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">

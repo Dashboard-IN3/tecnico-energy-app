@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation"
 import { useStore } from "@/app/lib/store"
-import { getStudy } from "@/app/lib/data"
+import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
 import { scenario } from "@prisma/client"
+import { getStudyMetadata } from "../../lib/utils"
 
 export default async function ExplorePage({
   params,
@@ -13,6 +14,9 @@ export default async function ExplorePage({
 }) {
   const study = await getStudy(params.slug)
   if (!study) notFound()
+
+  const metricsMetadata = await getMetricsMetadata(study.slug)
+  const studyMetadata = getStudyMetadata(metricsMetadata)
 
   const selectedStudy = {
     ...study,
@@ -28,6 +32,7 @@ export default async function ExplorePage({
       }
       return acc
     }, {}),
+    metadata: studyMetadata,
     selectedTheme: {
       ...study.themes[0],
       selectedScenario: { slug: "", name: "", description: "" },

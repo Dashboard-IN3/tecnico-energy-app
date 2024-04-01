@@ -17,7 +17,6 @@ export const DropdownMenu: React.FC<Props> = ({
   selected,
   setSelected,
 }) => {
-  console.log({ options })
   return (
     <div className="">
       <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
