@@ -24,7 +24,7 @@ export const ScenarioControl: React.FC = () => {
 
           const newScenarioSelection =
             selectedTheme.scenarios[option.value] ?? baselineScenario
-
+          console.log({ newScenarioSelection })
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">

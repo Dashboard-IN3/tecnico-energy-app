@@ -20,14 +20,22 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     setSelectedUsage,
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
-  const selectedScenario = selectedTheme.selectedScenario
-  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
+  const selectedScenario =
+    themes[selectedTheme.slug]?.scenarios[
+      selectedTheme.selectedScenario.slug
+    ] ?? baselineScenario
+  const {
+    category: selectedCategory,
+    source: selectedSource,
+    usage: selectedUsage,
+  } = selectedScenario
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as DropdownOption[]
 
   const scenarioKey = selectedScenario?.slug || "baseline"
+  console.log({ scenarioKey })
 
   const categoryOptions =
     metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
@@ -44,7 +52,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           label: source,
         })) as DropdownOption[])
       : []
-  console.log({ selectedScenario })
 
   const usageOptions =
     metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]

@@ -24,7 +24,30 @@ export default async function ExplorePage({
       acc[theme.slug] = {
         ...theme,
         selectedScenario: baselineScenario,
-        scenarios: theme?.scenarios.reduce((acc, scenario) => {
+        scenarios: {
+          ...theme?.scenarios.reduce((acc, scenario) => {
+            if (scenario.scenario?.slug) {
+              acc[scenario.scenario?.slug] = {
+                slug: scenario.scenario_slug,
+                name: scenario.scenario?.name,
+                selectedCategory: null,
+                selectedSource: null,
+                selectedUsage: null,
+              }
+            }
+            return acc
+          }, {}),
+          baseline: baselineScenario,
+        },
+      }
+      return acc
+    }, {}),
+    metadata: studyMetadata,
+    selectedTheme: {
+      ...study.themes[0],
+      selectedScenario: baselineScenario,
+      scenarios: {
+        ...study.themes[0]?.scenarios.reduce((acc, scenario) => {
           if (scenario.scenario?.slug) {
             acc[scenario.scenario?.slug] = {
               slug: scenario.scenario_slug,
@@ -36,25 +59,8 @@ export default async function ExplorePage({
           }
           return acc
         }, {}),
-      }
-      return acc
-    }, {}),
-    metadata: studyMetadata,
-    selectedTheme: {
-      ...study.themes[0],
-      selectedScenario: baselineScenario,
-      scenarios: study.themes[0]?.scenarios.reduce((acc, scenario) => {
-        if (scenario.scenario?.slug) {
-          acc[scenario.scenario?.slug] = {
-            slug: scenario.scenario_slug,
-            name: scenario.scenario?.name,
-            selectedCategory: null,
-            selectedSource: null,
-            selectedUsage: null,
-          }
-        }
-        return acc
-      }, {}),
+        baseline: baselineScenario,
+      },
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
