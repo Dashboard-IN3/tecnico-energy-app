@@ -9,8 +9,8 @@ interface InitialState {
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
   setSelectedCategory: (scenario_slug: string, category: string) => void
-  setSelectedSource: (source: string) => void
-  setSelectedUsage: (usage: string) => void
+  setSelectedSource: (scenario_slug: string, source: string) => void
+  setSelectedUsage: (scenario_slug: string, usage: string) => void
   setSelectedScenario: (scenarioId: Studies.Scenario) => void
 }
 
@@ -79,40 +79,6 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedUsage: (source: string) => {
-    set(state => ({
-      selectedStudy: {
-        ...state.selectedStudy,
-        themes: {
-          ...state.selectedStudy.themes,
-          [state.selectedStudy.selectedTheme.slug]: {
-            ...state.selectedStudy.selectedTheme,
-            scenarios: {
-              ...state.selectedStudy.selectedTheme.selectedScenario,
-            },
-          },
-        },
-      },
-    }))
-  },
-
-  setSelectedSource: (usage: string) => {
-    set(state => ({
-      selectedStudy: {
-        ...state.selectedStudy,
-        themes: {
-          ...state.selectedStudy.themes,
-          [state.selectedStudy.selectedTheme.slug]: {
-            ...state.selectedStudy.selectedTheme,
-            scenarios: {
-              ...state.selectedStudy.selectedTheme.selectedScenario,
-            },
-          },
-        },
-      },
-    }))
-  },
-
   setSelectedCategory: (scenario_slug: string, category: string) => {
     set(state => ({
       selectedStudy: {
@@ -136,6 +102,66 @@ export const useStore = create<InitialState>((set, get) => ({
               [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
                 ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
                 category,
+              },
+            },
+          },
+        },
+      },
+    }))
+  },
+  setSelectedUsage: (scenario_slug: string, usage: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        selectedTheme: {
+          ...state.selectedStudy.selectedTheme,
+          scenarios: {
+            ...state.selectedStudy.selectedTheme.scenarios,
+            [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+              ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
+              usage,
+            },
+          },
+        },
+        themes: {
+          ...state.selectedStudy.themes,
+          [state.selectedStudy.selectedTheme.slug]: {
+            ...state.selectedStudy.selectedTheme,
+            scenarios: {
+              ...state.selectedStudy.selectedTheme.scenarios,
+              [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+                ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
+                usage,
+              },
+            },
+          },
+        },
+      },
+    }))
+  },
+  setSelectedSource: (scenario_slug: string, source: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        selectedTheme: {
+          ...state.selectedStudy.selectedTheme,
+          scenarios: {
+            ...state.selectedStudy.selectedTheme.scenarios,
+            [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+              ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
+              source,
+            },
+          },
+        },
+        themes: {
+          ...state.selectedStudy.themes,
+          [state.selectedStudy.selectedTheme.slug]: {
+            ...state.selectedStudy.selectedTheme,
+            scenarios: {
+              ...state.selectedStudy.selectedTheme.scenarios,
+              [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+                ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
+                source,
               },
             },
           },

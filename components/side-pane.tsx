@@ -110,20 +110,20 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         options={usageOptions}
         selected={
           selectedUsage
-            ? categoryOptions.find(option => option.value === selectedUsage)!
+            ? usageOptions.find(option => option.value === selectedUsage)!
             : { value: "all", label: "All" }
         }
-        setSelected={option => setSelectedUsage(option.value)}
+        setSelected={option => setSelectedUsage(scenarioKey, option.value)}
       />
       <DropdownMenu
         title="Source"
         options={sourceOptions}
         selected={
           selectedSource
-            ? categoryOptions.find(option => option.value === selectedSource)!
+            ? sourceOptions.find(option => option.value === selectedSource)!
             : { value: "all", label: "All" }
         }
-        setSelected={option => setSelectedSource(option.value)}
+        setSelected={option => setSelectedSource(scenarioKey, option.value)}
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
