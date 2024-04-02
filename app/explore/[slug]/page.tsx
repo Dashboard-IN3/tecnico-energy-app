@@ -28,6 +28,9 @@ export default async function ExplorePage({
         scenarios: theme?.scenarios.map(scenario => ({
           slug: scenario.scenario_slug,
           name: scenario.scenario?.name,
+          selectedCategory: null,
+          selectedSource: null,
+          selectedUsage: null,
         })),
       }
       return acc
@@ -37,7 +40,13 @@ export default async function ExplorePage({
       ...study.themes[0],
       selectedScenario: { slug: "", name: "", description: "" },
       scenarios: study.themes[0]?.scenarios.map(
-        themeScenario => themeScenario.scenario as scenario
+        themeScenario =>
+          ({
+            ...themeScenario.scenario,
+            selectedCategory: null,
+            selectedSource: null,
+            selectedUsage: null,
+          } as scenario)
       ),
     },
     selectedThemeId: study.themes[0]?.slug,

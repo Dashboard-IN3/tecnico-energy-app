@@ -11,12 +11,47 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
-  const { selectedStudy, setSelectedTheme } = useStore()
-  const { selectedTheme, themes } = selectedStudy
+  const {
+    selectedStudy,
+    setSelectedTheme,
+    setSelectedCategory,
+    setSelectedSource,
+    setSelectedUsage,
+  } = useStore()
+  const { selectedTheme, themes, metadata } = selectedStudy
+  const { selectedScenario } = selectedTheme
+  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario!
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as DropdownOption[]
+
+  const scenarioKey = selectedScenario?.slug || "all"
+
+  const categoryOptions =
+    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
+      ? (metadata[selectedTheme.slug][scenarioKey].categories.map(category => ({
+          value: category,
+          label: category,
+        })) as DropdownOption[])
+      : []
+
+  const sourceOptions =
+    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
+      ? (metadata[selectedTheme.slug][scenarioKey].sources.map(source => ({
+          value: source,
+          label: source,
+        })) as DropdownOption[])
+      : []
+  console.log({ selectedScenario: selectedScenario?.slug })
+
+  const usageOptions =
+    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
+      ? (metadata[selectedTheme.slug][scenarioKey].usages.map(usage => ({
+          value: usage,
+          label: usage,
+        })) as DropdownOption[])
+      : []
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -52,24 +87,36 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         }}
         setSelected={option => setSelectedTheme(themes[option.value])}
       />
-      {/* <DropdownMenu
+      <DropdownMenu
         title="Category"
-        options={[]}
-        selected={{ value: "energy", label: "Energy" }}
-        setSelected={() => {}}
+        options={categoryOptions}
+        selected={
+          selectedCategory
+            ? categoryOptions.find(option => option.value === selectedCategory)!
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedCategory(option.value)}
       />
       <DropdownMenu
         title="Usage"
-        options={[]}
-        selected={{ value: "cooking", label: "Cooking" }}
-        setSelected={() => {}}
+        options={usageOptions}
+        selected={
+          selectedUsage
+            ? categoryOptions.find(option => option.value === selectedUsage)!
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedUsage(option.value)}
       />
       <DropdownMenu
         title="Source"
-        options={[]}
-        selected={{ value: "all", label: "All" }}
-        setSelected={() => {}}
-      /> */}
+        options={sourceOptions}
+        selected={
+          selectedSource
+            ? categoryOptions.find(option => option.value === selectedSource)!
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedSource(option.value)}
+      />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
         <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
