@@ -4,7 +4,7 @@ import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { getStudyMetadata } from "../../lib/utils"
+import { baselineScenario, getStudyMetadata } from "../../lib/utils"
 
 export default async function ExplorePage({
   params,
@@ -23,7 +23,7 @@ export default async function ExplorePage({
     themes: study?.themes.reduce((acc, theme) => {
       acc[theme.slug] = {
         ...theme,
-        selectedScenario: null,
+        selectedScenario: baselineScenario,
         scenarios: theme?.scenarios.reduce((acc, scenario) => {
           if (scenario.scenario?.slug) {
             acc[scenario.scenario?.slug] = {
@@ -42,14 +42,7 @@ export default async function ExplorePage({
     metadata: studyMetadata,
     selectedTheme: {
       ...study.themes[0],
-      selectedScenario: {
-        slug: "",
-        name: "",
-        description: "",
-        selectedCategory: null,
-        selectedSource: null,
-        selectedUsage: null,
-      },
+      selectedScenario: baselineScenario,
       scenarios: study.themes[0]?.scenarios.reduce((acc, scenario) => {
         if (scenario.scenario?.slug) {
           acc[scenario.scenario?.slug] = {

@@ -1,5 +1,6 @@
 import { GeoJSONFeature } from "maplibre-gl"
 import { create } from "zustand"
+import { baselineScenario } from "./utils"
 
 interface InitialState {
   selectedStudy: Studies.Study
@@ -31,14 +32,7 @@ export const useStore = create<InitialState>((set, get) => ({
     selectedTheme: {
       name: "",
       slug: "",
-      selectedScenario: {
-        slug: "",
-        description: "",
-        name: "",
-        selectedCategory: null,
-        selectedSource: null,
-        selectedUsage: null,
-      },
+      selectedScenario: baselineScenario,
       scenarios: {},
     },
   },

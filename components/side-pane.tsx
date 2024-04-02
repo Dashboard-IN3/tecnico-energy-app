@@ -4,6 +4,7 @@ import Image from "next/image"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
+import { baselineScenario } from "../app/lib/utils"
 
 interface Props {
   imgSrc?: string
@@ -19,7 +20,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     setSelectedUsage,
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
-  const { selectedScenario } = selectedTheme
+  const selectedScenario = selectedTheme.selectedScenario ?? baselineScenario
   const { selectedCategory, selectedSource, selectedUsage } =
     selectedScenario ?? {
       selectedCategory: null,
@@ -48,7 +49,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           label: source,
         })) as DropdownOption[])
       : []
-  console.log({ selectedScenario: selectedScenario?.slug })
+  console.log({ selectedScenario })
 
   const usageOptions =
     metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
@@ -103,9 +104,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
             ? categoryOptions.find(option => option.value === selectedCategory)!
             : { value: "all", label: "All" }
         }
-        setSelected={option =>
-          setSelectedCategory(selectedScenario?.slug ?? "", option.value)
-        }
+        setSelected={option => setSelectedCategory(scenarioKey, option.value)}
       />
       <DropdownMenu
         title="Usage"

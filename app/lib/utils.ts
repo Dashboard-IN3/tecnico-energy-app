@@ -42,7 +42,15 @@ export const getStudyMetadata = (metricsMetadata: metrics_metadata[]) => {
       ]
     })
   })
-  console.log({ studyMetadata })
 
   return studyMetadata
+}
+
+export const baselineScenario = {
+  slug: "baseline",
+  description: "Baseline Scenario",
+  name: "Baseline",
+  selectedCategory: null,
+  selectedSource: null,
+  selectedUsage: null,
 }
