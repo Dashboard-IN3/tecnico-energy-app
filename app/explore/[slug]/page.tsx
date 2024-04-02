@@ -4,7 +4,7 @@ import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { baselineScenario, getStudyMetadata } from "../../lib/utils"
+import { baselineScenario, getUniqueMetricsCombinations } from "../../lib/utils"
 
 export default async function ExplorePage({
   params,
@@ -15,7 +15,7 @@ export default async function ExplorePage({
   if (!study) notFound()
 
   const metricsMetadata = await getMetricsMetadata(study.slug)
-  const studyMetadata = getStudyMetadata(metricsMetadata)
+  const studyMetadata = getUniqueMetricsCombinations(metricsMetadata)
 
   const selectedStudy = {
     ...study,

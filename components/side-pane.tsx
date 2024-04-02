@@ -4,7 +4,8 @@ import Image from "next/image"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
-import { baselineScenario } from "../app/lib/utils"
+import { baselineScenario, getMetricsOptions } from "../app/lib/utils"
+import { getMetricsMetadata } from "../app/lib/data"
 
 interface Props {
   imgSrc?: string
@@ -20,6 +21,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     setSelectedUsage,
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
+
   const selectedScenario =
     themes[selectedTheme.slug]?.scenarios[
       selectedTheme.selectedScenario.slug
@@ -34,32 +36,19 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     label: theme.name,
   })) as DropdownOption[]
 
-  const scenarioKey = selectedScenario?.slug || "baseline"
-  console.log({ scenarioKey })
+  const scenarioKey = selectedScenario?.slug
 
-  const categoryOptions =
+  const scenarioMetaData =
     metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
-      ? (metadata[selectedTheme.slug][scenarioKey].categories.map(category => ({
-          value: category,
-          label: category,
-        })) as DropdownOption[])
+      ? metadata[selectedTheme.slug][scenarioKey].combinations
       : []
 
-  const sourceOptions =
-    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
-      ? (metadata[selectedTheme.slug][scenarioKey].sources.map(source => ({
-          value: source,
-          label: source,
-        })) as DropdownOption[])
-      : []
-
-  const usageOptions =
-    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
-      ? (metadata[selectedTheme.slug][scenarioKey].usages.map(usage => ({
-          value: usage,
-          label: usage,
-        })) as DropdownOption[])
-      : []
+  const metricsOptions = getMetricsOptions({
+    metadata: scenarioMetaData,
+    category: selectedCategory || null,
+    usage: selectedUsage || null,
+    source: selectedSource || null,
+  })
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -97,30 +86,36 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       />
       <DropdownMenu
         title="Category"
-        options={categoryOptions}
+        options={metricsOptions.categories}
         selected={
           selectedCategory
-            ? categoryOptions.find(option => option.value === selectedCategory)!
+            ? metricsOptions.categories.find(
+                option => option.value === selectedCategory
+              )!
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedCategory(scenarioKey, option.value)}
       />
       <DropdownMenu
         title="Usage"
-        options={usageOptions}
+        options={metricsOptions.usages}
         selected={
           selectedUsage
-            ? usageOptions.find(option => option.value === selectedUsage)!
+            ? metricsOptions.usages.find(
+                option => option.value === selectedUsage
+              )!
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedUsage(scenarioKey, option.value)}
       />
       <DropdownMenu
         title="Source"
-        options={sourceOptions}
+        options={metricsOptions.sources}
         selected={
           selectedSource
-            ? sourceOptions.find(option => option.value === selectedSource)!
+            ? metricsOptions.sources.find(
+                option => option.value === selectedSource
+              )!
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedSource(scenarioKey, option.value)}

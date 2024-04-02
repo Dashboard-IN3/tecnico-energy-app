@@ -1,6 +1,63 @@
 import { metrics_metadata } from "@prisma/client"
+import { isEqual } from "lodash-es"
 
-export const getStudyMetadata = (metricsMetadata: metrics_metadata[]) => {
+export const getMetricsOptions = ({ metadata, category, usage, source }) => {
+  let filteredMetadata = metadata
+  if (category || usage || source) {
+    if (category) {
+      filteredMetadata = filteredMetadata.filter(
+        option => option.category === category
+      )
+    }
+    if (usage) {
+      filteredMetadata = filteredMetadata.filter(
+        option => option.usage === usage
+      )
+    }
+    if (source) {
+      filteredMetadata = filteredMetadata.filter(
+        option => option.source === source
+      )
+    }
+  }
+  const metricsOptions = filteredMetadata.reduce(
+    (acc, metrics) => {
+      const { category, source, usage } = metrics
+      if (category) {
+        acc.categories.add(category)
+      }
+      if (usage) {
+        acc.usages.add(usage)
+      }
+      if (source) {
+        acc.sources.add(source)
+      }
+      return acc
+    },
+    {
+      categories: new Set(),
+      sources: new Set(),
+      usages: new Set(),
+    }
+  )
+  metricsOptions.categories = [...metricsOptions.categories].map(option => ({
+    value: option,
+    label: option,
+  }))
+  metricsOptions.usages = [...metricsOptions.usages].map(option => ({
+    value: option,
+    label: option,
+  }))
+  metricsOptions.sources = [...metricsOptions.sources].map(option => ({
+    value: option,
+    label: option,
+  }))
+  return metricsOptions
+}
+
+export const getUniqueMetricsCombinations = (
+  metricsMetadata: metrics_metadata[]
+) => {
   const studyMetadata = Object.values(metricsMetadata).reduce((acc, obj) => {
     const { theme_slug, scenario_slug, category, source, usage } = obj
 
@@ -11,37 +68,25 @@ export const getStudyMetadata = (metricsMetadata: metrics_metadata[]) => {
 
     const scenarioKey = scenario_slug || "baseline"
 
-    // Check if the scenario exists in the theme object, if not, initialize it with empty sets
+    // Check if the scenario exists in the theme object, if not, initialize it with empty arrays
     if (!acc[theme_slug][scenarioKey]) {
       acc[theme_slug][scenarioKey] = {
-        categories: new Set(),
-        sources: new Set(),
-        usages: new Set(),
+        combinations: [],
       }
     }
 
-    // Add category, source, and usage to the respective sets
-    acc[theme_slug][scenarioKey].categories.add(category)
-    acc[theme_slug][scenarioKey].sources.add(source)
-    acc[theme_slug][scenarioKey].usages.add(usage)
+    // Add combination of category, source, and usage to the combinations array
+    const combination = { category, source, usage }
+    if (
+      !acc[theme_slug][scenarioKey].combinations.some(item =>
+        isEqual(item, combination)
+      )
+    ) {
+      acc[theme_slug][scenarioKey].combinations.push(combination)
+    }
 
     return acc
   }, {})
-
-  // Convert sets to arrays
-  Object.keys(studyMetadata).forEach(theme => {
-    Object.keys(studyMetadata[theme]).forEach(scenario => {
-      studyMetadata[theme][scenario].categories = [
-        ...studyMetadata[theme][scenario].categories,
-      ]
-      studyMetadata[theme][scenario].sources = [
-        ...studyMetadata[theme][scenario].sources,
-      ]
-      studyMetadata[theme][scenario].usages = [
-        ...studyMetadata[theme][scenario].usages,
-      ]
-    })
-  })
 
   return studyMetadata
 }
