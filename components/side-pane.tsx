@@ -20,19 +20,14 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     setSelectedUsage,
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
-  const selectedScenario = selectedTheme.selectedScenario ?? baselineScenario
-  const { selectedCategory, selectedSource, selectedUsage } =
-    selectedScenario ?? {
-      selectedCategory: null,
-      selectedSource: null,
-      selectedUsage: null,
-    }
+  const selectedScenario = selectedTheme.selectedScenario
+  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as DropdownOption[]
 
-  const scenarioKey = selectedScenario?.slug || "all"
+  const scenarioKey = selectedScenario?.slug || "baseline"
 
   const categoryOptions =
     metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
@@ -59,9 +54,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         })) as DropdownOption[])
       : []
 
-  // if (!selectedScenario) {
-  //   return <></>
-  // }
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">

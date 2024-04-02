@@ -9,7 +9,7 @@ export const getStudyMetadata = (metricsMetadata: metrics_metadata[]) => {
       acc[theme_slug] = {}
     }
 
-    const scenarioKey = scenario_slug || "all"
+    const scenarioKey = scenario_slug || "baseline"
 
     // Check if the scenario exists in the theme object, if not, initialize it with empty sets
     if (!acc[theme_slug][scenarioKey]) {

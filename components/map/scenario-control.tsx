@@ -1,4 +1,5 @@
 import { useStore } from "../../app/lib/store"
+import { baselineScenario } from "../../app/lib/utils"
 
 export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
@@ -22,7 +23,7 @@ export const ScenarioControl: React.FC = () => {
           const { selectedScenario } = themes[selectedTheme.slug]
 
           const newScenarioSelection =
-            selectedTheme.scenarios[option.value] ?? null
+            selectedTheme.scenarios[option.value] ?? baselineScenario
 
           return (
             <div key={key} className="mb-2">
@@ -36,7 +37,7 @@ export const ScenarioControl: React.FC = () => {
                   onClick={() => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
-                        ? null
+                        ? baselineScenario
                         : newScenarioSelection
                     )
                   }}

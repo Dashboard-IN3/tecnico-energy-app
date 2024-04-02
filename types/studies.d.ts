@@ -25,7 +25,7 @@ declare namespace Studies {
     name: string
     slug: string
     scenarios: { [scenario_id]: Scenario }
-    selectedScenario: Scenario | null
+    selectedScenario: Scenario
   }
 
   export type Scenario = {

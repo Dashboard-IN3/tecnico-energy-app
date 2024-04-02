@@ -11,7 +11,7 @@ interface InitialState {
   setSelectedCategory: (scenario_slug: string, category: string) => void
   setSelectedSource: (source: string) => void
   setSelectedUsage: (usage: string) => void
-  setSelectedScenario: (scenarioId: Studies.Scenario | null) => void
+  setSelectedScenario: (scenarioId: Studies.Scenario) => void
 }
 
 export const useStore = create<InitialState>((set, get) => ({
