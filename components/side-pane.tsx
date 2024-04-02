@@ -20,7 +20,12 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
   const { selectedScenario } = selectedTheme
-  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario!
+  const { selectedCategory, selectedSource, selectedUsage } =
+    selectedScenario ?? {
+      selectedCategory: null,
+      selectedSource: null,
+      selectedUsage: null,
+    }
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
@@ -53,6 +58,9 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         })) as DropdownOption[])
       : []
 
+  // if (!selectedScenario) {
+  //   return <></>
+  // }
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
@@ -95,7 +103,9 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
             ? categoryOptions.find(option => option.value === selectedCategory)!
             : { value: "all", label: "All" }
         }
-        setSelected={option => setSelectedCategory(option.value)}
+        setSelected={option =>
+          setSelectedCategory(selectedScenario?.slug ?? "", option.value)
+        }
       />
       <DropdownMenu
         title="Usage"

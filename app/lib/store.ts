@@ -7,7 +7,7 @@ interface InitialState {
   setTotalSelectedFeatures: (total: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
-  setSelectedCategory: (category: string) => void
+  setSelectedCategory: (scenario_slug: string, category: string) => void
   setSelectedSource: (source: string) => void
   setSelectedUsage: (usage: string) => void
   setSelectedScenario: (scenarioId: Studies.Scenario | null) => void
@@ -39,7 +39,7 @@ export const useStore = create<InitialState>((set, get) => ({
         selectedSource: null,
         selectedUsage: null,
       },
-      scenarios: [],
+      scenarios: {},
     },
   },
   setAoi: (aoi: { feature: GeoJSONFeature; bbox: number[] }) => {
@@ -70,6 +70,10 @@ export const useStore = create<InitialState>((set, get) => ({
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
+        selectedTheme: {
+          ...state.selectedStudy.selectedTheme,
+          selectedScenario: scenario,
+        },
         themes: {
           ...state.selectedStudy.themes,
           [state.selectedStudy.selectedTheme.slug]: {
@@ -115,7 +119,7 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedCategory: (category: string) => {
+  setSelectedCategory: (scenario_slug: string, category: string) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -123,7 +127,13 @@ export const useStore = create<InitialState>((set, get) => ({
           ...state.selectedStudy.themes,
           [state.selectedStudy.selectedTheme.slug]: {
             ...state.selectedStudy.selectedTheme,
-            selectedScenario: category,
+            scenarios: {
+              ...state.selectedStudy.selectedTheme.selectedScenario,
+              [state.selectedStudy.selectedTheme.slug]: {
+                ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
+                category,
+              },
+            },
           },
         },
       },

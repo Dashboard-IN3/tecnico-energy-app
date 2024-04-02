@@ -7,10 +7,12 @@ export const ScenarioControl: React.FC = () => {
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
   }
-  const options = selectedTheme?.scenarios?.map(scenario => ({
-    value: scenario.slug,
-    label: scenario.name,
-  }))
+  const options = Object.values(selectedTheme?.scenarios)?.map(
+    (scenario: Studies.Scenario) => ({
+      value: scenario.slug,
+      label: scenario.name,
+    })
+  )
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
@@ -20,9 +22,7 @@ export const ScenarioControl: React.FC = () => {
           const { selectedScenario } = themes[selectedTheme.slug]
 
           const newScenarioSelection =
-            selectedTheme.scenarios.find(
-              scenario => scenario.slug === option.value
-            ) ?? null
+            selectedTheme.scenarios[option.value] ?? null
 
           return (
             <div key={key} className="mb-2">

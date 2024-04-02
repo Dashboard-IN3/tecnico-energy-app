@@ -4,7 +4,6 @@ import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { scenario } from "@prisma/client"
 import { getStudyMetadata } from "../../lib/utils"
 
 export default async function ExplorePage({
@@ -25,29 +24,44 @@ export default async function ExplorePage({
       acc[theme.slug] = {
         ...theme,
         selectedScenario: null,
-        scenarios: theme?.scenarios.map(scenario => ({
-          slug: scenario.scenario_slug,
-          name: scenario.scenario?.name,
-          selectedCategory: null,
-          selectedSource: null,
-          selectedUsage: null,
-        })),
+        scenarios: theme?.scenarios.reduce((acc, scenario) => {
+          if (scenario.scenario?.slug) {
+            acc[scenario.scenario?.slug] = {
+              slug: scenario.scenario_slug,
+              name: scenario.scenario?.name,
+              selectedCategory: null,
+              selectedSource: null,
+              selectedUsage: null,
+            }
+          }
+          return acc
+        }, {}),
       }
       return acc
     }, {}),
     metadata: studyMetadata,
     selectedTheme: {
       ...study.themes[0],
-      selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0]?.scenarios.map(
-        themeScenario =>
-          ({
-            ...themeScenario.scenario,
+      selectedScenario: {
+        slug: "",
+        name: "",
+        description: "",
+        selectedCategory: null,
+        selectedSource: null,
+        selectedUsage: null,
+      },
+      scenarios: study.themes[0]?.scenarios.reduce((acc, scenario) => {
+        if (scenario.scenario?.slug) {
+          acc[scenario.scenario?.slug] = {
+            slug: scenario.scenario_slug,
+            name: scenario.scenario?.name,
             selectedCategory: null,
             selectedSource: null,
             selectedUsage: null,
-          } as scenario)
-      ),
+          }
+        }
+        return acc
+      }, {}),
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
