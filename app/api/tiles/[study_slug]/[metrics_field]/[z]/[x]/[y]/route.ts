@@ -10,12 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   } catch (e) {
     return new Response((e as Error).message, { status: 400 })
   }
-  const sql = tile.asSql(
-    "geometries",
-    "geom",
-    "scenario_metrics",
-    "impact.cooking.ALL"
-  )
+  const sql = tile.asSql("geometries", "geom", "scenario_metrics")
   const [{ st_asmvt }] = await prisma.$queryRaw<{ st_asmvt: Buffer }[]>(sql)
 
   return new Response(
@@ -39,13 +34,15 @@ class Tile {
   public x: number
   public y: number
   public scenario_slug: string
+  public user_metrics_field: string
 
-  constructor({ z, x, y, study_slug }: Params) {
+  constructor({ z, x, y, study_slug, metrics_field }: Params) {
     if (!study_slug) {
       throw new Error("study_slug is required")
     }
     this.study_slug = study_slug
     this.scenario_slug = "e2-scenario"
+    this.user_metrics_field = metrics_field
 
     if ([z, x, y].map(val => parseInt(val)).some(isNaN)) {
       throw new Error("Coordinates must be numbers")
@@ -106,7 +103,6 @@ class Tile {
     table: string,
     geomColumn: string,
     metrics_table: string,
-    metrics_field: string,
     attrColumns: string[] = [],
     srid: number = 4326
   ): Sql {
@@ -114,9 +110,12 @@ class Tile {
 
     // NOTE: Do not mark any user-provided data as raw!
     const rawVals: Record<string, Sql> = Object.fromEntries(
-      Object.entries({ table, geomColumn, metrics_table, metrics_field }).map(
-        ([k, v]) => [k, Prisma.raw(v)]
-      )
+      Object.entries({
+        table,
+        geomColumn,
+        metrics_table,
+        metrics_field: this.user_metrics_field,
+      }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
       WITH bounds AS (
@@ -173,6 +172,7 @@ interface Params {
   y: string
   z: string
   study_slug: string
+  metrics_field: string
 }
 
 interface Envelope {

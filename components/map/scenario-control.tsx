@@ -8,6 +8,7 @@ export const ScenarioControl: React.FC = () => {
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
   }
+
   const options = Object.values(selectedTheme?.scenarios)
     ?.filter((scenario: Studies.Scenario) => scenario.slug !== "baseline")
     .map((scenario: Studies.Scenario) => ({
@@ -22,8 +23,7 @@ export const ScenarioControl: React.FC = () => {
         {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
 
-          const newScenarioSelection =
-            selectedTheme.scenarios[option.value] ?? baselineScenario
+          const newScenarioSelection = selectedTheme.scenarios[option.value]
 
           return (
             <div key={key} className="mb-2">
@@ -37,7 +37,7 @@ export const ScenarioControl: React.FC = () => {
                   onClick={() => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
-                        ? baselineScenario
+                        ? selectedTheme.scenarios["baseline"]
                         : newScenarioSelection
                     )
                   }}

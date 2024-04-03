@@ -61,6 +61,7 @@ export const useStore = create<InitialState>((set, get) => ({
   },
 
   setSelectedScenario: (scenario: Studies.Scenario) => {
+    console.log({ scenario })
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -85,11 +86,15 @@ export const useStore = create<InitialState>((set, get) => ({
         ...state.selectedStudy,
         selectedTheme: {
           ...state.selectedStudy.selectedTheme,
+          selectedScenario: {
+            ...state.selectedStudy.selectedTheme.selectedScenario,
+            selectedCategory: category,
+          },
           scenarios: {
             ...state.selectedStudy.selectedTheme.scenarios,
-            [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+            [scenario_slug]: {
               ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
-              category,
+              selectedCategory: category,
             },
           },
         },
@@ -99,9 +104,9 @@ export const useStore = create<InitialState>((set, get) => ({
             ...state.selectedStudy.selectedTheme,
             scenarios: {
               ...state.selectedStudy.selectedTheme.scenarios,
-              [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+              [scenario_slug]: {
                 ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
-                category,
+                seletedCategory: category,
               },
             },
           },
@@ -115,11 +120,15 @@ export const useStore = create<InitialState>((set, get) => ({
         ...state.selectedStudy,
         selectedTheme: {
           ...state.selectedStudy.selectedTheme,
+          selectedScenario: {
+            ...state.selectedStudy.selectedTheme.selectedScenario,
+            selectedUsage: usage,
+          },
           scenarios: {
             ...state.selectedStudy.selectedTheme.scenarios,
-            [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+            [scenario_slug]: {
               ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
-              usage,
+              selectedUsage: usage,
             },
           },
         },
@@ -129,9 +138,9 @@ export const useStore = create<InitialState>((set, get) => ({
             ...state.selectedStudy.selectedTheme,
             scenarios: {
               ...state.selectedStudy.selectedTheme.scenarios,
-              [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+              [scenario_slug]: {
                 ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
-                usage,
+                selectedUsage: usage,
               },
             },
           },
@@ -139,15 +148,20 @@ export const useStore = create<InitialState>((set, get) => ({
       },
     }))
   },
+
   setSelectedSource: (scenario_slug: string, source: string) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
         selectedTheme: {
           ...state.selectedStudy.selectedTheme,
+          selectedScenario: {
+            ...state.selectedStudy.selectedTheme.selectedScenario,
+            selectedSource: source,
+          },
           scenarios: {
             ...state.selectedStudy.selectedTheme.scenarios,
-            [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+            [scenario_slug]: {
               ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
               source,
             },
@@ -159,7 +173,7 @@ export const useStore = create<InitialState>((set, get) => ({
             ...state.selectedStudy.selectedTheme,
             scenarios: {
               ...state.selectedStudy.selectedTheme.scenarios,
-              [state.selectedStudy.selectedTheme.selectedScenario.slug]: {
+              [scenario_slug]: {
                 ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
                 source,
               },

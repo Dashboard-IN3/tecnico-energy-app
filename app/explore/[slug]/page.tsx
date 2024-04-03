@@ -4,7 +4,7 @@ import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { baselineScenario, getUniqueMetricsCombinations } from "../../lib/utils"
+import { getUniqueMetricsCombinations } from "../../lib/utils"
 
 export default async function ExplorePage({
   params,
@@ -16,6 +16,16 @@ export default async function ExplorePage({
 
   const metricsMetadata = await getMetricsMetadata(study.slug)
   const studyMetadata = getUniqueMetricsCombinations(metricsMetadata)
+  const initialCategory = Object.values(metricsMetadata)[0]?.category ?? null
+  const initialUsage = Object.values(metricsMetadata)[0]?.usage ?? null
+  const initialScenario = {
+    slug: "baseline",
+    description: "Baseline Scenario",
+    name: "Baseline",
+    selectedCategory: initialCategory,
+    selectedSource: null,
+    selectedUsage: initialUsage,
+  }
 
   const selectedStudy = {
     ...study,
@@ -23,21 +33,21 @@ export default async function ExplorePage({
     themes: study?.themes.reduce((acc, theme) => {
       acc[theme.slug] = {
         ...theme,
-        selectedScenario: baselineScenario,
+        selectedScenario: initialScenario,
         scenarios: {
           ...theme?.scenarios.reduce((acc, scenario) => {
             if (scenario.scenario?.slug) {
               acc[scenario.scenario?.slug] = {
                 slug: scenario.scenario_slug,
                 name: scenario.scenario?.name,
-                selectedCategory: null,
+                selectedCategory: initialCategory,
                 selectedSource: null,
                 selectedUsage: null,
               }
             }
             return acc
           }, {}),
-          baseline: baselineScenario,
+          baseline: initialScenario,
         },
       }
       return acc
@@ -45,21 +55,21 @@ export default async function ExplorePage({
     metadata: studyMetadata,
     selectedTheme: {
       ...study.themes[0],
-      selectedScenario: baselineScenario,
+      selectedScenario: initialScenario,
       scenarios: {
         ...study.themes[0]?.scenarios.reduce((acc, scenario) => {
           if (scenario.scenario?.slug) {
             acc[scenario.scenario?.slug] = {
               slug: scenario.scenario_slug,
               name: scenario.scenario?.name,
-              selectedCategory: null,
+              selectedCategory: initialCategory,
               selectedSource: null,
               selectedUsage: null,
             }
           }
           return acc
         }, {}),
-        baseline: baselineScenario,
+        baseline: initialScenario,
       },
     },
     selectedThemeId: study.themes[0]?.slug,

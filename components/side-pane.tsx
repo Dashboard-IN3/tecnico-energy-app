@@ -22,31 +22,29 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   } = useStore()
   const { selectedTheme, themes, metadata } = selectedStudy
 
-  const selectedScenario =
-    themes[selectedTheme.slug]?.scenarios[
-      selectedTheme.selectedScenario.slug
-    ] ?? baselineScenario
-  const {
-    category: selectedCategory,
-    source: selectedSource,
-    usage: selectedUsage,
-  } = selectedScenario
+  const selectedScenario = selectedTheme?.selectedScenario
+
+  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
+
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
     value: theme.slug,
     label: theme.name,
   })) as DropdownOption[]
 
   const scenarioKey = selectedScenario?.slug
+  console.log({ scenarioKey })
 
-  const scenarioMetaData = metadata[selectedTheme.slug]
-    ? metadata[selectedTheme.slug]["baseline"].combinations
-    : []
+  // Render unique options based on existing selection
+  const scenarioMetaData =
+    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
+      ? metadata[selectedTheme.slug][scenarioKey].combinations
+      : []
 
   const metricsOptions = getMetricsOptions({
     metadata: scenarioMetaData,
-    category: selectedCategory || null,
-    usage: selectedUsage || null,
-    source: selectedSource || null,
+    selectedCategory,
+    selectedUsage,
+    selectedSource,
   })
 
   return (
@@ -88,9 +86,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         options={metricsOptions.categories}
         selected={
           selectedCategory
-            ? metricsOptions.categories.find(
-                option => option.value === selectedCategory
-              )!
+            ? { value: selectedCategory, label: selectedCategory }
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedCategory(scenarioKey, option.value)}
@@ -100,9 +96,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         options={metricsOptions.usages}
         selected={
           selectedUsage
-            ? metricsOptions.usages.find(
-                option => option.value === selectedUsage
-              )!
+            ? { value: selectedUsage, label: selectedUsage }
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedUsage(scenarioKey, option.value)}
@@ -112,9 +106,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         options={metricsOptions.sources}
         selected={
           selectedSource
-            ? metricsOptions.sources.find(
-                option => option.value === selectedSource
-              )!
+            ? { value: selectedSource, label: selectedSource }
             : { value: "all", label: "All" }
         }
         setSelected={option => setSelectedSource(scenarioKey, option.value)}

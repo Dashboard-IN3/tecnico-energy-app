@@ -1,37 +1,27 @@
 import { metrics_metadata } from "@prisma/client"
 import { isEqual } from "lodash-es"
 
-export const getMetricsOptions = ({ metadata, category, usage, source }) => {
-  let filteredMetadata = metadata
-  if (category || usage || source) {
-    if (category) {
-      filteredMetadata = filteredMetadata.filter(
-        option => option.category === category
-      )
-    }
-    if (usage) {
-      filteredMetadata = filteredMetadata.filter(
-        option => option.usage === usage
-      )
-    }
-    if (source) {
-      filteredMetadata = filteredMetadata.filter(
-        option => option.source === source
-      )
-    }
-  }
-  const metricsOptions = filteredMetadata.reduce(
+export const getMetricsOptions = ({
+  metadata,
+  selectedCategory,
+  selectedUsage,
+  selectedSource,
+}) => {
+  const metricsOptions = metadata.reduce(
     (acc, metrics) => {
       const { category, source, usage } = metrics
       if (category) {
         acc.categories.add(category)
       }
-      if (usage) {
-        acc.usages.add(usage)
+      // limit usage option to selected category
+      if (!category || category === selectedCategory) {
+        usage && acc.usages.add(usage)
+        // limit source options to category and usage
+        if (!selectedUsage || selectedUsage === usage) {
+          source && acc.sources.add(source)
+        }
       }
-      if (source) {
-        acc.sources.add(source)
-      }
+
       return acc
     },
     {
