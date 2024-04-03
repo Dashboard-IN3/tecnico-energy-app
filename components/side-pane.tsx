@@ -38,10 +38,9 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
 
   const scenarioKey = selectedScenario?.slug
 
-  const scenarioMetaData =
-    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
-      ? metadata[selectedTheme.slug][scenarioKey].combinations
-      : []
+  const scenarioMetaData = metadata[selectedTheme.slug]
+    ? metadata[selectedTheme.slug]["baseline"].combinations
+    : []
 
   const metricsOptions = getMetricsOptions({
     metadata: scenarioMetaData,
