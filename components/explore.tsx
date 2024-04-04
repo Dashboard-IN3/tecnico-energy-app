@@ -57,7 +57,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             tiles={[
               `${global.window?.location.origin}/api/tiles/${params.slug}/${selectedScenario?.slug}/${metricsField}/{z}/{x}/{y}`,
             ]}
-            minzoom={6}
+            minzoom={2}
             maxzoom={14}
           >
             <Layer
