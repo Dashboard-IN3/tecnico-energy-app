@@ -62,6 +62,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
           >
             <Layer
               id="buildings-layer"
+              beforeId="road_path"
               type="fill-extrusion"
               source={"buildings"}
               source-layer="default"
