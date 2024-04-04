@@ -7,7 +7,12 @@ declare namespace Studies {
     imageSrc?: string
     selectedTheme: Theme
     selectedThemeId: string
-    totalSelectedFeatures: number
+    summary: {
+      totalSelectedFeatures: number
+      summaryUnit: string
+      summaryTotal: number
+      summaryAvg: number
+    }
     isDrawing: boolean
     aoi: MapState.aoi
     metadata: Metadata

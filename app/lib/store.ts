@@ -5,7 +5,10 @@ import { baselineScenario } from "./utils"
 interface InitialState {
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
-  setTotalSelectedFeatures: (total: number) => void
+  setTotalSelectedFeatures: (featureTotal: number) => void
+  setSummaryTotal: (summaryTotal: number) => void
+  setSummaryUnit: (summaryUnit: string) => void
+  setSummaryAvg: (summaryAvg: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
   setSelectedCategory: (scenario_slug: string, category: string) => void
@@ -20,7 +23,12 @@ export const useStore = create<InitialState>((set, get) => ({
     name: "",
     description: "",
     imageSrc: "",
-    totalSelectedFeatures: 0,
+    summary: {
+      totalSelectedFeatures: 0,
+      summaryTotal: 0,
+      summaryUnit: "null",
+      summaryAvg: 0,
+    },
     isDrawing: false,
     aoi: {
       feature: undefined,
@@ -39,9 +47,52 @@ export const useStore = create<InitialState>((set, get) => ({
   setAoi: (aoi: { feature: GeoJSONFeature; bbox: number[] }) => {
     set(state => ({ selectedStudy: { ...state.selectedStudy, aoi } }))
   },
+
   setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
     set(state => ({
-      selectedStudy: { ...state.selectedStudy, totalSelectedFeatures },
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          totalSelectedFeatures,
+        },
+      },
+    }))
+  },
+
+  setSummaryTotal: (summaryTotal: number) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryTotal,
+        },
+      },
+    }))
+  },
+
+  setSummaryUnit: (summaryUnit: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryUnit,
+        },
+      },
+    }))
+  },
+
+  setSummaryAvg: (summaryAvg: number) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryAvg,
+        },
+      },
     }))
   },
 

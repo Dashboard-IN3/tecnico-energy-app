@@ -28,7 +28,12 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const selectedStudy = useStore(state => state.selectedStudy)
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
-  const { setTotalSelectedFeatures } = useStore()
+  const {
+    setTotalSelectedFeatures,
+    setSummaryAvg,
+    setSummaryTotal,
+    setSummaryUnit,
+  } = useStore()
   const { selectedTheme } = selectedStudy
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory
@@ -57,6 +62,9 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     updateIntersectingFeatures(featureIDs)
     setTotalSelectedFeatures(featureIDs.length)
+    setSummaryAvg(summaryAvg)
+    setSummaryTotal(summaryTotal)
+    setSummaryUnit(summaryUnit)
   }
 
   useEffect(() => {

@@ -73,7 +73,12 @@ export default async function ExplorePage({
       },
     },
     selectedThemeId: study.themes[0]?.slug,
-    totalSelectedFeatures: 0,
+    summary: {
+      totalSelectedFeatures: 0,
+      summaryUnit: "",
+      summaryTotal: 0,
+      summaryAvg: 0,
+    },
     isDrawing: false,
     aoi: { feature: undefined, bbox: [] },
   }

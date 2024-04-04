@@ -5,6 +5,7 @@ import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
 import { getMetricsOptions } from "../app/lib/utils"
+import { round } from "lodash-es"
 
 interface Props {
   imgSrc?: string
@@ -67,7 +68,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
-          {selectedStudy.totalSelectedFeatures} Features
+          {selectedStudy.summary.totalSelectedFeatures} Features
         </div>
       </div>
       <DropdownMenu
@@ -111,8 +112,13 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-        <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
-          Number of Features in Spatial DB Query
+        <div>
+          Total {round(selectedStudy.summary.summaryTotal, 2)}{" "}
+          {selectedStudy.summary.summaryUnit}
+        </div>
+        <div>
+          Average {round(selectedStudy.summary.summaryAvg, 2)}{" "}
+          {selectedStudy.summary.summaryUnit}
         </div>
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
       </div>
