@@ -70,7 +70,6 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "selected"], false],
-                  "#228C22",
                   [
                     "interpolate-hcl",
                     ["linear"],
@@ -82,8 +81,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     100,
                     "#1b2d48",
                   ],
+                  "#dadada",
                 ],
-
                 "fill-extrusion-opacity": 0.9,
               }}
             />
