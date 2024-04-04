@@ -108,12 +108,6 @@ class Tile {
   ): Sql {
     const envSql = this.asEnvelopeSql()
 
-    console.log({
-      study_slug: this.study_slug,
-      scenario_slug: this.scenario_slug,
-      metrics_field: this.metrics_field,
-    })
-
     // NOTE: Do not mark any user-provided data as raw!
     const rawVals: Record<string, Sql> = Object.fromEntries(
       Object.entries({

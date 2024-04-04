@@ -4,8 +4,7 @@ import Image from "next/image"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
-import { baselineScenario, getMetricsOptions } from "../app/lib/utils"
-import { getMetricsMetadata } from "../app/lib/data"
+import { getMetricsOptions } from "../app/lib/utils"
 
 interface Props {
   imgSrc?: string
