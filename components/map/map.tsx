@@ -20,6 +20,22 @@ type MapViewProps = {
   studySlug: string
 }
 
+const getDbIntersectingFeatures = async ({
+  coordinates,
+  studySlug,
+  scenarioSlug,
+  metricsField,
+}) => {
+  const linestring = encodeURI(
+    coordinates.map(pair => pair.join(" ")).join(",")
+  )
+
+  const response = await fetch(
+    `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${linestring}/${metricsField}`
+  )
+  const buildings = await response.json()
+}
+
 const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const [roundedZoom, setRoundedZoom] = useState(0)
@@ -31,17 +47,13 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const { setTotalSelectedFeatures } = useStore()
 
-  const getDbIntersectingFeatures = async coordinates => {
-    const linestring = encodeURI(
-      coordinates.map(pair => pair.join(" ")).join(",")
-    )
+  const { selectedTheme } = selectedStudy
+  const selectedScenario = selectedTheme.selectedScenario
+  const category = selectedScenario?.selectedCategory
+  const usage = selectedScenario?.selectedUsage || "ALL"
+  const source = selectedScenario?.selectedSource || "ALL"
 
-    const response = await fetch(
-      `${global.window?.location.origin}/api/search/${studySlug}/${linestring}`
-    )
-    const buildings = await response.json()
-    // console.log({ buildings })
-  }
+  const metricsField = `${category}.${usage}.${source}`
 
   useEffect(() => {
     if (selectedFeatureIds && !aoi.feature) {
@@ -68,7 +80,12 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     updateIntersectingFeatures(intersectingFeatures)
 
-    getDbIntersectingFeatures(aoi.feature.geometry.coordinates[0])
+    getDbIntersectingFeatures({
+      coordinates: aoi.feature.geometry.coordinates[0],
+      studySlug,
+      metricsField,
+      scenarioSlug: selectedScenario?.slug,
+    })
   }, [aoi.feature, aoi.bbox, map, roundedZoom])
 
   const updateIntersectingFeatures = featureIdsToUpdate => {

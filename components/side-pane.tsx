@@ -32,7 +32,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   })) as DropdownOption[]
 
   const scenarioKey = selectedScenario?.slug
-  console.log({ scenarioKey })
 
   // Render unique options based on existing selection
   const scenarioMetaData =
