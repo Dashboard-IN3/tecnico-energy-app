@@ -75,7 +75,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       metricsField,
       scenarioSlug: selectedScenario?.slug,
     })
-  }, [aoi.feature, aoi.bbox, map])
+  }, [aoi.feature, aoi.bbox, map, metricsField])
 
   const updateIntersectingFeatures = featureIdsToUpdate => {
     // remove Ids that are no longer in new array of ids
