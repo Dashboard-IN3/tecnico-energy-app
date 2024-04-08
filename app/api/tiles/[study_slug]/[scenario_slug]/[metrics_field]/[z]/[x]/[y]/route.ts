@@ -139,7 +139,7 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
-          0 as height,
+          45 as height,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
         FROM

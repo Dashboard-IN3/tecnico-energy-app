@@ -16,6 +16,7 @@ declare namespace Studies {
     isDrawing: boolean
     aoi: MapState.aoi
     metadata: Metadata
+    scale: string | null
   }
 
   export type Metadata = {
