@@ -11,9 +11,18 @@ interface InitialState {
   setSummaryAvg: (summaryAvg: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
-  setSelectedCategory: (scenario_slug: string, category: string) => void
-  setSelectedSource: (scenario_slug: string, source: string) => void
-  setSelectedUsage: (scenario_slug: string, usage: string) => void
+  setSelectedCategory: (
+    scenario_slug: string,
+    category: { value: string; label: string }
+  ) => void
+  setSelectedSource: (
+    scenario_slug: string,
+    source: { value: string; label: string }
+  ) => void
+  setSelectedUsage: (
+    scenario_slug: string,
+    usage: { value: string; label: string }
+  ) => void
   setSelectedScenario: (scenarioId: Studies.Scenario) => void
 }
 
@@ -112,7 +121,6 @@ export const useStore = create<InitialState>((set, get) => ({
   },
 
   setSelectedScenario: (scenario: Studies.Scenario) => {
-    console.log({ scenario })
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -131,7 +139,10 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedCategory: (scenario_slug: string, category: string) => {
+  setSelectedCategory: (
+    scenario_slug: string,
+    category: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -165,7 +176,10 @@ export const useStore = create<InitialState>((set, get) => ({
       },
     }))
   },
-  setSelectedUsage: (scenario_slug: string, usage: string) => {
+  setSelectedUsage: (
+    scenario_slug: string,
+    usage: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -200,7 +214,10 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedSource: (scenario_slug: string, source: string) => {
+  setSelectedSource: (
+    scenario_slug: string,
+    source: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,

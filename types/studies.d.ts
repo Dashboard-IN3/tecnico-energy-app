@@ -37,8 +37,8 @@ declare namespace Studies {
     slug: string
     description: string | null
     name: string
-    selectedUsage: string | null
-    selectedCategory: string | null
-    selectedSource: string | null
+    selectedUsage: { value: string; label: string } | null
+    selectedCategory: { value: string; label: string } | null
+    selectedSource: { value: string; label: string } | null
   }
 }

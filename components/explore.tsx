@@ -25,9 +25,9 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
   const { selectedTheme, themes } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
-  const category = selectedScenario?.selectedCategory
-  const usage = selectedScenario?.selectedUsage || "ALL"
-  const source = selectedScenario?.selectedSource || "ALL"
+  const category = selectedScenario?.selectedCategory?.value
+  const usage = selectedScenario?.selectedUsage?.value || "ALL"
+  const source = selectedScenario?.selectedSource?.value || "ALL"
 
   const metricsField = `${category}.${usage}.${source}`
 

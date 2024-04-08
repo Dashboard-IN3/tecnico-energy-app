@@ -36,9 +36,9 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   } = useStore()
   const { selectedTheme } = selectedStudy
   const selectedScenario = selectedTheme.selectedScenario
-  const category = selectedScenario?.selectedCategory
-  const usage = selectedScenario?.selectedUsage || "ALL"
-  const source = selectedScenario?.selectedSource || "ALL"
+  const category = selectedScenario?.selectedCategory?.value
+  const usage = selectedScenario?.selectedUsage?.value || "ALL"
+  const source = selectedScenario?.selectedSource?.value || "ALL"
 
   const metricsField = `${category}.${usage}.${source}`
 
@@ -52,7 +52,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       ? encodeURI(coordinates.map(pair => pair.join(" ")).join(","))
       : null
     const searchResponse = await fetch(
-      `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${linestring}/${metricsField}`
+      `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
     const featureIDs = search.search[0].feature_ids

@@ -3,7 +3,9 @@ import { Prisma } from "@prisma/client"
 import { NextRequest } from "next/server"
 
 export async function GET(req: NextRequest, { params }: { params: Params }) {
-  const { coordinates, study_slug, metrics_field, scenario_slug } = params
+  const { study_slug, metrics_field, scenario_slug } = params
+  const coordinates = req?.nextUrl?.searchParams.get("coordinates")!
+
   // get all features if we have no aoi
   if (coordinates == "null") {
     const search = await prisma.$queryRaw`

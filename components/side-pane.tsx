@@ -12,6 +12,8 @@ interface Props {
   studyId: string
 }
 
+const baselineOption = { value: "ALL", label: "All" }
+
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const {
     selectedStudy,
@@ -23,7 +25,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const { selectedTheme, themes, metadata } = selectedStudy
 
   const selectedScenario = selectedTheme?.selectedScenario
-
   const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
 
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
@@ -83,32 +84,20 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <DropdownMenu
         title="Category"
         options={metricsOptions.categories}
-        selected={
-          selectedCategory
-            ? { value: selectedCategory, label: selectedCategory }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedCategory(scenarioKey, option.value)}
+        selected={selectedCategory ? selectedCategory : baselineOption}
+        setSelected={option => setSelectedCategory(scenarioKey, option)}
       />
       <DropdownMenu
         title="Usage"
         options={metricsOptions.usages}
-        selected={
-          selectedUsage
-            ? { value: selectedUsage, label: selectedUsage }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedUsage(scenarioKey, option.value)}
+        selected={selectedUsage ? selectedUsage : baselineOption}
+        setSelected={option => setSelectedUsage(scenarioKey, option)}
       />
       <DropdownMenu
         title="Source"
         options={metricsOptions.sources}
-        selected={
-          selectedSource
-            ? { value: selectedSource, label: selectedSource }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedSource(scenarioKey, option.value)}
+        selected={selectedSource ? selectedSource : baselineOption}
+        setSelected={option => setSelectedSource(scenarioKey, option)}
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
