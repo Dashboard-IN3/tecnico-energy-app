@@ -55,12 +55,14 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
         g.study_slug = ${study_slug}
       )
       SELECT 
-          (SELECT SUM(data_value) FROM IntersectedGeometries) AS data_total,
-          (SELECT AVG(data_value) FROM IntersectedGeometries) AS data_avg,
-          (SELECT data_unit FROM IntersectedGeometries LIMIT 1) AS data_unit,
+          SUM(data_value) AS data_total,
+          AVG(data_value) AS data_avg,
+          data_unit,
           json_agg(id) AS feature_ids
       FROM 
           IntersectedGeometries
+      GROUP BY data_unit
+      LIMIT 1
   `
 
   return Response.json({ search })
