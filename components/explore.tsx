@@ -74,7 +74,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     selectedStudy.scale === "Buildings" && show3d,
                     true,
                   ],
-                  5555,
+                  0,
                   ["get", "height"],
                 ],
                 "fill-extrusion-color": [
