@@ -9,6 +9,7 @@ import {
 import fs from "fs/promises"
 import xlsx from "xlsx"
 import { slugify } from "./slugify"
+import { forEachChild } from "typescript"
 
 export class Workbook {
   readonly WORKSHEET_NAMES = {
@@ -78,14 +79,27 @@ export class Workbook {
       ([k, v]) => [
         k,
         // metrics_key_field value should be normalized
-        k === "metrics_key_field" ? v.toLowerCase() : v,
+        k === "metrics_key_field" && v ? v.toLowerCase() : v,
       ]
     )
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
   }
 
-  public loadMetrics(): Omit<metrics, "study_slug">[] {
-    return this.loadSheetAsJson<MetricsInput>(this.WORKSHEET_NAMES.metrics)
+  public loadMetrics(metrics_key_field): Record<string, number | string>[] {
+    const metrics = this.loadSheetAsJson<Record<string, number | string>>(
+      this.WORKSHEET_NAMES.metrics
+    )
+    for (const metric of metrics) {
+      for (const [k, v] of Object.entries(metric)) {
+        if (k === metrics_key_field) continue
+        if (["", undefined, null].includes(v as any)) {
+          throw new Error(
+            `values for metrics sheet cannot be empty. Missing value for ${metric}`
+          )
+        }
+      }
+    }
+    return metrics
   }
 
   public loadScenariosMetadata(): Omit<scenario, "study_slug">[] {
@@ -161,7 +175,9 @@ export class Workbook {
    * @returns The processed scenario value.
    */
   private isBaselineScenario(scenario: string) {
-    return scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
+    return scenario
+      ? scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
+      : false
   }
 }
 

@@ -65,7 +65,7 @@ async function main() {
 
           // Create metrics
           log(`ingesting metrics for ${study_slug}...`)
-          const metrics = workbook.loadMetrics().map(
+          const metrics = workbook.loadMetrics(study.metrics_key_field).map(
             (data): metrics => ({
               study_slug,
               geometry_key: data[study.metrics_key_field],
@@ -144,7 +144,9 @@ async function main() {
           // Insert geometries
           log(`processing geometries for ${study_slug}...`)
           const compressedData = await fs.readFile(geojsonPath)
+          log(`decompressing ${geojsonPath}...`)
           const geoJsonStr = await gunzip(compressedData)
+          log(`parsing ${geojsonPath}...`)
           const geoJSON = JSON.parse(geoJsonStr.toString())
           if (
             geoJSON.type !== "FeatureCollection" ||
