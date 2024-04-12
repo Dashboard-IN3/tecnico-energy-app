@@ -8,6 +8,7 @@ import { metrics, Prisma } from "@prisma/client"
 
 const gunzip = promisify(zlib.gunzip)
 
+const STRICT_MODE = process.env.STRICT
 
 async function main() {
   const failures: Failure[] = []
@@ -216,9 +217,16 @@ async function main() {
             WHERE g.key IS NULL;
           `
           if (results.length) {
-            throw new Error(
-              `${results.length} metrics are missing corresponding geometries`,
-              { cause: results.map(r => r.geometry_key) }
+            if (STRICT_MODE) {
+              throw new Error(
+                `${results.length} metrics are missing corresponding geometries`,
+                { cause: results.map(r => r.geometry_key) }
+              )
+            }
+            log(
+              `ignoring ${results.length} metrics due to missing corresponding geometries ` +
+                `(would fail but STRICT_MODE=false). Missing geometries: ` +
+                results.map(r => r.geometry_key).join(", ")
             )
           }
 
