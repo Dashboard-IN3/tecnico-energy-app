@@ -15,7 +15,7 @@ const gunzip = promisify(zlib.gunzip)
  */
 
 async function main() {
-  const failures: Error[] = []
+  const failures: Failure[] = []
   const files = await fs.readdir("data", { withFileTypes: true })
   for (const file of files) {
     const log = (msg: string) =>
@@ -65,13 +65,25 @@ async function main() {
 
           // Create metrics
           log(`ingesting metrics for ${study_slug}...`)
-          const metrics = workbook.loadMetrics(study.metrics_key_field).map(
-            (data): metrics => ({
+          const metrics = workbook.loadMetrics().map((data): metrics => {
+            for (const [k, v] of Object.entries(data)) {
+              if (k === study.metrics_key_field) continue
+              if (["", undefined, null].includes(v as any)) {
+                throw new Error(
+                  `values for metrics sheet cannot be empty. Missing value for ${{
+                    study_slug,
+                    k,
+                    v,
+                  }}`
+                )
+              }
+            }
+            return {
               study_slug,
-              geometry_key: data[study.metrics_key_field],
+              geometry_key: String(data[study.metrics_key_field]),
               data,
-            })
-          )
+            }
+          })
           const metricsResult = await tx.metrics.createMany({
             data: metrics as Prisma.metricsCreateManyInput[],
             skipDuplicates: true,
@@ -176,7 +188,7 @@ async function main() {
               // success = false
               await tx.$executeRaw`ROLLBACK TO SAVEPOINT before_geom_insert`
               switch (e.meta?.code) {
-                case "23503":
+                case "23503": // FK Constraint Violation
                   const [{ geometry_key: closestGeometryKey }] =
                     await tx.$queryRaw<{ geometry_key: string }[]>`
                     select 
@@ -190,13 +202,15 @@ async function main() {
                     limit 1
                   `
                   log(
-                    `failed to insert geometry with key "${geomKey}", can't join to metrics table (did you mean "${closestGeometryKey}"?): ${e.meta.message}`
+                    `ignoring geometry with key "${geomKey}", no related metrics in metrics table (closest we could find was "${closestGeometryKey}"?)`
                   )
+                  if (process.env.DEBUG) log(e.meta.message)
                   continue
-                case "23505": // Duplicate
+                case "23505": // Duplicate record
                   log(
-                    `failed to insert geometry with key "${geomKey}", already exists in the geometries table: ${e.meta.message}`
+                    `failed to insert geometry with key "${geomKey}", already exists in the geometries table`
                   )
+                  if (process.env.DEBUG) log(e.meta.message)
                   continue
                 default:
                   throw e
@@ -204,6 +218,28 @@ async function main() {
             }
           }
           if (!success) throw new Error("failed to insert geometries")
+
+          const results = await tx.$queryRaw<{ geometry_key: string }[]>`
+            SELECT 
+              m.geometry_key
+            FROM 
+              metrics m 
+            LEFT OUTER JOIN 
+              geometries g 
+            ON 
+              m.study_slug = ${study_slug}
+              AND
+              m.study_slug = g.study_slug 
+              AND 
+              m.geometry_key = g.key 
+            WHERE g.key IS NULL;
+          `
+          if (results.length) {
+            throw new Error(
+              `${results.length} metrics are missing corresponding geometries`,
+              { cause: results.map(r => r.geometry_key) }
+            )
+          }
 
           /**
            * Pre-process derived data
@@ -240,26 +276,30 @@ async function main() {
       )
     } catch (e) {
       log(`failure during ingestion of study "${study_slug}": ${e.message}`)
-      failures.push(e)
+      failures.push([study_slug, e])
     }
   }
 
   if (failures.length) {
-    throw new Error(
-      `Failed to ingest ${failures.length} studies:\n${failures
-        .map(e => e.message)
-        .join("\n")}`
-    )
+    throw failures
   }
 }
 
 let exitCode = 0
 main()
-  .catch(e => {
-    console.log(e)
+  .catch((e: Failure[]) => {
+    e.forEach(([study_slug, error]) => {
+      console.log(`\nFailed to ingest study "${study_slug}":`)
+      console.log(`Name: ${error.name}`)
+      console.log(`Message: ${error.message}`)
+      console.log(`Cause: ${error.cause}`)
+      console.log(`Stack: ${error.stack}`)
+    })
     exitCode = 1
   })
   .finally(async () => {
     await prisma.$disconnect()
     process.exit(exitCode)
   })
+
+type Failure = [string, Error]

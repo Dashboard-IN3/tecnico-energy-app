@@ -53,10 +53,10 @@ export class Workbook {
    * @returns Array of key-value pairs
    */
   private loadSheetAsTuple(name: string): [string, string][] {
+    const sheet = this.fetchSheet(name)
     return xlsx.utils
-      .sheet_to_json<[string, string]>(this.fetchSheet(name), {
-        header: 1,
-      })
+      .sheet_to_json<[string, string]>(sheet, { header: 1 })
+      .filter(([k, v]) => k) // Ignore rows with empty keys
       .map(([k, v]) => [this.processColumnName(k), v])
   }
 
@@ -85,21 +85,10 @@ export class Workbook {
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
   }
 
-  public loadMetrics(metrics_key_field): Record<string, number | string>[] {
-    const metrics = this.loadSheetAsJson<Record<string, number | string>>(
+  public loadMetrics(): Record<string, number | string>[] {
+    return this.loadSheetAsJson<Record<string, number | string>>(
       this.WORKSHEET_NAMES.metrics
     )
-    for (const metric of metrics) {
-      for (const [k, v] of Object.entries(metric)) {
-        if (k === metrics_key_field) continue
-        if (["", undefined, null].includes(v as any)) {
-          throw new Error(
-            `values for metrics sheet cannot be empty. Missing value for ${metric}`
-          )
-        }
-      }
-    }
-    return metrics
   }
 
   public loadScenariosMetadata(): Omit<scenario, "study_slug">[] {
@@ -174,10 +163,11 @@ export class Workbook {
    * @param scenario - The scenario to be processed.
    * @returns The processed scenario value.
    */
-  private isBaselineScenario(scenario: string) {
-    return scenario
-      ? scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
-      : false
+  private isBaselineScenario(scenario?: string) {
+    return (
+      scenario === undefined ||
+      scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
+    )
   }
 }
 
