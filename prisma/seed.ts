@@ -186,7 +186,8 @@ async function main() {
                     limit 1
                   `
                   log(
-                    `ignoring geometry with key "${geomKey}", no related metrics in metrics table (closest we could find was "${closestGeometryKey}"?)`
+                    `ignoring geometry with key "${geomKey}", no related metrics in metrics ` +
+                      `table (closest metric that we could find was "${closestGeometryKey}")`
                   )
                   if (process.env.DEBUG) log(e.meta.message)
                   continue
