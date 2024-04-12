@@ -31,7 +31,7 @@ export const useStore = create<InitialState>((set, get) => ({
     slug: "",
     name: "",
     description: "",
-    imageSrc: "",
+    image_src: "",
     summary: {
       totalSelectedFeatures: 0,
       summaryTotal: 0,

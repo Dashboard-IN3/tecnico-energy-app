@@ -5,14 +5,11 @@ import { promisify } from "util"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
 import { metrics, Prisma } from "@prisma/client"
-import { slugify } from "./utils/slugify"
-import { skip } from "node:test"
 
 const gunzip = promisify(zlib.gunzip)
 
-/**
- * TODO: Run each file ingestion as a single transaction, first clearing out any existing data matching the study slug
- */
+const DEBUG_MODE = process.env.DEBUG
+const STRICT_MODE = process.env.STRICT
 
 async function main() {
   const failures: Failure[] = []
@@ -167,16 +164,22 @@ async function main() {
             throw new Error("Invalid GeoJSON FeatureCollection")
           }
           log(
-            `ingesting ${geoJSON.features.length} geometries, joining on "${studyResult.geom_key_field}" field...`
+            `ingesting ${geoJSON.features.length} geometries, joining the geometry ` +
+              `"${studyResult.geom_key_field}" field to the metrics ` +
+              `"${studyResult.metrics_key_field}" field...`
           )
           let success = true
+          let insertionCount = 0
           for (const feature of geoJSON.features) {
             const geomKey = feature.properties[studyResult.geom_key_field]
             if (!geomKey)
               throw new Error(
-                `Encountered geometry without ${
+                `Encountered geometry without "${
                   studyResult.geom_key_field
-                } field: ${JSON.stringify(feature)}`
+                }" field. Available properties: ${Array.from(
+                  Object.keys(feature.properties)
+                )}`,
+                { cause: feature.properties }
               )
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
@@ -184,8 +187,9 @@ async function main() {
                 INSERT INTO "geometries" ("study_slug", "key", "geom")
                 VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
               `
+              insertionCount++
             } catch (e) {
-              // success = false
+              success = false
               await tx.$executeRaw`ROLLBACK TO SAVEPOINT before_geom_insert`
               switch (e.meta?.code) {
                 case "23503": // FK Constraint Violation
@@ -202,22 +206,58 @@ async function main() {
                     limit 1
                   `
                   log(
-                    `ignoring geometry with key "${geomKey}", no related metrics in metrics table (closest we could find was "${closestGeometryKey}"?)`
+                    `ignoring geometry with key "${geomKey}", no related metrics in metrics ` +
+                      `table (closest metric that we could find was "${closestGeometryKey}")`
                   )
-                  if (process.env.DEBUG) log(e.meta.message)
+                  if (DEBUG_MODE) log(e.meta.message)
                   continue
                 case "23505": // Duplicate record
                   log(
                     `failed to insert geometry with key "${geomKey}", already exists in the geometries table`
                   )
-                  if (process.env.DEBUG) log(e.meta.message)
+                  if (DEBUG_MODE) log(e.meta.message)
                   continue
                 default:
                   throw e
               }
             }
           }
-          if (!success) throw new Error("failed to insert geometries")
+          if (!success && STRICT_MODE)
+            throw new Error("failed to insert all geometries")
+          log(`ingested ${insertionCount} geometries`)
+
+          log(`checking for any metrics without corresponding geometries...`)
+          const results = await tx.$queryRaw<{ geometry_key: string }[]>`
+            SELECT 
+              m.geometry_key
+            FROM 
+              metrics m 
+            LEFT OUTER JOIN 
+              geometries g 
+            ON 
+              m.study_slug = ${study_slug}
+              AND
+              m.study_slug = g.study_slug 
+              AND 
+              m.geometry_key = g.key 
+            WHERE g.key IS NULL;
+          `
+          if (results.length) {
+            const missingGeometries = results.map(r => r.geometry_key).sort()
+            if (STRICT_MODE) {
+              throw new Error(
+                `${results.length} metrics are missing corresponding geometries. ` +
+                  `Failing due to STRICT_MODE=true.`,
+                { cause: missingGeometries }
+              )
+            }
+            log(
+              `deleted ${results.length} metrics due to missing corresponding geometries. ` +
+                `Missing geometries: ${missingGeometries}`
+            )
+          } else {
+            log(`no metrics are missing corresponding geometries`)
+          }
 
           const results = await tx.$queryRaw<{ geometry_key: string }[]>`
             SELECT 
@@ -288,8 +328,10 @@ async function main() {
 let exitCode = 0
 main()
   .catch((e: Failure[]) => {
-    e.forEach(([study_slug, error]) => {
-      console.log(`\nFailed to ingest study "${study_slug}":`)
+    console.log(`${e.length} studies failed to be ingested.`)
+    e.forEach(([study_slug, error], i) => {
+      console.log(`\n\n***** Ingestion Failure ${i + 1} *****`)
+      console.log(`Study: ${study_slug}`)
       console.log(`Name: ${error.name}`)
       console.log(`Message: ${error.message}`)
       console.log(`Cause: ${error.cause}`)
