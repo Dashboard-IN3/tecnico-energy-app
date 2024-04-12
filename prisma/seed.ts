@@ -226,7 +226,10 @@ async function main() {
             log(
               `ignoring ${results.length} metrics due to missing corresponding geometries ` +
                 `(would fail but STRICT_MODE=false). Missing geometries: ` +
-                results.map(r => r.geometry_key).join(", ")
+                results
+                  .map(r => r.geometry_key)
+                  .toSorted()
+                  .join(", ")
             )
           }
 
