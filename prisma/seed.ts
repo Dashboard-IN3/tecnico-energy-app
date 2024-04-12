@@ -8,6 +8,7 @@ import { metrics, Prisma } from "@prisma/client"
 
 const gunzip = promisify(zlib.gunzip)
 
+const DEBUG_MODE = process.env.DEBUG
 const STRICT_MODE = process.env.STRICT
 
 async function main() {
@@ -149,18 +150,22 @@ async function main() {
             throw new Error("Invalid GeoJSON FeatureCollection")
           }
           log(
-            `ingesting ${geoJSON.features.length} geometries, joining on "${studyResult.geom_key_field}" field...`
+            `ingesting ${geoJSON.features.length} geometries, joining the geometry ` +
+              `"${studyResult.geom_key_field}" field to the metrics ` +
+              `"${studyResult.metrics_key_field}" field...`
           )
           let success = true
+          let insertionCount = 0
           for (const feature of geoJSON.features) {
             const geomKey = feature.properties[studyResult.geom_key_field]
             if (!geomKey)
               throw new Error(
                 `Encountered geometry without "${
                   studyResult.geom_key_field
-                }" field. Available properties: ${JSON.stringify(
-                  feature.properties
-                )}`
+                }" field. Available properties: ${Array.from(
+                  Object.keys(feature.properties)
+                )}`,
+                { cause: feature.properties }
               )
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
@@ -168,8 +173,9 @@ async function main() {
                 INSERT INTO "geometries" ("study_slug", "key", "geom")
                 VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
               `
+              insertionCount++
             } catch (e) {
-              // success = false
+              success = false
               await tx.$executeRaw`ROLLBACK TO SAVEPOINT before_geom_insert`
               switch (e.meta?.code) {
                 case "23503": // FK Constraint Violation
@@ -189,21 +195,24 @@ async function main() {
                     `ignoring geometry with key "${geomKey}", no related metrics in metrics ` +
                       `table (closest metric that we could find was "${closestGeometryKey}")`
                   )
-                  if (process.env.DEBUG) log(e.meta.message)
+                  if (DEBUG_MODE) log(e.meta.message)
                   continue
                 case "23505": // Duplicate record
                   log(
                     `failed to insert geometry with key "${geomKey}", already exists in the geometries table`
                   )
-                  if (process.env.DEBUG) log(e.meta.message)
+                  if (DEBUG_MODE) log(e.meta.message)
                   continue
                 default:
                   throw e
               }
             }
           }
-          if (!success) throw new Error("failed to insert geometries")
+          if (!success && STRICT_MODE)
+            throw new Error("failed to insert all geometries")
+          log(`ingested ${insertionCount} geometries`)
 
+          log(`verifying that all metrics have corresponding geometries...`)
           const results = await tx.$queryRaw<{ geometry_key: string }[]>`
             SELECT 
               m.geometry_key
@@ -231,6 +240,8 @@ async function main() {
               `ignoring ${results.length} metrics due to missing corresponding geometries ` +
                 `(would fail but STRICT_MODE=false). Missing geometries: ${missingGeometries}`
             )
+          } else {
+            log(`no metrics are missing corresponding geometries`)
           }
 
           /**
