@@ -160,8 +160,11 @@ export class Workbook {
    * @param scenario - The scenario to be processed.
    * @returns The processed scenario value.
    */
-  private isBaselineScenario(scenario: string) {
-    return scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
+  private isBaselineScenario(scenario?: string) {
+    return (
+      scenario === undefined ||
+      scenario.toLowerCase() === this.BASELINE_SCENARIO.toLocaleLowerCase()
+    )
   }
 }
 
