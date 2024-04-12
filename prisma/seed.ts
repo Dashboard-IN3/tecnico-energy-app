@@ -5,14 +5,9 @@ import { promisify } from "util"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
 import { metrics, Prisma } from "@prisma/client"
-import { slugify } from "./utils/slugify"
-import { skip } from "node:test"
 
 const gunzip = promisify(zlib.gunzip)
 
-/**
- * TODO: Run each file ingestion as a single transaction, first clearing out any existing data matching the study slug
- */
 
 async function main() {
   const failures: Failure[] = []
