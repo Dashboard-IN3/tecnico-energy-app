@@ -156,9 +156,11 @@ async function main() {
             const geomKey = feature.properties[studyResult.geom_key_field]
             if (!geomKey)
               throw new Error(
-                `Encountered geometry without ${
+                `Encountered geometry without "${
                   studyResult.geom_key_field
-                } field: ${JSON.stringify(feature)}`
+                }" field. Available properties: ${JSON.stringify(
+                  feature.properties
+                )}`
               )
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
@@ -217,19 +219,16 @@ async function main() {
             WHERE g.key IS NULL;
           `
           if (results.length) {
+            const missingGeometries = results.map(r => r.geometry_key).sort()
             if (STRICT_MODE) {
               throw new Error(
                 `${results.length} metrics are missing corresponding geometries`,
-                { cause: results.map(r => r.geometry_key) }
+                { cause: missingGeometries }
               )
             }
             log(
               `ignoring ${results.length} metrics due to missing corresponding geometries ` +
-                `(would fail but STRICT_MODE=false). Missing geometries: ` +
-                results
-                  .map(r => r.geometry_key)
-                  .toSorted()
-                  .join(", ")
+                `(would fail but STRICT_MODE=false). Missing geometries: ${missingGeometries}`
             )
           }
 
