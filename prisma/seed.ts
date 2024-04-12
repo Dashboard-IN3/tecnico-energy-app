@@ -212,7 +212,7 @@ async function main() {
             throw new Error("failed to insert all geometries")
           log(`ingested ${insertionCount} geometries`)
 
-          log(`verifying that all metrics have corresponding geometries...`)
+          log(`checking for any metrics without corresponding geometries...`)
           const results = await tx.$queryRaw<{ geometry_key: string }[]>`
             SELECT 
               m.geometry_key
@@ -232,13 +232,14 @@ async function main() {
             const missingGeometries = results.map(r => r.geometry_key).sort()
             if (STRICT_MODE) {
               throw new Error(
-                `${results.length} metrics are missing corresponding geometries`,
+                `${results.length} metrics are missing corresponding geometries. ` +
+                  `Failing due to STRICT_MODE=true.`,
                 { cause: missingGeometries }
               )
             }
             log(
-              `ignoring ${results.length} metrics due to missing corresponding geometries ` +
-                `(would fail but STRICT_MODE=false). Missing geometries: ${missingGeometries}`
+              `deleted ${results.length} metrics due to missing corresponding geometries. ` +
+                `Missing geometries: ${missingGeometries}`
             )
           } else {
             log(`no metrics are missing corresponding geometries`)
@@ -291,8 +292,10 @@ async function main() {
 let exitCode = 0
 main()
   .catch((e: Failure[]) => {
-    e.forEach(([study_slug, error]) => {
-      console.log(`\nFailed to ingest study "${study_slug}":`)
+    console.log(`${e.length} studies failed to be ingested.`)
+    e.forEach(([study_slug, error], i) => {
+      console.log(`\n\n***** Ingestion Failure ${i + 1} *****`)
+      console.log(`Study: ${study_slug}`)
       console.log(`Name: ${error.name}`)
       console.log(`Message: ${error.message}`)
       console.log(`Cause: ${error.cause}`)
