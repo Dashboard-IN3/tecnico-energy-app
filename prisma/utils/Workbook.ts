@@ -52,10 +52,10 @@ export class Workbook {
    * @returns Array of key-value pairs
    */
   private loadSheetAsTuple(name: string): [string, string][] {
+    const sheet = this.fetchSheet(name)
     return xlsx.utils
-      .sheet_to_json<[string, string]>(this.fetchSheet(name), {
-        header: 1,
-      })
+      .sheet_to_json<[string, string]>(sheet, { header: 1 })
+      .filter(([k, v]) => k) // Ignore rows with empty keys
       .map(([k, v]) => [this.processColumnName(k), v])
   }
 
