@@ -78,9 +78,14 @@ export class Workbook {
     const keyVals = this.loadSheetAsTuple(this.WORKSHEET_NAMES.metadata).map(
       ([k, v]) => {
         switch (k) {
+          case "image":
+            // Handle legacy "image" field by renaming to "image_src"
+            return ["image_src", v]
           case "metrics_key_field":
+            // Process "metrics_key_field" field so that it matches processed column name
             return [k, this.processColumnName(v)]
           case "highlight":
+            // Attempt to parse "highlight" field as JSON
             try {
               return [k, JSON.parse(v)]
             } catch (e) {
@@ -185,7 +190,7 @@ interface StudyMetadataInput {
   name: string
   description: string
   details?: string
-  image?: string
+  image_src?: string
   scale: study_scale
   highlights: string
   geom_key_field: string
