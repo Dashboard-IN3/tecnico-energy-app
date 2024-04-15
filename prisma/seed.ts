@@ -11,8 +11,10 @@ const gunzip = promisify(zlib.gunzip)
 const DEBUG_MODE = process.env.DEBUG
 const STRICT_MODE = process.env.STRICT
 
+const successes: string[] = []
+const failures: Array<[string, Error]> = []
+
 async function main() {
-  const failures: Failure[] = []
   const files = await fs.readdir("data", { withFileTypes: true })
   for (const file of files) {
     const log = (msg: string) =>
@@ -163,20 +165,20 @@ async function main() {
           ) {
             throw new Error("Invalid GeoJSON FeatureCollection")
           }
+          let success = true
+          let insertionCount = 0
           log(
             `ingesting ${geoJSON.features.length} geometries, joining the geometry ` +
               `"${studyResult.geom_key_field}" field to the metrics ` +
               `"${studyResult.metrics_key_field}" field...`
           )
-          let success = true
-          let insertionCount = 0
           for (const feature of geoJSON.features) {
             const geomKey = feature.properties[studyResult.geom_key_field]
             if (!geomKey)
               throw new Error(
                 `Encountered geometry without "${
                   studyResult.geom_key_field
-                }" field. Available properties: ${Array.from(
+                }" field. Available properties: ${JSON.stringify(
                   Object.keys(feature.properties)
                 )}`,
                 { cause: feature.properties }
@@ -235,12 +237,13 @@ async function main() {
             LEFT OUTER JOIN 
               geometries g 
             ON 
-              m.study_slug = ${study_slug}
-              AND
               m.study_slug = g.study_slug 
               AND 
               m.geometry_key = g.key 
-            WHERE g.key IS NULL;
+            WHERE 
+              g.key IS NULL
+              AND 
+              m.study_slug = ${study_slug}
           `
           if (results.length) {
             const missingGeometries = results.map(r => r.geometry_key).sort()
@@ -251,34 +254,16 @@ async function main() {
                 { cause: missingGeometries }
               )
             }
+            const r = await tx.metrics.deleteMany({
+              where: { geometry_key: { in: missingGeometries }, study_slug },
+            })
             log(
-              `deleted ${results.length} metrics due to missing corresponding geometries. ` +
-                `Missing geometries: ${missingGeometries}`
+              `deleted ${r.count} metrics due to missing corresponding geometries. ` +
+                `These are the "geometry_key" values of those metrics: ` +
+                JSON.stringify(missingGeometries)
             )
           } else {
             log(`no metrics are missing corresponding geometries`)
-          }
-
-          const results = await tx.$queryRaw<{ geometry_key: string }[]>`
-            SELECT 
-              m.geometry_key
-            FROM 
-              metrics m 
-            LEFT OUTER JOIN 
-              geometries g 
-            ON 
-              m.study_slug = ${study_slug}
-              AND
-              m.study_slug = g.study_slug 
-              AND 
-              m.geometry_key = g.key 
-            WHERE g.key IS NULL;
-          `
-          if (results.length) {
-            throw new Error(
-              `${results.length} metrics are missing corresponding geometries`,
-              { cause: results.map(r => r.geometry_key) }
-            )
           }
 
           /**
@@ -308,6 +293,8 @@ async function main() {
           log(
             `derived ${scenarioMetricsTotalsCount} pre-aggregated scenario metrics totals`
           )
+
+          successes.push(study_slug)
         },
         {
           maxWait: 180 * 1000, // Max query time
@@ -315,33 +302,37 @@ async function main() {
         }
       )
     } catch (e) {
-      log(`failure during ingestion of study "${study_slug}": ${e.message}`)
+      log(
+        `failure encountered during ingestion of study "${study_slug}". Stopping.`
+      )
       failures.push([study_slug, e])
     }
   }
-
-  if (failures.length) {
-    throw failures
-  }
 }
 
-let exitCode = 0
-main()
-  .catch((e: Failure[]) => {
-    console.log(`${e.length} studies failed to be ingested.`)
-    e.forEach(([study_slug, error], i) => {
-      console.log(`\n\n***** Ingestion Failure ${i + 1} *****`)
-      console.log(`Study: ${study_slug}`)
-      console.log(`Name: ${error.name}`)
-      console.log(`Message: ${error.message}`)
-      console.log(`Cause: ${error.cause}`)
-      console.log(`Stack: ${error.stack}`)
-    })
-    exitCode = 1
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-    process.exit(exitCode)
-  })
+main().finally(async () => {
+  await prisma.$disconnect()
 
-type Failure = [string, Error]
+  console.log(
+    `\n***** Successfully ingested ${successes.length} studies: *****`
+  )
+  successes.forEach(study_slug => console.log(`- Study: ${study_slug}`))
+
+  if (failures.length) {
+    console.log(`\n***** Failed to ingest ${failures.length} studies: *****`)
+    failures.forEach(([study_slug, error]) => {
+      console.log(`- Study: ${study_slug}`)
+      console.log("  Error Cause: " + indent(`${error.cause}`))
+      console.log("  Error Stack: " + indent(`${error.stack}`))
+    })
+  }
+  process.exit(failures.length)
+})
+
+function indent(str: string, spaces: number = 4, skipFirst: boolean = true) {
+  return str
+    .split("\n")
+    .map((line, i) => (i === 0 && skipFirst ? line : " ".repeat(spaces) + line))
+    .join("\n")
+    .trim()
+}
