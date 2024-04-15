@@ -18,9 +18,8 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
         geometries g, 
         scenario_metrics_total m 
       WHERE 
-        (m.scenario_slug = ${scenario_slug} OR (m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline'))
-        AND
-        g.study_slug = ${study_slug}
+          (g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
+          (g.study_slug = ${study_slug} AND m.scenario_slug = ${scenario_slug}) 
       GROUP BY m.id
     `
     return Response.json({ search })
@@ -50,18 +49,18 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
             )
         )
         AND
-        (m.scenario_slug = ${scenario_slug} OR (m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline'))
-        AND
-        g.study_slug = ${study_slug}
+          (g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
+          (g.study_slug = ${study_slug} AND m.scenario_slug = ${scenario_slug})
       )
       SELECT 
-          SUM(data_value) AS data_total,
-          AVG(data_value) AS data_avg,
+          SUM(COALESCE(data_value, 0)) AS data_total,
+          AVG(COALESCE(data_value, 0)) AS data_avg,
           data_unit,
           json_agg(id) AS feature_ids
       FROM 
           IntersectedGeometries
       GROUP BY data_unit
+      ORDER BY data_total desc
       LIMIT 1
   `
 

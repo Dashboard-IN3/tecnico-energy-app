@@ -80,7 +80,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     ["linear"],
                     ["get", "shading_percentage"],
                     0,
-                    "#ffffff",
+                    "#000000",
                     25,
                     "#3c649f",
                     100,
