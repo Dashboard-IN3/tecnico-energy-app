@@ -12,14 +12,14 @@ interface Props {
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const layerType =
-    params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
+    metaData?.scale?.toLowerCase() === "buildings" ? "fill-extrusion" : "line"
 
   const mapCenter: LngLatLike =
-    params.slug === "lisbon-building-energy"
-      ? [-9.142, 38.735]
-      : [-9.102, 38.755]
+    metaData?.scale?.toLowerCase() === "buildings"
+      ? [-9.102, 38.755]
+      : [-9.142, 38.735]
 
-  const mapZoom = params.slug === "lisbon-building-energy" ? 11 : 6
+  const mapZoom = metaData?.scale?.toLowerCase() === "buildings" ? 6 : 12
 
   const { selectedStudy } = useStore()
   const { selectedTheme, themes } = selectedStudy
@@ -62,7 +62,11 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
           >
             <Layer
               id="buildings-layer"
-              beforeId="road_path"
+              beforeId={
+                metaData?.scale?.toLowerCase() === "buildings"
+                  ? "road_path"
+                  : "watername_ocean"
+              }
               type="fill-extrusion"
               source={"buildings"}
               source-layer="default"
