@@ -79,7 +79,7 @@ export class Workbook {
       ([k, v]) => [
         k,
         // metrics_key_field value should be normalized
-        k === "metrics_key_field" && v ? v.toLowerCase() : v,
+        k === "metrics_key_field" ? this.processColumnName(v) : v,
       ]
     )
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
