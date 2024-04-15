@@ -76,11 +76,21 @@ export class Workbook {
    */
   public loadMetadata(): StudyMetadataInput {
     const keyVals = this.loadSheetAsTuple(this.WORKSHEET_NAMES.metadata).map(
-      ([k, v]) => [
-        k,
-        // metrics_key_field value should be normalized
-        k === "metrics_key_field" ? this.processColumnName(v) : v,
-      ]
+      ([k, v]) => {
+        switch (k) {
+          case "metrics_key_field":
+            return this.processColumnName(v)
+          case "highlight":
+            try {
+              return JSON.parse(v)
+            } catch (e) {
+              console.log(`Unable to coerce 'highlight' field to JSON: '${v}'`)
+              return v
+            }
+          default:
+            return v
+        }
+      }
     )
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
   }
