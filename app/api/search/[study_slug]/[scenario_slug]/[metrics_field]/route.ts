@@ -5,7 +5,6 @@ import { NextRequest } from "next/server"
 export async function GET(req: NextRequest, { params }: { params: Params }) {
   const { study_slug, metrics_field, scenario_slug } = params
   const coordinates = req?.nextUrl?.searchParams.get("coordinates")!
-
   // get all features if we have no aoi
   if (coordinates == "null") {
     const search = await prisma.$queryRaw`
@@ -17,9 +16,9 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
       FROM 
         geometries g, 
         scenario_metrics_total m 
-      WHERE 
-          (g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
-          (g.study_slug = ${study_slug} AND m.scenario_slug = ${scenario_slug}) 
+      WHERE
+          ((g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
+          (g.study_slug = ${study_slug} AND m.scenario_slug IS NOT NULL AND m.scenario_slug = ${scenario_slug}))
       GROUP BY m.id
     `
     return Response.json({ search })
@@ -49,8 +48,8 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
             )
         )
         AND
-          (g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
-          (g.study_slug = ${study_slug} AND m.scenario_slug = ${scenario_slug})
+          ((g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
+          (g.study_slug = ${study_slug} AND m.scenario_slug IS NOT NULL AND m.scenario_slug = ${scenario_slug}))
       )
       SELECT 
           SUM(COALESCE(data_value, 0)) AS data_total,

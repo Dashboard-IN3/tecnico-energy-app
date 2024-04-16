@@ -130,8 +130,8 @@ class Tile {
         JOIN
           scenario_metrics m ON t.key = m.geometry_key
         WHERE
-            (t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
-            (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}) 
+            ((t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
+            (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug})) 
       ),
       mvtgeom AS (
         SELECT
@@ -157,8 +157,8 @@ class Tile {
             ST_Transform(bounds.geom, ${srid}::integer)
           )
           AND
-          (t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
-          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}) 
+          ((t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
+          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug})) 
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
