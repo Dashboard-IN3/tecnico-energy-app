@@ -3,6 +3,8 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+// Auto generate an ERD diagram for the database. 
+// DEV_NOTE: Slow generation can be skipped via DISABLE_ERD=true environment variable.
 generator erd {
   provider                  = "prisma-erd-generator"
   includeRelationFromFields = "true"
@@ -16,7 +18,7 @@ datasource db {
   extensions = [postgis, pg_trgm]
 }
 
-/// Retrieved from the `metadata` worksheet of a study spreadsheet
+// Study data.
 model study {
   slug                    String
   name                    String
@@ -42,7 +44,7 @@ model study {
   @@id([slug])
 }
 
-// TODO: Verify that we'll want to display info about a theme
+// Theme data. A theme is a way to group metrics in a study (e.g. "Transportation", "Heating").
 model theme {
   slug             String
   name             String
@@ -55,7 +57,8 @@ model theme {
   @@index([study_slug])
 }
 
-/// 
+// Metadata about scenarios. A scenario is a collection of metrics that are used to compare 
+// against a baseline, used to demonstrate a hypothetical alteration to reality.
 model scenario {
   slug                    String
   name                    String
@@ -71,6 +74,10 @@ model scenario {
   @@id([study_slug, slug])
 }
 
+// A through-table to allow for many-to-many relationships between themes and scenarios.
+// 
+// DEV_NOTE: This table provides convenient traversal from a theme to scenarios, often 
+// used on the fronted to support a study > theme > scenario hierarchy.
 model theme_scenario {
   id            Int       @id @default(autoincrement())
   study_slug    String
@@ -94,6 +101,10 @@ model geometries {
   @@index([study_slug])
 }
 
+// Metadata for each metric. This table describes what each field is used for.
+// 
+// DEV_NOTE: This data is somewhat raw and is likely not useful for querying from the
+// frontend.
 model metrics_metadata {
   field_name  String
   description String
@@ -115,6 +126,10 @@ model metrics_metadata {
   @@id([study_slug, field_name])
 }
 
+// Raw metrics for each geometry.
+// 
+// DEV_NOTE: This data is somewhat raw and is likely not useful for querying from the 
+// frontend.
 model metrics {
   study        study        @relation(fields: [study_slug], references: [slug], onDelete: Cascade)
   study_slug   String
@@ -127,6 +142,12 @@ model metrics {
   @@id([study_slug, geometry_key])
 }
 
+// The metrics for each geometry for a given study/scenario. The `data` column stores a 
+// merged combination of a given scenario and the baseline data, providing for a full 
+// dataset for any given scenario. Metrics are additionaly augmented with data from the
+// `metrics_metadata` table.
+// 
+// DEV_NOTE: This should be queried for per-geometry metrics for any given scenario.
 model scenario_metrics {
   id Int @id @default(autoincrement())
 
@@ -135,7 +156,6 @@ model scenario_metrics {
   scenario      scenario? @relation(fields: [study_slug, scenario_slug], references: [study_slug, slug])
   scenario_slug String?
 
-  // geometry     geometries @relation(fields: [study_slug, geometry_key], references: [study_slug, name])
   geometry_key String
   data         Json
 
@@ -143,6 +163,9 @@ model scenario_metrics {
   @@index([scenario_slug])
 }
 
+// Aggregated sum,min,and max for each metric for all geometries within a given study/scenario.
+// 
+// DEV_NOTE: This should be queried for rendering totals for a given scenario.
 model scenario_metrics_total {
   id Int @id @default(autoincrement())
 
