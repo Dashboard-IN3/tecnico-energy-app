@@ -6,6 +6,7 @@ import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
 import { getMetricsOptions } from "../app/lib/utils"
 import { round } from "lodash-es"
+import { largeNumberDisplay } from "../lib/utils"
 
 interface Props {
   imgSrc?: string | null
@@ -102,11 +103,13 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
         <div>
-          Total {round(selectedStudy.summary.summaryTotal, 2)}{" "}
+          Total{" "}
+          {largeNumberDisplay(round(selectedStudy.summary.summaryTotal, 2))}{" "}
           {selectedStudy.summary.summaryUnit}
         </div>
         <div>
-          Average {round(selectedStudy.summary.summaryAvg, 2)}{" "}
+          Average{" "}
+          {largeNumberDisplay(round(selectedStudy.summary.summaryAvg, 2))}{" "}
           {selectedStudy.summary.summaryUnit}
         </div>
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
