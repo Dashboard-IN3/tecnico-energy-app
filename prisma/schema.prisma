@@ -96,6 +96,7 @@ model geometries {
   study_slug String
   geom       Unsupported("geometry")
   metrics    metrics?                @relation(fields: [study_slug, key], references: [study_slug, geometry_key])
+  properties Json                    @default("{}")
 
   @@id([study_slug, key])
   @@index([study_slug])
