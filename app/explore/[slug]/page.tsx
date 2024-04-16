@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation"
 import { useStore } from "@/app/lib/store"
-import { getStudies, getStudy } from "@/app/lib/data"
+import { getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
+import { scenario } from "@prisma/client"
 
 export default async function ExplorePage({
   params,
@@ -20,8 +21,9 @@ export default async function ExplorePage({
       acc[theme.slug] = {
         ...theme,
         selectedScenario: null,
-        scenarios: theme.scenarios.reduce((acc, scenario) => {
-          acc[scenario.slug] = scenario
+        scenarios: theme?.scenarios.reduce((acc, themeScenario) => {
+          if (!themeScenario.scenario_slug) return acc
+          acc[themeScenario.scenario_slug] = themeScenario.scenario
           return acc
         }, {}),
       }
@@ -30,12 +32,14 @@ export default async function ExplorePage({
     selectedTheme: {
       ...study.themes[0],
       selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0].scenarios,
+      scenarios: study.themes[0]?.scenarios.map(
+        themeScenario => themeScenario.scenario as scenario
+      ),
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
     isDrawing: false,
-    aoi: { feature: null, bbox: null },
+    aoi: { feature: undefined, bbox: [] },
   }
   const stateObject = {
     selectedStudy,

@@ -4,24 +4,25 @@ export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
   const themes = useStore(state => state.selectedStudy.themes)
   const selectedTheme = useStore(state => state.selectedStudy?.selectedTheme)
-  if (!selectedTheme) {
-    return <div></div>
+  if (!selectedTheme || !Object.values(themes).length) {
+    return <></>
   }
 
-  const options = Object.values(selectedTheme?.scenarios).map(
-    (scenario: Studies.Scenario) => ({
-      value: scenario.slug,
-      label: scenario.name,
-    })
-  )
+  const options = selectedTheme?.scenarios.map(scenario => ({
+    value: scenario.slug,
+    label: scenario.name,
+  }))
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
       <div className="text-sm font-medium mb-2 ">Study Scenarios</div>
       <div>
-        {options?.map((option: any, key: number) => {
+        {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
-
+          const newScenarioSelection =
+            selectedTheme.scenarios.find(
+              scenario => scenario.slug === option.value
+            ) ?? null
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">
@@ -35,7 +36,7 @@ export const ScenarioControl: React.FC = () => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
                         ? null
-                        : themes[selectedTheme.slug].scenarios[option.value]
+                        : newScenarioSelection
                     )
                   }}
                 />
