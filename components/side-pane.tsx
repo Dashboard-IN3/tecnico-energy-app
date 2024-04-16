@@ -53,7 +53,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         {selectedStudy.name}
       </div>
       {imgSrc && (
-        <div className="relative w-full min-h-[150px]">
+        <div className="relative w-full min-h-[175px] max-w-[250px] md:max-w-lg">
           <Image
             className="w-full h-[200px] object-cover rounded-lg"
             src={imgSrc}
