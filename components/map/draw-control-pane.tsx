@@ -48,6 +48,7 @@ export const DrawControlPane: React.FC = () => {
         <button
           onClick={() => {
             setAoi({ feature: undefined, bbox: [] })
+            setIsDrawing(false)
           }}
           className={`py-2 px-4 rounded-md border border-slate-800  ${
             aoi.feature ? "hover:shadow-lg" : "opacity-30 hover:cursor-default"

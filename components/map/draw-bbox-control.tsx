@@ -92,10 +92,12 @@ function DrawBboxControl({
   }, [map, handleDraw, handleSelection, handleUpdate])
 
   const resetMapFeatures = useCallback(() => {
-    drawControlRef.current.deleteAll()
-    drawControlRef.current.changeMode("draw_polygon")
-    map.getCanvas().style.cursor = "crosshair"
-  }, [map])
+    drawControlRef.current?.deleteAll()
+    if (isEnabled) {
+      drawControlRef.current?.changeMode("draw_polygon")
+      map.getCanvas().style.cursor = "crosshair"
+    }
+  }, [map, isEnabled])
 
   // set map drawing to on when drawing state is on
   useEffect(() => {
