@@ -1,4 +1,5 @@
 import { useStore } from "../../app/lib/store"
+import { baselineScenario } from "../../app/lib/utils"
 
 export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
@@ -8,10 +9,12 @@ export const ScenarioControl: React.FC = () => {
     return <></>
   }
 
-  const options = selectedTheme?.scenarios.map(scenario => ({
-    value: scenario.slug,
-    label: scenario.name,
-  }))
+  const options = Object.values(selectedTheme?.scenarios)
+    ?.filter((scenario: Studies.Scenario) => scenario.slug !== "baseline")
+    .map((scenario: Studies.Scenario) => ({
+      value: scenario.slug,
+      label: scenario.name,
+    }))
 
   return (
     <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
@@ -19,10 +22,9 @@ export const ScenarioControl: React.FC = () => {
       <div>
         {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
-          const newScenarioSelection =
-            selectedTheme.scenarios.find(
-              scenario => scenario.slug === option.value
-            ) ?? null
+
+          const newScenarioSelection = selectedTheme.scenarios[option.value]
+
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">
@@ -35,7 +37,7 @@ export const ScenarioControl: React.FC = () => {
                   onClick={() => {
                     setSelectedScenario(
                       option.value === selectedScenario?.slug
-                        ? null
+                        ? selectedTheme.scenarios["baseline"]
                         : newScenarioSelection
                     )
                   }}

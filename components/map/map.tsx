@@ -40,7 +40,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${linestring}`
     )
     const buildings = await response.json()
-    console.log({ buildings })
+    // console.log({ buildings })
   }
 
   useEffect(() => {

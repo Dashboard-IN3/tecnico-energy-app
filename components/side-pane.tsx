@@ -1,9 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { ThemeSelector } from "./theme-selector"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
+import { DropdownMenu, DropdownOption } from "./dropdown-menu"
+import { baselineScenario, getMetricsOptions } from "../app/lib/utils"
+import { getMetricsMetadata } from "../app/lib/data"
 
 interface Props {
   imgSrc?: string | null
@@ -11,7 +13,39 @@ interface Props {
 }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
-  const { selectedStudy } = useStore()
+  const {
+    selectedStudy,
+    setSelectedTheme,
+    setSelectedCategory,
+    setSelectedSource,
+    setSelectedUsage,
+  } = useStore()
+  const { selectedTheme, themes, metadata } = selectedStudy
+
+  const selectedScenario = selectedTheme?.selectedScenario
+
+  const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
+
+  const themeDropdownOptions = Object.values(themes)?.map(theme => ({
+    value: theme.slug,
+    label: theme.name,
+  })) as DropdownOption[]
+
+  const scenarioKey = selectedScenario?.slug
+  console.log({ scenarioKey })
+
+  // Render unique options based on existing selection
+  const scenarioMetaData =
+    metadata[selectedTheme.slug] && metadata[selectedTheme.slug][scenarioKey]
+      ? metadata[selectedTheme.slug][scenarioKey].combinations
+      : []
+
+  const metricsOptions = getMetricsOptions({
+    metadata: scenarioMetaData,
+    selectedCategory,
+    selectedUsage,
+    selectedSource,
+  })
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
@@ -38,7 +72,45 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           {selectedStudy.totalSelectedFeatures} Features
         </div>
       </div>
-      <ThemeSelector />
+      <DropdownMenu
+        title="Theme"
+        options={themeDropdownOptions}
+        selected={{
+          value: selectedTheme?.slug,
+          label: selectedTheme?.name,
+        }}
+        setSelected={option => setSelectedTheme(themes[option.value])}
+      />
+      <DropdownMenu
+        title="Category"
+        options={metricsOptions.categories}
+        selected={
+          selectedCategory
+            ? { value: selectedCategory, label: selectedCategory }
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedCategory(scenarioKey, option.value)}
+      />
+      <DropdownMenu
+        title="Usage"
+        options={metricsOptions.usages}
+        selected={
+          selectedUsage
+            ? { value: selectedUsage, label: selectedUsage }
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedUsage(scenarioKey, option.value)}
+      />
+      <DropdownMenu
+        title="Source"
+        options={metricsOptions.sources}
+        selected={
+          selectedSource
+            ? { value: selectedSource, label: selectedSource }
+            : { value: "all", label: "All" }
+        }
+        setSelected={option => setSelectedSource(scenarioKey, option.value)}
+      />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
         <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
