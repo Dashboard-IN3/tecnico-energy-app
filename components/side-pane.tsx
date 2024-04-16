@@ -8,7 +8,7 @@ import { getMetricsOptions } from "../app/lib/utils"
 import { round } from "lodash-es"
 
 interface Props {
-  imgSrc?: string
+  imgSrc?: string | null
   studyId: string
 }
 
