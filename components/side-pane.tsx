@@ -68,7 +68,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
 
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />
-        <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
+        {/* <InPageLink href={`${studyId}/attributes`} label="Data Attribues" /> */}
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
           {selectedStudy.summary.totalSelectedFeatures} Features
         </div>
