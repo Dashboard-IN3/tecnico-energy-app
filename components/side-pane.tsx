@@ -8,7 +8,7 @@ import { baselineScenario, getMetricsOptions } from "../app/lib/utils"
 import { getMetricsMetadata } from "../app/lib/data"
 
 interface Props {
-  imgSrc?: string
+  imgSrc?: string | null
   studyId: string
 }
 

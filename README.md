@@ -17,20 +17,44 @@ Data is modeled with the following concepts:
 To provide data, two files must be provided:
 
 1. A XLSX spreadsheet file for a study, named `{study_identifier}.xlsx`
-1. A GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson`
+1. A gzipped GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson.gz`
 
 ### Study Spreadsheet
 
-The study spreadsheet must contain the following worksheets:
+The study spreadsheet must contain the following worksheets. Column/key names are case insensitive and asterisks are removed prior to ingestion. Coumns/keys with that contain "ignore" are ignored.
 
-- `study`: metadata about the study. Column names are case insensitive and asterisks are removed prior to ingestion.
-- `metrics`: raw data. the first column is expected to be the value used for matching geometries
-- `metrics_metadata`
+- `study`: metadata about the study. Formatted in key, value format.
+  - Keys
+    - `Name`: Text, required;
+    - `Description`: Text, required;
+    - `Image Src`: URL, optional;
+    - `Details`: Text, optional;
+    - `Scale`: 'Municipality' or 'Building', required;
+    - `Geom Key Field`: Text, required; must match a property key present in geometry GeoJSON file
+    - `Metrics Key Field`: Text, required; must match a column name present in `metrics` tab
+    - `Highlight`: boolean, optional;
+- `metrics`: raw data. The following conditions must be met:
+    - Each metric must have a corresponding geometry in the accompanying geometry file. This is determined by matching the value at the column specified by the `Metrics Key Field` to the value of the geometery's property at the `Geom Key Field`.
+- `metrics_metadata`:
+  - Columns
+    - `field_name`: Text, required;
+    - `description`: Text, required;
+    - `units`: Text, required;
+    - `theme`: Text, required;
+    - `scenario`: Text, required; leave blank to indicate baseline scenario
+    - `category`: Text, required; blank values are interpreted as "all"
+    - `usage`: Text, required; blank values are interpreted as "all"
+    - `source`: Text, required; blank values are interpreted as "all"
+- `scenarios_metadata`
+  - Columns
+    - `scenario`: Text, required; Identifier for scenario
+    - `description`: Text, required; Description of scenario
 
 ### Study Geometries
 
 - `FeatureCollection` of `Polygon` or `MultiPolygon` values.
 - Each `Feature` must contain a unique `id` property of either a string or integer.
+- Features that are not referenced by a metric in the study spreadsheet will be logged and ignored at time of ingestion.
 
 ## Development
 
