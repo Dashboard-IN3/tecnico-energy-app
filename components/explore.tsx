@@ -21,8 +21,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
 
   const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
-  const { selectedStudy } = useStore()
-  const { selectedTheme, themes } = selectedStudy
+  const { selectedStudy, show3d } = useStore()
+  const { selectedTheme } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
@@ -71,7 +71,16 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               source={"buildings"}
               source-layer="default"
               paint={{
-                "fill-extrusion-height": ["get", "floors"],
+                "fill-extrusion-height": [
+                  "case",
+                  [
+                    "boolean",
+                    selectedStudy.scale === "Building" && show3d,
+                    true,
+                  ],
+                  0,
+                  ["get", "floors"],
+                ],
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "selected"], false],

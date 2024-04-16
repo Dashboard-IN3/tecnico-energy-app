@@ -24,14 +24,17 @@ interface InitialState {
     usage: { value: string; label: string }
   ) => void
   setSelectedScenario: (scenarioId: Studies.Scenario) => void
+  setShow3d: () => void
+  show3d: boolean
 }
 
 export const useStore = create<InitialState>((set, get) => ({
   selectedStudy: {
     slug: "",
+    scale: null,
     name: "",
     description: "",
-    image_src: "",
+    imageSrc: "",
     summary: {
       totalSelectedFeatures: 0,
       summaryTotal: 0,
@@ -121,6 +124,7 @@ export const useStore = create<InitialState>((set, get) => ({
   },
 
   setSelectedScenario: (scenario: Studies.Scenario) => {
+    console.log({ scenario })
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -250,5 +254,9 @@ export const useStore = create<InitialState>((set, get) => ({
         },
       },
     }))
+  },
+  show3d: false,
+  setShow3d: () => {
+    set(state => ({ ...state, show3d: !state.show3d }))
   },
 }))

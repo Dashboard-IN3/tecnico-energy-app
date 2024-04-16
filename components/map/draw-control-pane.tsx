@@ -6,12 +6,12 @@ import trash from "../../public/icons/trash.svg"
 import area from "../../public/icons/area.svg"
 
 export const DrawControlPane: React.FC = () => {
-  const { setIsDrawing, setAoi, selectedStudy } = useStore()
+  const { setIsDrawing, setAoi, selectedStudy, setShow3d, show3d } = useStore()
   const isDrawing = useStore(state => state.selectedStudy.isDrawing)
   const aoi = useStore(state => state.selectedStudy.aoi)
-  const [isChecked, setIsChecked] = useState(false)
+
   const handleCheckboxChange = () => {
-    setIsChecked(!isChecked)
+    setShow3d()
   }
 
   return (
@@ -21,16 +21,15 @@ export const DrawControlPane: React.FC = () => {
           <div className="text-slate-700 text-base font-normal font-['Inter'] leading-normal">
             Show 3D
           </div>
-
           <div
             className={`w-[50px] h-7 p-0.5 bg-slate-300 rounded-full justify-start items-center flex ${
-              isChecked ? "bg-blue-500" : ""
+              show3d ? "bg-slate-500" : ""
             }`}
             onClick={handleCheckboxChange}
           >
             <div
               className={`w-6 h-6 bg-white rounded-full transform transition-transform ${
-                isChecked ? "translate-x-[23px]" : "translate-x-0"
+                show3d ? "translate-x-[23px]" : "translate-x-0"
               }`}
             ></div>
           </div>
