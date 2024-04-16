@@ -11,7 +11,6 @@ import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
-import { globalVariables } from "../../global-config"
 
 type MapViewProps = {
   children?: ReactNode
@@ -41,7 +40,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${linestring}`
     )
     const buildings = await response.json()
-    console.log({ buildings })
+    // console.log({ buildings })
   }
 
   useEffect(() => {
@@ -129,6 +128,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   // zoom event listener
   useEffect(() => {
     if (!map) return
+
     const zoomHandler = () => {
       setRoundedZoom(round(map.getZoom()))
     }

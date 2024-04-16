@@ -4,17 +4,13 @@ import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
-import { globalVariables } from "../global-config"
-import { useState } from "react"
-
+import { useStore } from "../app/lib/store"
 interface Props {
   params: { slug: string }
   metaData: Studies.Study
 }
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
-  const [tilesLoaded, setTilesLoaded] = useState()
-
   const layerType =
     params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
 
@@ -24,6 +20,16 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
       : [-9.102, 38.755]
 
   const mapZoom = params.slug === "lisbon-building-energy" ? 11 : 6
+
+  const { selectedStudy } = useStore()
+  const { selectedTheme, themes } = selectedStudy
+
+  const selectedScenario = selectedTheme.selectedScenario
+  const category = selectedScenario?.selectedCategory
+  const usage = selectedScenario?.selectedUsage || "ALL"
+  const source = selectedScenario?.selectedSource || "ALL"
+
+  const metricsField = `${category}.${usage}.${source}`
 
   return (
     <>
@@ -46,10 +52,10 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
         >
           <Source
             id="building-footprints"
-            promoteId={"name"}
+            promoteId={"key"}
             type="vector"
             tiles={[
-              `${global.window?.location.origin}/api/tiles/${params.slug}/{z}/{x}/{y}`,
+              `${global.window?.location.origin}/api/tiles/${params.slug}/${metricsField}/{z}/{x}/{y}`,
             ]}
             minzoom={6}
             maxzoom={14}
@@ -60,7 +66,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               source={"buildings"}
               source-layer="default"
               paint={{
-                "fill-extrusion-height": ["get", "height"],
+                "fill-extrusion-height": 0,
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "selected"], false],
@@ -68,16 +74,17 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                   [
                     "interpolate-hcl",
                     ["linear"],
-                    ["get", "height"],
+                    ["get", "shading_percentage"],
                     0,
-                    "#990000",
-                    3,
-                    "#990000",
-                    15,
-                    "#990000",
+                    "#ffffff",
+                    25,
+                    "#3c649f",
+                    100,
+                    "#1b2d48",
                   ],
                 ],
-                "fill-extrusion-opacity": 0.75,
+
+                "fill-extrusion-opacity": 0.9,
               }}
             />
           </Source>

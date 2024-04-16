@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   } catch (e) {
     return new Response((e as Error).message, { status: 400 })
   }
-  const sql = tile.asSql("geometries", "geom")
+  const sql = tile.asSql("geometries", "geom", "scenario_metrics")
   const [{ st_asmvt }] = await prisma.$queryRaw<{ st_asmvt: Buffer }[]>(sql)
 
   return new Response(
@@ -33,12 +33,16 @@ class Tile {
   public zoom: number
   public x: number
   public y: number
+  public scenario_slug: string
+  public user_metrics_field: string
 
-  constructor({ z, x, y, study_slug }: Params) {
+  constructor({ z, x, y, study_slug, metrics_field }: Params) {
     if (!study_slug) {
       throw new Error("study_slug is required")
     }
     this.study_slug = study_slug
+    this.scenario_slug = "e2-scenario"
+    this.user_metrics_field = metrics_field
 
     if ([z, x, y].map(val => parseInt(val)).some(isNaN)) {
       throw new Error("Coordinates must be numbers")
@@ -98,6 +102,7 @@ class Tile {
   public asSql(
     table: string,
     geomColumn: string,
+    metrics_table: string,
     attrColumns: string[] = [],
     srid: number = 4326
   ): Sql {
@@ -105,13 +110,28 @@ class Tile {
 
     // NOTE: Do not mark any user-provided data as raw!
     const rawVals: Record<string, Sql> = Object.fromEntries(
-      Object.entries({ table, geomColumn }).map(([k, v]) => [k, Prisma.raw(v)])
+      Object.entries({
+        table,
+        geomColumn,
+        metrics_table,
+        metrics_field: this.user_metrics_field,
+      }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
       WITH bounds AS (
         SELECT
           ${envSql} AS geom,
           ${envSql}::box2d AS b2d
+      ),
+      global_max AS (
+        SELECT
+            MAX(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS max_shading
+        FROM
+            ${rawVals.table} t
+        JOIN
+          scenario_metrics m ON t.key = m.geometry_key
+        WHERE
+            t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
       ),
       mvtgeom AS (
         SELECT
@@ -120,17 +140,24 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
-          43 AS height
+          0 as height,
+          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS INTEGER) AS shading,
+          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
         FROM
-          ${rawVals.table} t,
+          ${rawVals.table} t
+        JOIN
+          scenario_metrics m ON t.key = m.geometry_key
+        CROSS JOIN
           bounds
+        CROSS JOIN
+          global_max gm
         WHERE
           ST_Intersects(
             t.${rawVals.geomColumn},
             ST_Transform(bounds.geom, ${srid}::integer)
           )
           AND
-          study_slug = ${this.study_slug}
+          t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
@@ -145,6 +172,7 @@ interface Params {
   y: string
   z: string
   study_slug: string
+  metrics_field: string
 }
 
 interface Envelope {

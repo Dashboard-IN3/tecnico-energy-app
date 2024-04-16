@@ -2,34 +2,31 @@ import dynamic from "next/dynamic"
 import { useStore } from "../app/lib/store"
 const Select = dynamic(() => import("react-select"), { ssr: false })
 
-export type Option = { value: string; label: string }
+export type DropdownOption = { value: string; label: string }
 
-export const ThemeSelector: React.FC = () => {
-  const selectedStudy = useStore(state => state.selectedStudy)
-  const { selectedTheme, themes } = selectedStudy
-  const { setSelectedTheme } = useStore()
+interface Props {
+  title: string
+  options: DropdownOption[]
+  selected: DropdownOption
+  setSelected: (arg: DropdownOption) => void
+}
 
-  const selectedOption = {
-    value: selectedTheme?.slug,
-    label: selectedTheme?.name,
-  } as Option
-
-  const options = Object.values(themes)?.map(theme => ({
-    value: theme.slug,
-    label: theme.name,
-  })) as Option[]
-
+export const DropdownMenu: React.FC<Props> = ({
+  title,
+  options,
+  selected,
+  setSelected,
+}) => {
   return (
     <div className="">
       <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
-        Theme:
+        {title}:
       </div>
       <Select
         id="react-selector"
-        value={selectedOption}
+        value={selected}
         onChange={(option: any) => {
-          // TODO check if this doesn need to be a Theme
-          setSelectedTheme(themes[option.value])
+          setSelected(option)
         }}
         options={options}
         styles={{

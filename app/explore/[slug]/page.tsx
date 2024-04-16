@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation"
 import { useStore } from "@/app/lib/store"
-import { getStudy } from "@/app/lib/data"
+import { getMetricsMetadata, getStudy } from "@/app/lib/data"
 import Explore from "@/components/explore"
 import StoreInitialize from "@/components/store-initialize"
 import { Header } from "@/components/header"
-import { scenario } from "@prisma/client"
+import { getUniqueMetricsCombinations } from "../../lib/utils"
 
 export default async function ExplorePage({
   params,
@@ -14,27 +14,63 @@ export default async function ExplorePage({
   const study = await getStudy(params.slug)
   if (!study) notFound()
 
+  const metricsMetadata = await getMetricsMetadata(study.slug)
+  const studyMetadata = getUniqueMetricsCombinations(metricsMetadata)
+  const initialCategory = Object.values(metricsMetadata)[0]?.category ?? null
+  const initialUsage = Object.values(metricsMetadata)[0]?.usage ?? null
+  const initialScenario = {
+    slug: "baseline",
+    description: "Baseline Scenario",
+    name: "Baseline",
+    selectedCategory: initialCategory,
+    selectedSource: null,
+    selectedUsage: initialUsage,
+  }
+
   const selectedStudy = {
     ...study,
     // store themes and scenarios as dictionaries for easier lookup
     themes: study?.themes.reduce((acc, theme) => {
       acc[theme.slug] = {
         ...theme,
-        selectedScenario: null,
-        scenarios: theme?.scenarios.reduce((acc, themeScenario) => {
-          if (!themeScenario.scenario_slug) return acc
-          acc[themeScenario.scenario_slug] = themeScenario.scenario
-          return acc
-        }, {}),
+        selectedScenario: initialScenario,
+        scenarios: {
+          ...theme?.scenarios.reduce((acc, scenario) => {
+            if (scenario.scenario?.slug) {
+              acc[scenario.scenario?.slug] = {
+                slug: scenario.scenario_slug,
+                name: scenario.scenario?.name,
+                selectedCategory: initialCategory,
+                selectedSource: null,
+                selectedUsage: null,
+              }
+            }
+            return acc
+          }, {}),
+          baseline: initialScenario,
+        },
       }
       return acc
     }, {}),
+    metadata: studyMetadata,
     selectedTheme: {
       ...study.themes[0],
-      selectedScenario: { slug: "", name: "", description: "" },
-      scenarios: study.themes[0]?.scenarios.map(
-        themeScenario => themeScenario.scenario as scenario
-      ),
+      selectedScenario: initialScenario,
+      scenarios: {
+        ...study.themes[0]?.scenarios.reduce((acc, scenario) => {
+          if (scenario.scenario?.slug) {
+            acc[scenario.scenario?.slug] = {
+              slug: scenario.scenario_slug,
+              name: scenario.scenario?.name,
+              selectedCategory: initialCategory,
+              selectedSource: null,
+              selectedUsage: null,
+            }
+          }
+          return acc
+        }, {}),
+        baseline: initialScenario,
+      },
     },
     selectedThemeId: study.themes[0]?.slug,
     totalSelectedFeatures: 0,
