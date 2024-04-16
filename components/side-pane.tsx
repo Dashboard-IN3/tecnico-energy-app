@@ -6,7 +6,7 @@ import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 
 interface Props {
-  imgSrc?: string
+  imgSrc?: string | null
   studyId: string
 }
 
