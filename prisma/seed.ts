@@ -186,8 +186,8 @@ async function main() {
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
               await tx.$executeRaw`
-                INSERT INTO "geometries" ("study_slug", "key", "geom")
-                VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
+                INSERT INTO "geometries" ("study_slug", "key", "geom", "properties")
+                VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}), ${feature.properties})
               `
               insertionCount++
             } catch (e) {
