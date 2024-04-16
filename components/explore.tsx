@@ -71,7 +71,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               source={"buildings"}
               source-layer="default"
               paint={{
-                "fill-extrusion-height": ["get", "height"],
+                "fill-extrusion-height": ["get", "floors"],
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "selected"], false],
