@@ -79,7 +79,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     true,
                   ],
                   0,
-                  ["get", "floors"],
+                  ["*", ["to-number", ["get", "floors"]], 5], // multiply by 5m for each floor as a typical estimate
                 ],
                 "fill-extrusion-color": [
                   "case",
