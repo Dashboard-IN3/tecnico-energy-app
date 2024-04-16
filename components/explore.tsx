@@ -64,7 +64,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               id="buildings-layer"
               beforeId={
                 metaData?.scale?.toLowerCase() === "building"
-                  ? "watername_ocean"
+                  ? "housenumber"
                   : "road_path"
               }
               type="fill-extrusion"
