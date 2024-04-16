@@ -7,10 +7,16 @@ declare namespace Studies {
     image_src?: string | null
     selectedTheme: Theme
     selectedThemeId: string
-    totalSelectedFeatures: number
+    summary: {
+      totalSelectedFeatures: number
+      summaryUnit: string
+      summaryTotal: number
+      summaryAvg: number
+    }
     isDrawing: boolean
     aoi: MapState.aoi
     metadata: Metadata
+    scale: string | null
   }
 
   export type Metadata = {
@@ -32,8 +38,8 @@ declare namespace Studies {
     slug: string
     description: string | null
     name: string
-    selectedUsage: string | null
-    selectedCategory: string | null
-    selectedSource: string | null
+    selectedUsage: { value: string; label: string } | null
+    selectedCategory: { value: string; label: string } | null
+    selectedSource: { value: string; label: string } | null
   }
 }

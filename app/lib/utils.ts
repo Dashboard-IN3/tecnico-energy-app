@@ -13,12 +13,23 @@ export const getMetricsOptions = ({
       if (category) {
         acc.categories.add(category)
       }
-      // limit usage option to selected category
-      if (!category || category === selectedCategory) {
-        usage && acc.usages.add(usage)
+      // limit usage and source options to selected category
+      if (!category || category === selectedCategory.value) {
+        // limit usage to selected source
+        if (
+          !selectedSource ||
+          selectedSource.value === "ALL" ||
+          selectedSource.value === source
+        ) {
+          usage ? acc.usages.add(usage) : acc.usages.add("ALL")
+        }
         // limit source options to category and usage
-        if (!selectedUsage || selectedUsage === usage) {
-          source && acc.sources.add(source)
+        if (
+          !selectedUsage ||
+          selectedUsage.value == "ALL" ||
+          selectedUsage.value === usage
+        ) {
+          source ? acc.sources.add(source) : acc.sources.add("ALL")
         }
       }
 
@@ -32,15 +43,15 @@ export const getMetricsOptions = ({
   )
   metricsOptions.categories = [...metricsOptions.categories].map(option => ({
     value: option,
-    label: option,
+    label: option === "ALL" ? "All" : option,
   }))
   metricsOptions.usages = [...metricsOptions.usages].map(option => ({
     value: option,
-    label: option,
+    label: option === "ALL" ? "All" : option,
   }))
   metricsOptions.sources = [...metricsOptions.sources].map(option => ({
     value: option,
-    label: option,
+    label: option === "ALL" ? "All" : option,
   }))
   return metricsOptions
 }

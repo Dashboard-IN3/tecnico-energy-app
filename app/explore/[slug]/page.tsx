@@ -22,9 +22,13 @@ export default async function ExplorePage({
     slug: "baseline",
     description: "Baseline Scenario",
     name: "Baseline",
-    selectedCategory: initialCategory,
+    selectedCategory: initialCategory
+      ? { value: initialCategory, label: initialCategory }
+      : null,
     selectedSource: null,
-    selectedUsage: initialUsage,
+    selectedUsage: initialUsage
+      ? { value: initialUsage, label: initialUsage }
+      : null,
   }
 
   const selectedStudy = {
@@ -40,7 +44,10 @@ export default async function ExplorePage({
               acc[scenario.scenario?.slug] = {
                 slug: scenario.scenario_slug,
                 name: scenario.scenario?.name,
-                selectedCategory: initialCategory,
+                selectedCategory: {
+                  value: initialCategory,
+                  label: initialCategory,
+                },
                 selectedSource: null,
                 selectedUsage: null,
               }
@@ -62,7 +69,10 @@ export default async function ExplorePage({
             acc[scenario.scenario?.slug] = {
               slug: scenario.scenario_slug,
               name: scenario.scenario?.name,
-              selectedCategory: initialCategory,
+              selectedCategory: {
+                value: initialCategory,
+                label: initialCategory,
+              },
               selectedSource: null,
               selectedUsage: null,
             }
@@ -73,7 +83,12 @@ export default async function ExplorePage({
       },
     },
     selectedThemeId: study.themes[0]?.slug,
-    totalSelectedFeatures: 0,
+    summary: {
+      totalSelectedFeatures: 0,
+      summaryUnit: "",
+      summaryTotal: 0,
+      summaryAvg: 0,
+    },
     isDrawing: false,
     aoi: { feature: undefined, bbox: [] },
   }

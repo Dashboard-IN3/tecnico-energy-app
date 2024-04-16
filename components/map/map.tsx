@@ -3,10 +3,9 @@
 import React, { useRef, useState, ReactNode, useEffect } from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
-import maplibregl, { LngLatLike } from "maplibre-gl"
+import maplibregl from "maplibre-gl"
 import DrawBboxControl from "./draw-bbox-control"
 import { bbox } from "@turf/turf"
-import { getAoiFeatures } from "../aoi/aoi-search"
 import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
@@ -29,47 +28,54 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const selectedStudy = useStore(state => state.selectedStudy)
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
-  const { setTotalSelectedFeatures } = useStore()
+  const {
+    setTotalSelectedFeatures,
+    setSummaryAvg,
+    setSummaryTotal,
+    setSummaryUnit,
+  } = useStore()
+  const { selectedTheme } = selectedStudy
+  const selectedScenario = selectedTheme.selectedScenario
+  const category = selectedScenario?.selectedCategory?.value
+  const usage = selectedScenario?.selectedUsage?.value || "ALL"
+  const source = selectedScenario?.selectedSource?.value || "ALL"
 
-  const getDbIntersectingFeatures = async coordinates => {
-    const linestring = encodeURI(
-      coordinates.map(pair => pair.join(" ")).join(",")
-    )
+  const metricsField = `${category}.${usage}.${source}`
 
-    const response = await fetch(
-      `${global.window?.location.origin}/api/search/${studySlug}/${linestring}`
+  const getDbIntersectingFeatures = async ({
+    coordinates,
+    studySlug,
+    scenarioSlug,
+    metricsField,
+  }) => {
+    const linestring = coordinates
+      ? encodeURI(coordinates.map(pair => pair.join(" ")).join(","))
+      : null
+    const searchResponse = await fetch(
+      `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
-    const buildings = await response.json()
-    // console.log({ buildings })
+    const search = await searchResponse.json()
+    const featureIDs = search.search[0].feature_ids
+    const summaryTotal = search.search[0].data_total
+    const summaryUnit = search.search[0].data_unit
+    const summaryAvg = search.search[0].data_avg
+
+    updateIntersectingFeatures(featureIDs)
+    setTotalSelectedFeatures(featureIDs.length)
+    setSummaryAvg(summaryAvg)
+    setSummaryTotal(summaryTotal)
+    setSummaryUnit(summaryUnit)
   }
 
   useEffect(() => {
-    if (selectedFeatureIds && !aoi.feature) {
-      updateIntersectingFeatures([])
-    }
-    if (!map || !aoi.feature || !aoi.bbox[0]) return
-
-    const southWest = [aoi.bbox[0], aoi.bbox[1]] as LngLatLike
-    const northEast = [aoi.bbox[2], aoi.bbox[3]] as LngLatLike
-
-    // query rendered features within bounding box
-    const northEastPointPixel = map.project(northEast)
-    const southWestPointPixel = map.project(southWest)
-    const features = map.queryRenderedFeatures(
-      [southWestPointPixel, northEastPointPixel],
-      { layers: ["buildings-layer"] }
-    )
-
-    // calculate intersections between features and aoi
-    const intersectingFeatures = getAoiFeatures(
-      features,
-      aoi.feature.geometry.coordinates
-    )
-
-    updateIntersectingFeatures(intersectingFeatures)
-
-    getDbIntersectingFeatures(aoi.feature.geometry.coordinates[0])
-  }, [aoi.feature, aoi.bbox, map, roundedZoom])
+    if (!map) return
+    getDbIntersectingFeatures({
+      coordinates: aoi.feature ? aoi.feature.geometry.coordinates[0] : null,
+      studySlug,
+      metricsField,
+      scenarioSlug: selectedScenario?.slug,
+    })
+  }, [aoi.feature, aoi.bbox, map, metricsField])
 
   const updateIntersectingFeatures = featureIdsToUpdate => {
     // remove Ids that are no longer in new array of ids
@@ -137,21 +143,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       map.off("zoomend", zoomHandler)
     }
   }, [map])
-
-  // footprint loading event listener
-  // useEffect(() => {
-  //   if (!map) return
-
-  //   const dataHandler = () => {
-  //     console.log("All data loaded")
-  //   }
-
-  //   map.once("data", dataHandler)
-
-  //   return () => {
-  //     map.off("data", dataHandler)
-  //   }
-  // }, [map])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

@@ -34,15 +34,15 @@ class Tile {
   public x: number
   public y: number
   public scenario_slug: string
-  public user_metrics_field: string
+  public metrics_field: string
 
-  constructor({ z, x, y, study_slug, metrics_field }: Params) {
+  constructor({ z, x, y, study_slug, scenario_slug, metrics_field }: Params) {
     if (!study_slug) {
       throw new Error("study_slug is required")
     }
     this.study_slug = study_slug
-    this.scenario_slug = "e2-scenario"
-    this.user_metrics_field = metrics_field
+    this.scenario_slug = scenario_slug
+    this.metrics_field = metrics_field
 
     if ([z, x, y].map(val => parseInt(val)).some(isNaN)) {
       throw new Error("Coordinates must be numbers")
@@ -114,7 +114,6 @@ class Tile {
         table,
         geomColumn,
         metrics_table,
-        metrics_field: this.user_metrics_field,
       }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
@@ -125,13 +124,13 @@ class Tile {
       ),
       global_max AS (
         SELECT
-            MAX(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS max_shading
+            MAX(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS max_shading
         FROM
             ${rawVals.table} t
         JOIN
           scenario_metrics m ON t.key = m.geometry_key
         WHERE
-            t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
+            t.study_slug = ${this.study_slug} AND (m.scenario_slug = ${this.scenario_slug}) OR (m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline')
       ),
       mvtgeom AS (
         SELECT
@@ -140,9 +139,9 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
-          0 as height,
-          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS INTEGER) AS shading,
-          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
+          45 as height,
+          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
+          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
         FROM
           ${rawVals.table} t
         JOIN
@@ -157,7 +156,7 @@ class Tile {
             ST_Transform(bounds.geom, ${srid}::integer)
           )
           AND
-          t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
+          t.study_slug = ${this.study_slug} AND (m.scenario_slug = ${this.scenario_slug}) OR (m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline')
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
@@ -172,6 +171,7 @@ interface Params {
   y: string
   z: string
   study_slug: string
+  scenario_slug: string
   metrics_field: string
 }
 

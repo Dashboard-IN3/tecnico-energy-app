@@ -4,13 +4,16 @@ import Image from "next/image"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
 import { DropdownMenu, DropdownOption } from "./dropdown-menu"
-import { baselineScenario, getMetricsOptions } from "../app/lib/utils"
-import { getMetricsMetadata } from "../app/lib/data"
+import { getMetricsOptions } from "../app/lib/utils"
+import { round } from "lodash-es"
+import { largeNumberDisplay } from "../lib/utils"
 
 interface Props {
   imgSrc?: string | null
   studyId: string
 }
+
+const baselineOption = { value: "ALL", label: "All" }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const {
@@ -32,7 +35,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   })) as DropdownOption[]
 
   const scenarioKey = selectedScenario?.slug
-  console.log({ scenarioKey })
 
   // Render unique options based on existing selection
   const scenarioMetaData =
@@ -69,7 +71,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         <InPageLink href={`${studyId}/attributes`} label="Data Attribues" />
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
-          {selectedStudy.totalSelectedFeatures} Features
+          {selectedStudy.summary.totalSelectedFeatures} Features
         </div>
       </div>
       <DropdownMenu
@@ -84,37 +86,32 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <DropdownMenu
         title="Category"
         options={metricsOptions.categories}
-        selected={
-          selectedCategory
-            ? { value: selectedCategory, label: selectedCategory }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedCategory(scenarioKey, option.value)}
+        selected={selectedCategory ? selectedCategory : baselineOption}
+        setSelected={option => setSelectedCategory(scenarioKey, option)}
       />
       <DropdownMenu
         title="Usage"
         options={metricsOptions.usages}
-        selected={
-          selectedUsage
-            ? { value: selectedUsage, label: selectedUsage }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedUsage(scenarioKey, option.value)}
+        selected={selectedUsage ? selectedUsage : baselineOption}
+        setSelected={option => setSelectedUsage(scenarioKey, option)}
       />
       <DropdownMenu
         title="Source"
         options={metricsOptions.sources}
-        selected={
-          selectedSource
-            ? { value: selectedSource, label: selectedSource }
-            : { value: "all", label: "All" }
-        }
-        setSelected={option => setSelectedSource(scenarioKey, option.value)}
+        selected={selectedSource ? selectedSource : baselineOption}
+        setSelected={option => setSelectedSource(scenarioKey, option)}
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-        <div className="self-stretch h-[68px] flex-col justify-start items-start gap-3 flex">
-          Number of Features in Spatial DB Query
+        <div>
+          Total{" "}
+          {largeNumberDisplay(round(selectedStudy.summary.summaryTotal, 2))}{" "}
+          {selectedStudy.summary.summaryUnit}
+        </div>
+        <div>
+          Average{" "}
+          {largeNumberDisplay(round(selectedStudy.summary.summaryAvg, 2))}{" "}
+          {selectedStudy.summary.summaryUnit}
         </div>
         <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
       </div>

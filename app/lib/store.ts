@@ -5,22 +5,42 @@ import { baselineScenario } from "./utils"
 interface InitialState {
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
-  setTotalSelectedFeatures: (total: number) => void
+  setTotalSelectedFeatures: (featureTotal: number) => void
+  setSummaryTotal: (summaryTotal: number) => void
+  setSummaryUnit: (summaryUnit: string) => void
+  setSummaryAvg: (summaryAvg: number) => void
   setIsDrawing: (isDrawing: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
-  setSelectedCategory: (scenario_slug: string, category: string) => void
-  setSelectedSource: (scenario_slug: string, source: string) => void
-  setSelectedUsage: (scenario_slug: string, usage: string) => void
+  setSelectedCategory: (
+    scenario_slug: string,
+    category: { value: string; label: string }
+  ) => void
+  setSelectedSource: (
+    scenario_slug: string,
+    source: { value: string; label: string }
+  ) => void
+  setSelectedUsage: (
+    scenario_slug: string,
+    usage: { value: string; label: string }
+  ) => void
   setSelectedScenario: (scenarioId: Studies.Scenario) => void
+  setShow3d: () => void
+  show3d: boolean
 }
 
 export const useStore = create<InitialState>((set, get) => ({
   selectedStudy: {
     slug: "",
+    scale: null,
     name: "",
     description: "",
-    image_src: "",
-    totalSelectedFeatures: 0,
+    imageSrc: "",
+    summary: {
+      totalSelectedFeatures: 0,
+      summaryTotal: 0,
+      summaryUnit: "null",
+      summaryAvg: 0,
+    },
     isDrawing: false,
     aoi: {
       feature: undefined,
@@ -39,9 +59,52 @@ export const useStore = create<InitialState>((set, get) => ({
   setAoi: (aoi: { feature: GeoJSONFeature; bbox: number[] }) => {
     set(state => ({ selectedStudy: { ...state.selectedStudy, aoi } }))
   },
+
   setTotalSelectedFeatures: (totalSelectedFeatures: number) => {
     set(state => ({
-      selectedStudy: { ...state.selectedStudy, totalSelectedFeatures },
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          totalSelectedFeatures,
+        },
+      },
+    }))
+  },
+
+  setSummaryTotal: (summaryTotal: number) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryTotal,
+        },
+      },
+    }))
+  },
+
+  setSummaryUnit: (summaryUnit: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryUnit,
+        },
+      },
+    }))
+  },
+
+  setSummaryAvg: (summaryAvg: number) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryAvg,
+        },
+      },
     }))
   },
 
@@ -80,7 +143,10 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedCategory: (scenario_slug: string, category: string) => {
+  setSelectedCategory: (
+    scenario_slug: string,
+    category: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -114,7 +180,10 @@ export const useStore = create<InitialState>((set, get) => ({
       },
     }))
   },
-  setSelectedUsage: (scenario_slug: string, usage: string) => {
+  setSelectedUsage: (
+    scenario_slug: string,
+    usage: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -149,7 +218,10 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setSelectedSource: (scenario_slug: string, source: string) => {
+  setSelectedSource: (
+    scenario_slug: string,
+    source: { value: string; label: string }
+  ) => {
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
@@ -182,5 +254,9 @@ export const useStore = create<InitialState>((set, get) => ({
         },
       },
     }))
+  },
+  show3d: false,
+  setShow3d: () => {
+    set(state => ({ ...state, show3d: !state.show3d }))
   },
 }))
