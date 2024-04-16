@@ -78,8 +78,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     selectedStudy.scale === "Building" && show3d,
                     true,
                   ],
-                  0,
                   ["*", ["to-number", ["get", "floors"]], 5], // multiply by 5m for each floor as a typical estimate
+                  0,
                 ],
                 "fill-extrusion-color": [
                   "case",
