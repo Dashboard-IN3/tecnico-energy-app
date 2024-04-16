@@ -34,26 +34,15 @@ class Tile {
   public x: number
   public y: number
   public scenario_slug: string
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
   public metrics_field: string
 
   constructor({ z, x, y, study_slug, scenario_slug, metrics_field }: Params) {
-========
-  public user_metrics_field: string
-
-  constructor({ z, x, y, study_slug, metrics_field }: Params) {
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
     if (!study_slug) {
       throw new Error("study_slug is required")
     }
     this.study_slug = study_slug
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
     this.scenario_slug = scenario_slug
     this.metrics_field = metrics_field
-========
-    this.scenario_slug = "e2-scenario"
-    this.user_metrics_field = metrics_field
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
 
     if ([z, x, y].map(val => parseInt(val)).some(isNaN)) {
       throw new Error("Coordinates must be numbers")
@@ -125,10 +114,6 @@ class Tile {
         table,
         geomColumn,
         metrics_table,
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
-========
-        metrics_field: this.user_metrics_field,
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
       }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
@@ -139,21 +124,13 @@ class Tile {
       ),
       global_max AS (
         SELECT
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
             MAX(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS max_shading
-========
-            MAX(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS max_shading
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
         FROM
             ${rawVals.table} t
         JOIN
           scenario_metrics m ON t.key = m.geometry_key
         WHERE
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
             t.study_slug = ${this.study_slug} AND (m.scenario_slug = ${this.scenario_slug}) OR (m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline')
-========
-            t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
       ),
       mvtgeom AS (
         SELECT
@@ -162,15 +139,9 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
           45 as height,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
-========
-          0 as height,
-          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC)) AS INTEGER) AS shading,
-          CAST(ROUND(CAST(m.data->'${rawVals.metrics_field}'->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
         FROM
           ${rawVals.table} t
         JOIN
@@ -185,11 +156,7 @@ class Tile {
             ST_Transform(bounds.geom, ${srid}::integer)
           )
           AND
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
           t.study_slug = ${this.study_slug} AND (m.scenario_slug = ${this.scenario_slug}) OR (m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline')
-========
-          t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
@@ -204,10 +171,7 @@ interface Params {
   y: string
   z: string
   study_slug: string
-<<<<<<<< HEAD:app/api/tiles/[study_slug]/[scenario_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
   scenario_slug: string
-========
->>>>>>>> main:app/api/tiles/[study_slug]/[metrics_field]/[z]/[x]/[y]/route.ts
   metrics_field: string
 }
 
