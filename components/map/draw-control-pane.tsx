@@ -16,7 +16,7 @@ export const DrawControlPane: React.FC = () => {
 
   return (
     <div className="absolute bottom-4 left-4 bg-white p-4 rounded shadow-md opacity-90 flex justify-center gap-3">
-      {selectedStudy.scale === "Buildings" && (
+      {selectedStudy.scale === "Building" && (
         <div className="justify-center items-center flex-col">
           <div className="text-slate-700 text-base font-normal font-['Inter'] leading-normal">
             Show 3D

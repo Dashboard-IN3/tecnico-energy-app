@@ -12,14 +12,14 @@ interface Props {
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const layerType =
-    metaData?.scale?.toLowerCase() === "buildings" ? "fill-extrusion" : "line"
+    metaData?.scale?.toLowerCase() === "building" ? "fill-extrusion" : "line"
 
   const mapCenter: LngLatLike =
-    metaData?.scale?.toLowerCase() === "buildings"
-      ? [-9.102, 38.755]
-      : [-9.142, 38.735]
+    metaData?.scale?.toLowerCase() === "building"
+      ? [-9.142, 38.735]
+      : [-9.102, 38.755]
 
-  const mapZoom = metaData?.scale?.toLowerCase() === "buildings" ? 6 : 12
+  const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
   const { selectedStudy } = useStore()
   const { selectedTheme, themes } = selectedStudy
@@ -63,15 +63,15 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             <Layer
               id="buildings-layer"
               beforeId={
-                metaData?.scale?.toLowerCase() === "buildings"
-                  ? "road_path"
-                  : "watername_ocean"
+                metaData?.scale?.toLowerCase() === "building"
+                  ? "watername_ocean"
+                  : "road_path"
               }
               type="fill-extrusion"
               source={"buildings"}
               source-layer="default"
               paint={{
-                "fill-extrusion-height": 0,
+                "fill-extrusion-height": ["get", "height"],
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "selected"], false],
