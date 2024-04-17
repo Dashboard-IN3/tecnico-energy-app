@@ -50,7 +50,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
 
   return (
     <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
-      <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
+      <div className="w-full text-black text-xl font-extrabold leading-loose">
         {selectedStudy.name}
       </div>
       {imgSrc && (
@@ -69,7 +69,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         {/* <InPageLink href={`${studyId}/attributes`} label="Data Attribues" /> */}
-        <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
+        <div className="grow shrink basis-0 text-right text-black text-sm font-normal leading-tight">
           {selectedStudy.summary.totalSelectedFeatures} Features
         </div>
       </div>
@@ -102,12 +102,14 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
         <div>
-          Total{" "}
-          {largeNumberDisplay(round(selectedStudy.summary.summaryTotal, 2))}{" "}
+          <span className="font-bold">Total </span>
+          {largeNumberDisplay(
+            round(selectedStudy.summary.summaryTotal, 2)
+          )}{" "}
           {selectedStudy.summary.summaryUnit}
         </div>
         <div>
-          Average{" "}
+          <span className="font-bold">Average </span>
           {largeNumberDisplay(round(selectedStudy.summary.summaryAvg, 2))}{" "}
           {selectedStudy.summary.summaryUnit}
         </div>

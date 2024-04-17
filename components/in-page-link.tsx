@@ -8,7 +8,7 @@ interface Props {
 export const InPageLink: React.FC<Props> = ({ href, label }) => {
   return (
     <Link href={href}>
-      <div className="text-blue-900 text-sm font-normal font-['Inter'] leading-tight">
+      <div className="text-blue-900 text-sm font-normal leading-tight">
         {label}
       </div>
     </Link>
