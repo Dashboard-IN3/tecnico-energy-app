@@ -131,7 +131,7 @@ class Tile {
         SELECT
             MAX(CAST(data->${this.metrics_field}->>'max' AS NUMERIC)) AS max_shading
         FROM
-          ${rawVals.metric_total_table}
+          ${rawVals.metrics_table}
         WHERE
             ((study_slug = ${this.study_slug} AND scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
             (study_slug = ${this.study_slug} AND scenario_slug = ${this.scenario_slug})) 
