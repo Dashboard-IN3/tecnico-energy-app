@@ -101,7 +101,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         setSelected={option => setSelectedSource(scenarioKey, option)}
       />
       <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
-        <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
         <div>
           Total{" "}
           {largeNumberDisplay(round(selectedStudy.summary.summaryTotal, 2))}{" "}
@@ -112,7 +111,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           {largeNumberDisplay(round(selectedStudy.summary.summaryAvg, 2))}{" "}
           {selectedStudy.summary.summaryUnit}
         </div>
-        <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
       </div>
     </div>
   )
