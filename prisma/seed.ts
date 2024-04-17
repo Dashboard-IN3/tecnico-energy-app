@@ -297,8 +297,8 @@ async function main() {
           successes.push(study_slug)
         },
         {
-          maxWait: 1 * 60 * 1000, // Max query time
-          timeout: 5 * 60 * 1000, // Max time per study
+          maxWait: 1 * 60 * 1000, // Query Timeout
+          timeout: 10 * 60 * 1000, // Each Ingestion Timeout
         }
       )
     } catch (e) {
