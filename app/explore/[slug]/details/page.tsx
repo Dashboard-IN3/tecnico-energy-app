@@ -29,12 +29,15 @@ const StudyDetails: React.FC = async ({
         </div>
         <div>{`About ${doc?.title}`}</div>
       </div>
-
-      <Mdx
-        code={
-          doc ? doc?.body.code : "Could not find markdown content for this page"
-        }
-      />
+      <div className="ml-12">
+        <Mdx
+          code={
+            doc
+              ? doc?.body.code
+              : "Could not find markdown content for this page"
+          }
+        />
+      </div>
     </div>
   )
 }
