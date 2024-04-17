@@ -186,10 +186,8 @@ async function main() {
             try {
               await tx.$executeRaw`SAVEPOINT before_geom_insert;`
               await tx.$executeRaw`
-                INSERT INTO "geometries" ("study_slug", "key", "geom", "properties")
-                VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${
-                feature.geometry
-              }), ${JSON.stringify(feature.properties)}::jsonb)
+                INSERT INTO "geometries" ("study_slug", "key", "geom")
+                VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
               `
               insertionCount++
             } catch (e) {
@@ -299,8 +297,8 @@ async function main() {
           successes.push(study_slug)
         },
         {
-          maxWait: 180 * 1000, // Max query time
-          timeout: 180 * 1000, // Max time per study
+          maxWait: 1 * 60 * 1000, // Max query time
+          timeout: 5 * 60 * 1000, // Max time per study
         }
       )
     } catch (e) {
