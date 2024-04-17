@@ -86,7 +86,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         </div>
       </div>
 
-      <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex border-solid border-[1px] border-slate-400 bg-white p-4 rounded-md">
+      <div className="self-stretch grow-0 shrink basis-0 flex-col justify-start items-start gap-6 flex border-solid border-[1px] border-slate-400 bg-white p-4 rounded-md">
         <div className="w-full">
           <SummaryValue
             value={selectedStudy.summary.summaryTotal}
