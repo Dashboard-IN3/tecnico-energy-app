@@ -10,7 +10,12 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   } catch (e) {
     return new Response((e as Error).message, { status: 400 })
   }
-  const sql = tile.asSql("geometries", "geom", "scenario_metrics")
+  const sql = tile.asSql(
+    "geometries",
+    "geom",
+    "scenario_metrics",
+    "scenario_metrics_total"
+  )
   const [{ st_asmvt }] = await prisma.$queryRaw<{ st_asmvt: Buffer }[]>(sql)
 
   return new Response(
@@ -103,6 +108,7 @@ class Tile {
     table: string,
     geomColumn: string,
     metrics_table: string,
+    metric_total_table: string,
     attrColumns: string[] = [],
     srid: number = 4326
   ): Sql {
@@ -114,6 +120,7 @@ class Tile {
         table,
         geomColumn,
         metrics_table,
+        metric_total_table,
       }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
@@ -124,14 +131,12 @@ class Tile {
       ),
       global_max AS (
         SELECT
-            MAX(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS max_shading
+            MAX(CAST(data->${this.metrics_field}->>'max' AS NUMERIC)) AS max_shading
         FROM
-            ${rawVals.table} t
-        JOIN
-          scenario_metrics m ON t.key = m.geometry_key
+          ${rawVals.metric_total_table}
         WHERE
-            ((t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
-            (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug})) 
+            ((study_slug = ${this.study_slug} AND scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
+            (study_slug = ${this.study_slug} AND scenario_slug = ${this.scenario_slug})) 
       ),
       mvtgeom AS (
         SELECT
@@ -140,6 +145,7 @@ class Tile {
             bounds.b2d
           ) AS geom,
           key,
+          gm.max_shading as global_max,
           CAST(t.properties->'floors_ag' AS NUMERIC) AS floors,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
