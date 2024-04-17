@@ -49,7 +49,10 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   })
 
   return (
-    <div className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-hidden">
+    <div
+      className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-y-scroll"
+      style={{ scrollbarWidth: "none" }}
+    >
       <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
         {selectedStudy.name}
       </div>
