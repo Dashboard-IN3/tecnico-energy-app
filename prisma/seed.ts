@@ -189,7 +189,7 @@ async function main() {
                 INSERT INTO "geometries" ("study_slug", "key", "geom", "properties")
                 VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${
                 feature.geometry
-              }), ${JSON.stringify(feature.properties)})
+              }), ${JSON.stringify(feature.properties)}::jsonb)
               `
               insertionCount++
             } catch (e) {
