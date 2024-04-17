@@ -108,7 +108,6 @@ class Tile {
     table: string,
     geomColumn: string,
     metrics_table: string,
-    metric_total_table: string,
     attrColumns: string[] = [],
     srid: number = 4326
   ): Sql {
