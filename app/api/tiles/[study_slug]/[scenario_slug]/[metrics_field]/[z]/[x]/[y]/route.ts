@@ -10,12 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   } catch (e) {
     return new Response((e as Error).message, { status: 400 })
   }
-  const sql = tile.asSql(
-    "geometries",
-    "geom",
-    "scenario_metrics",
-    "scenario_metrics_total"
-  )
+  const sql = tile.asSql("geometries", "geom", "scenario_metrics_total")
   const [{ st_asmvt }] = await prisma.$queryRaw<{ st_asmvt: Buffer }[]>(sql)
 
   return new Response(
