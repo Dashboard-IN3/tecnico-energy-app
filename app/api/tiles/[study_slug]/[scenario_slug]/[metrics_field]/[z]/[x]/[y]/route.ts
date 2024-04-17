@@ -119,7 +119,6 @@ class Tile {
         table,
         geomColumn,
         metrics_table,
-        metric_total_table,
       }).map(([k, v]) => [k, Prisma.raw(v)])
     )
     return Prisma.sql`
