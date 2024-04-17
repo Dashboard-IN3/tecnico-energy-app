@@ -3,6 +3,7 @@ import chevron from "../../../../public/icons/chevron-left.svg"
 import Link from "next/link"
 import { allDocs } from "contentlayer/generated"
 import { notFound } from "next/navigation"
+import { Mdx } from "../../../../components/mdx-components"
 
 async function getDocFromParams(slug: string) {
   const doc = allDocs.find(doc => doc.slugAsParams === slug)
@@ -17,7 +18,7 @@ const StudyDetails: React.FC = async ({
   params: { slug: string }
 }) => {
   const doc = await getDocFromParams(params.slug)
-  console.log(doc)
+
   return (
     <div className="min-h-screen h-full w-full bg-slate-100 p-12">
       <div className="text-2xl font-light flex ml-10 min-w-[300px]">
@@ -26,9 +27,14 @@ const StudyDetails: React.FC = async ({
             <Image src={chevron} alt="chevron" width={22} height={22} />
           </Link>
         </div>
-        <div>About This Study</div>
+        <div>{`About ${doc?.title}`}</div>
       </div>
-      <div>{JSON.stringify(doc?.body.raw)}</div>
+
+      <Mdx
+        code={
+          doc ? doc?.body.code : "Could not find markdown content for this page"
+        }
+      />
     </div>
   )
 }
