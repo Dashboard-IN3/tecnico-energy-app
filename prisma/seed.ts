@@ -172,23 +172,13 @@ async function main() {
               `"${studyResult.metrics_key_field}" field...`
           )
 
-          if (0) {
-            await tx.$executeRaw`
-            CREATE TABLE tmp_geometries (
-              key text,
-              geom geometry,
-              properties json
-            )
-          `
-          } else {
-            await tx.$executeRaw`
+          await tx.$executeRaw`
             CREATE TEMPORARY TABLE tmp_geometries (
               key text,
               geom geometry,
               properties json
             ) ON COMMIT DROP
           `
-          }
           await tx.$executeRaw`CREATE INDEX ON tmp_geometries (key)`
 
           const totalGeometries = await tx.$executeRaw(Prisma.sql`
@@ -233,16 +223,12 @@ async function main() {
             `
 
             ignoredGeometries.forEach(({ key, most_similar_key }) => {
-              if (key === most_similar_key) {
-                log(
-                  `ignoring geometry with key "${key}", a geometry with that key already exists in the geometry table`
-                )
-              } else {
-                log(
-                  `ignoring geometry with key "${key}", no related metrics in metrics ` +
-                    `table (closest metric that we could find was "${most_similar_key}")`
-                )
-              }
+              log(
+                key === most_similar_key
+                  ? `ignoring geometry with key "${key}", a geometry with that key already exists in the geometry table`
+                  : `ignoring geometry with key "${key}", no related metrics in metrics ` +
+                      `table (closest metric that we could find was "${most_similar_key}")`
+              )
             })
           }
 
