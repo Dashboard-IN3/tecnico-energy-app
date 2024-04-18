@@ -13,6 +13,18 @@ interface Props {
   studyId: string
 }
 
+const SummaryValue = ({ value, unit, label }) => {
+  return (
+    <div className="flex justify-between mb-2 last:mb-0">
+      <span className="font-bold">{label} </span>
+      <span>
+        <span> {largeNumberDisplay(round(value, 2))} </span>
+        <span className="text-xs font-extralight text-slate-800">{unit}</span>
+      </span>
+    </div>
+  )
+}
+
 const baselineOption = { value: "ALL", label: "All" }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
@@ -50,10 +62,10 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
 
   return (
     <div
-      className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-y-scroll"
+      className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-scroll"
       style={{ scrollbarWidth: "none" }}
     >
-      <div className="w-full text-black text-xl font-extrabold font-['Inter'] leading-loose">
+      <div className="w-full text-black text-xl font-extrabold leading-loose">
         {selectedStudy.name}
       </div>
       {imgSrc && (
@@ -72,8 +84,23 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />
         {/* <InPageLink href={`${studyId}/attributes`} label="Data Attribues" /> */}
-        <div className="grow shrink basis-0 text-right text-black text-sm font-normal font-['Inter'] leading-tight">
+        <div className="grow shrink basis-0 text-right text-black text-sm font-normal leading-tight">
           {selectedStudy.summary.totalSelectedFeatures} Features
+        </div>
+      </div>
+
+      <div className="self-stretch grow-0 shrink basis-0 flex-col justify-start items-start gap-6 flex border-solid border-[1px] border-slate-400 bg-white p-4 rounded-md">
+        <div className="w-full">
+          <SummaryValue
+            value={selectedStudy.summary.summaryTotal}
+            unit={selectedStudy.summary.summaryUnit}
+            label="Total"
+          />
+          <SummaryValue
+            value={selectedStudy.summary.summaryAvg}
+            unit={selectedStudy.summary.summaryUnit}
+            label="Average"
+          />
         </div>
       </div>
       <DropdownMenu
@@ -103,20 +130,6 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         selected={selectedSource ? selectedSource : baselineOption}
         setSelected={option => setSelectedSource(scenarioKey, option)}
       />
-      <div className="self-stretch grow shrink basis-0 flex-col justify-start items-start gap-6 flex">
-        <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-        <div>
-          Total{" "}
-          {largeNumberDisplay(round(selectedStudy.summary.summaryTotal, 2))}{" "}
-          {selectedStudy.summary.summaryUnit}
-        </div>
-        <div>
-          Average{" "}
-          {largeNumberDisplay(round(selectedStudy.summary.summaryAvg, 2))}{" "}
-          {selectedStudy.summary.summaryUnit}
-        </div>
-        <div className="self-stretch h-[0px] origin-top-left rotate-180 border border-black"></div>
-      </div>
     </div>
   )
 }

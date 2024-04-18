@@ -19,7 +19,7 @@ export const DropdownMenu: React.FC<Props> = ({
 }) => {
   return (
     <div className="">
-      <div className="text-black text-md font-semibold font-['Inter'] leading-tight pb-2">
+      <div className="text-black text-md font-semibold leading-tight pb-2">
         {title}:
       </div>
       <Select
@@ -33,11 +33,9 @@ export const DropdownMenu: React.FC<Props> = ({
           control: (baseStyles, state) => ({
             ...baseStyles,
             borderColor: state.isFocused ? "black" : "grey",
-            fontFamily: "Inter",
           }),
           container: (baseStyles, state) => ({
             ...baseStyles,
-            fontFamily: "Inter",
           }),
         }}
       />
