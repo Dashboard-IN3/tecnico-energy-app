@@ -8,11 +8,12 @@ import { metrics, Prisma } from "@prisma/client"
 
 const gunzip = promisify(zlib.gunzip)
 
-const DEBUG_MODE = process.env.DEBUG
 const STRICT_MODE = process.env.STRICT
 
+const successes: string[] = []
+const failures: Array<[string, Error]> = []
+
 async function main() {
-  const failures: Failure[] = []
   const files = await fs.readdir("data", { withFileTypes: true })
   for (const file of files) {
     const log = (msg: string) =>
@@ -62,13 +63,25 @@ async function main() {
 
           // Create metrics
           log(`ingesting metrics for ${study_slug}...`)
-          const metrics = workbook.loadMetrics().map(
-            (data): metrics => ({
+          const metrics = workbook.loadMetrics().map((data): metrics => {
+            for (const [k, v] of Object.entries(data)) {
+              if (k === study.metrics_key_field) continue
+              if (["", undefined, null].includes(v as any)) {
+                throw new Error(
+                  `values for metrics sheet cannot be empty. Missing value for ${{
+                    study_slug,
+                    k,
+                    v,
+                  }}`
+                )
+              }
+            }
+            return {
               study_slug,
               geometry_key: String(data[study.metrics_key_field]),
               data,
-            })
-          )
+            }
+          })
           const metricsResult = await tx.metrics.createMany({
             data: metrics as Prisma.metricsCreateManyInput[],
             skipDuplicates: true,
@@ -141,7 +154,9 @@ async function main() {
           // Insert geometries
           log(`processing geometries for ${study_slug}...`)
           const compressedData = await fs.readFile(geojsonPath)
+          log(`decompressing ${geojsonPath}...`)
           const geoJsonStr = await gunzip(compressedData)
+          log(`parsing ${geojsonPath}...`)
           const geoJSON = JSON.parse(geoJsonStr.toString())
           if (
             geoJSON.type !== "FeatureCollection" ||
@@ -149,84 +164,78 @@ async function main() {
           ) {
             throw new Error("Invalid GeoJSON FeatureCollection")
           }
+
           log(
             `ingesting ${geoJSON.features.length} geometries, joining the geometry ` +
               `"${studyResult.geom_key_field}" field to the metrics ` +
               `"${studyResult.metrics_key_field}" field...`
           )
-          let success = true
-          let insertionCount = 0
-          for (const feature of geoJSON.features) {
-            const geomKey = feature.properties[studyResult.geom_key_field]
-            if (!geomKey)
-              throw new Error(
-                `Encountered geometry without "${
-                  studyResult.geom_key_field
-                }" field. Available properties: ${Array.from(
-                  Object.keys(feature.properties)
-                )}`,
-                { cause: feature.properties }
+
+          await tx.$executeRaw`
+            CREATE TEMPORARY TABLE tmp_geometries (
+              key text,
+              geom geometry,
+              properties json
+            ) ON COMMIT DROP
+          `
+          await tx.$executeRaw`CREATE INDEX ON tmp_geometries (key)`
+
+          const totalGeometries = await tx.$executeRaw(Prisma.sql`
+            INSERT INTO tmp_geometries (key, geom, properties) VALUES ${Prisma.join(
+              geoJSON.features.map(f => {
+                const geomKey = f.properties[studyResult.geom_key_field]
+                const geomStr = JSON.stringify(f.geometry)
+                const props = JSON.stringify(f.properties)
+                return Prisma.sql`(${geomKey}, ST_GeomFromGeoJSON(${geomStr}), ${props}::json)`
+              })
+            )}
+          `)
+          log(`inserted ${totalGeometries} geometries into a temporary table`)
+
+          const retainedGeometries = await tx.$executeRaw`
+            INSERT INTO geometries (key, study_slug, geom, properties)
+            SELECT t.key, m.study_slug, t.geom, t.properties
+            FROM tmp_geometries t, metrics m
+            WHERE t.key = m.geometry_key
+            AND m.study_slug = ${study_slug}
+            ON CONFLICT (study_slug, key) DO NOTHING
+          `
+          log(
+            `copied ${retainedGeometries} geometries into to the permanent table`
+          )
+
+          if (retainedGeometries !== totalGeometries) {
+            log(`retrieving geometries that were not retained...`)
+            const ignoredGeometries = await tx.$queryRaw<
+              { key: string; most_similar_key: string }[]
+            >`
+              SELECT t.key, (
+                SELECT m.geometry_key
+                FROM metrics m
+                WHERE m.study_slug = ${study_slug}
+                ORDER BY similarity(m.geometry_key, t.key) DESC
+                LIMIT 1
+              ) AS most_similar_key
+              FROM tmp_geometries t
+              LEFT OUTER JOIN metrics m ON t.key = m.geometry_key AND m.study_slug = ${study_slug}
+              WHERE m.geometry_key IS NULL;
+            `
+
+            ignoredGeometries.forEach(({ key, most_similar_key }) => {
+              log(
+                key === most_similar_key
+                  ? `ignoring geometry with key "${key}", a geometry with that key already exists in the geometry table`
+                  : `ignoring geometry with key "${key}", no related metrics in metrics table (closest metric had geometry_key="${most_similar_key}")`
               )
-            try {
-              await tx.$executeRaw`SAVEPOINT before_geom_insert;`
-              await tx.$executeRaw`
-                INSERT INTO "geometries" ("study_slug", "key", "geom")
-                VALUES (${study_slug}, ${geomKey}, ST_GeomFromGeoJSON(${feature.geometry}))
-              `
-              insertionCount++
-            } catch (e) {
-              success = false
-              await tx.$executeRaw`ROLLBACK TO SAVEPOINT before_geom_insert`
-              switch (e.meta?.code) {
-                case "23503": // FK Constraint Violation
-                  const [{ geometry_key: closestGeometryKey }] =
-                    await tx.$queryRaw<{ geometry_key: string }[]>`
-                    select 
-                      geometry_key 
-                    from 
-                      metrics 
-                    where 
-                      study_slug = ${study_slug} 
-                    order by 
-                      geometry_key <-> ${geomKey} 
-                    limit 1
-                  `
-                  log(
-                    `ignoring geometry with key "${geomKey}", no related metrics in metrics ` +
-                      `table (closest metric that we could find was "${closestGeometryKey}")`
-                  )
-                  if (DEBUG_MODE) log(e.meta.message)
-                  continue
-                case "23505": // Duplicate record
-                  log(
-                    `failed to insert geometry with key "${geomKey}", already exists in the geometries table`
-                  )
-                  if (DEBUG_MODE) log(e.meta.message)
-                  continue
-                default:
-                  throw e
-              }
-            }
+            })
           }
-          if (!success && STRICT_MODE)
-            throw new Error("failed to insert all geometries")
-          log(`ingested ${insertionCount} geometries`)
 
           log(`checking for any metrics without corresponding geometries...`)
           const results = await tx.$queryRaw<{ geometry_key: string }[]>`
-            SELECT 
-              m.geometry_key
-            FROM 
-              metrics m 
-            LEFT OUTER JOIN 
-              geometries g 
-            ON 
-              m.study_slug = ${study_slug}
-              AND
-              m.study_slug = g.study_slug 
-              AND 
-              m.geometry_key = g.key 
-            WHERE g.key IS NULL;
+            SELECT m.geometry_key
+            FROM metrics m 
+            LEFT OUTER JOIN geometries g ON m.study_slug = g.study_slug AND m.geometry_key = g.key 
+            WHERE g.key IS NULL AND m.study_slug = ${study_slug}
           `
           if (results.length) {
             const missingGeometries = results.map(r => r.geometry_key).sort()
@@ -237,9 +246,13 @@ async function main() {
                 { cause: missingGeometries }
               )
             }
+            const r = await tx.metrics.deleteMany({
+              where: { geometry_key: { in: missingGeometries }, study_slug },
+            })
             log(
-              `deleted ${results.length} metrics due to missing corresponding geometries. ` +
-                `Missing geometries: ${missingGeometries}`
+              `deleted ${r.count} metrics due to missing corresponding geometries. ` +
+                `These are the "geometry_key" values of those metrics: ` +
+                JSON.stringify(missingGeometries)
             )
           } else {
             log(`no metrics are missing corresponding geometries`)
@@ -272,40 +285,46 @@ async function main() {
           log(
             `derived ${scenarioMetricsTotalsCount} pre-aggregated scenario metrics totals`
           )
+
+          successes.push(study_slug)
         },
         {
-          maxWait: 180 * 1000, // Max query time
-          timeout: 180 * 1000, // Max time per study
+          maxWait: 1 * 60 * 1000, // Query Timeout
+          timeout: 10 * 60 * 1000, // Each Ingestion Timeout
         }
       )
     } catch (e) {
-      log(`failure during ingestion of study "${study_slug}": ${e.message}`)
+      log(
+        `failure encountered during ingestion of study "${study_slug}". Stopping.`
+      )
       failures.push([study_slug, e])
     }
   }
-
-  if (failures.length) {
-    throw failures
-  }
 }
 
-let exitCode = 0
-main()
-  .catch((e: Failure[]) => {
-    console.log(`${e.length} studies failed to be ingested.`)
-    e.forEach(([study_slug, error], i) => {
-      console.log(`\n\n***** Ingestion Failure ${i + 1} *****`)
-      console.log(`Study: ${study_slug}`)
-      console.log(`Name: ${error.name}`)
-      console.log(`Message: ${error.message}`)
-      console.log(`Cause: ${error.cause}`)
-      console.log(`Stack: ${error.stack}`)
-    })
-    exitCode = 1
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-    process.exit(exitCode)
-  })
+main().finally(async () => {
+  await prisma.$disconnect()
 
-type Failure = [string, Error]
+  console.log(
+    `\n***** Successfully ingested ${successes.length} studies: *****`
+  )
+  successes.forEach(study_slug => console.log(`- Study: ${study_slug}`))
+
+  if (failures.length) {
+    console.log(`\n***** Failed to ingest ${failures.length} studies: *****`)
+    failures.forEach(([study_slug, error]) => {
+      console.log(`- Study: ${study_slug}`)
+      console.log("  Error Cause: " + indent(`${error.cause}`))
+      console.log("  Error Stack: " + indent(`${error.stack}`) + "\n")
+    })
+  }
+  process.exit(failures.length)
+})
+
+function indent(str: string, spaces: number = 4, skipFirst: boolean = true) {
+  return str
+    .split("\n")
+    .map((line, i) => (i === 0 && skipFirst ? line : " ".repeat(spaces) + line))
+    .join("\n")
+    .trim()
+}

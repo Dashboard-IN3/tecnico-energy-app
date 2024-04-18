@@ -9,6 +9,7 @@ import {
 import fs from "fs/promises"
 import xlsx from "xlsx"
 import { slugify } from "./slugify"
+import { forEachChild } from "typescript"
 
 export class Workbook {
   readonly WORKSHEET_NAMES = {
@@ -75,17 +76,34 @@ export class Workbook {
    */
   public loadMetadata(): StudyMetadataInput {
     const keyVals = this.loadSheetAsTuple(this.WORKSHEET_NAMES.metadata).map(
-      ([k, v]) => [
-        k,
-        // metrics_key_field value should be normalized
-        k === "metrics_key_field" ? v.toLowerCase() : v,
-      ]
+      ([k, v]) => {
+        switch (k) {
+          case "image":
+            // Handle legacy "image" field by renaming to "image_src"
+            return ["image_src", v]
+          case "metrics_key_field":
+            // Process "metrics_key_field" field so that it matches processed column name
+            return [k, this.processColumnName(v)]
+          case "highlight":
+            // Attempt to parse "highlight" field as JSON
+            try {
+              return [k, JSON.parse(v)]
+            } catch (e) {
+              console.log(`Unable to coerce 'highlight' field to JSON: '${v}'`)
+              return [k, v]
+            }
+          default:
+            return [k, v]
+        }
+      }
     )
     return Object.fromEntries(keyVals) as any as StudyMetadataInput
   }
 
-  public loadMetrics(): Omit<metrics, "study_slug">[] {
-    return this.loadSheetAsJson<MetricsInput>(this.WORKSHEET_NAMES.metrics)
+  public loadMetrics(): Record<string, number | string>[] {
+    return this.loadSheetAsJson<Record<string, number | string>>(
+      this.WORKSHEET_NAMES.metrics
+    )
   }
 
   public loadScenariosMetadata(): Omit<scenario, "study_slug">[] {
@@ -172,7 +190,7 @@ interface StudyMetadataInput {
   name: string
   description: string
   details?: string
-  image?: string
+  image_src?: string
   scale: study_scale
   highlights: string
   geom_key_field: string

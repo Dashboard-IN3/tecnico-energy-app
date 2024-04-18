@@ -12,14 +12,14 @@ interface Props {
 
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const layerType =
-    params.slug === "lisbon-building-energy" ? "fill-extrusion" : "line"
+    metaData?.scale?.toLowerCase() === "building" ? "fill-extrusion" : "line"
 
   const mapCenter: LngLatLike =
-    params.slug === "lisbon-building-energy"
+    metaData?.scale?.toLowerCase() === "building"
       ? [-9.142, 38.735]
       : [-9.102, 38.755]
 
-  const mapZoom = params.slug === "lisbon-building-energy" ? 11 : 6
+  const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
   const { selectedStudy, show3d } = useStore()
   const { selectedTheme } = selectedStudy
@@ -62,7 +62,11 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
           >
             <Layer
               id="buildings-layer"
-              beforeId="road_path"
+              beforeId={
+                metaData?.scale?.toLowerCase() === "building"
+                  ? "housenumber"
+                  : "road_path"
+              }
               type="fill-extrusion"
               source={"buildings"}
               source-layer="default"
@@ -71,11 +75,11 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                   "case",
                   [
                     "boolean",
-                    selectedStudy.scale === "Buildings" && show3d,
+                    selectedStudy.scale === "Building" && show3d,
                     true,
                   ],
+                  ["*", ["to-number", ["get", "floors"]], 5], // multiply by 5m for each floor as a typical estimate
                   0,
-                  ["get", "height"],
                 ],
                 "fill-extrusion-color": [
                   "case",
@@ -85,11 +89,9 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     ["linear"],
                     ["get", "shading_percentage"],
                     0,
-                    "#ffffff",
-                    25,
-                    "#3c649f",
+                    "#fab482",
                     100,
-                    "#1b2d48",
+                    "#720a0a",
                   ],
                   "#dadada",
                 ],

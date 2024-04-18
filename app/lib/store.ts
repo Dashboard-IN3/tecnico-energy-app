@@ -124,7 +124,6 @@ export const useStore = create<InitialState>((set, get) => ({
   },
 
   setSelectedScenario: (scenario: Studies.Scenario) => {
-    console.log({ scenario })
     set(state => ({
       selectedStudy: {
         ...state.selectedStudy,
