@@ -8,7 +8,8 @@
     "dev": "prisma generate && next dev",
     "build": "prisma generate && prisma migrate deploy && prisma db seed && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "pnpm playwright test"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -41,6 +42,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.42.0",
     "@types/geojson": "^7946.0.14",
     "@types/mapbox-gl": "^2.7.20",
     "@types/mapbox__mapbox-gl-draw": "^1.4.6",
