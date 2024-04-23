@@ -8,7 +8,6 @@ import { metrics, Prisma } from "@prisma/client"
 
 const gunzip = promisify(zlib.gunzip)
 
-const DEBUG_MODE = process.env.DEBUG
 const STRICT_MODE = process.env.STRICT
 
 const successes: string[] = []
@@ -202,7 +201,7 @@ async function main() {
             ON CONFLICT (study_slug, key) DO NOTHING
           `
           log(
-            `copied ${retainedGeometries} into to the permanent geometries table`
+            `copied ${retainedGeometries} geometries into to the permanent table`
           )
 
           if (retainedGeometries !== totalGeometries) {
@@ -226,28 +225,17 @@ async function main() {
               log(
                 key === most_similar_key
                   ? `ignoring geometry with key "${key}", a geometry with that key already exists in the geometry table`
-                  : `ignoring geometry with key "${key}", no related metrics in metrics ` +
-                      `table (closest metric that we could find was "${most_similar_key}")`
+                  : `ignoring geometry with key "${key}", no related metrics in metrics table (closest metric had geometry_key="${most_similar_key}")`
               )
             })
           }
 
           log(`checking for any metrics without corresponding geometries...`)
           const results = await tx.$queryRaw<{ geometry_key: string }[]>`
-            SELECT 
-              m.geometry_key
-            FROM 
-              metrics m 
-            LEFT OUTER JOIN 
-              geometries g 
-            ON 
-              m.study_slug = g.study_slug 
-              AND 
-              m.geometry_key = g.key 
-            WHERE 
-              g.key IS NULL
-              AND 
-              m.study_slug = ${study_slug}
+            SELECT m.geometry_key
+            FROM metrics m 
+            LEFT OUTER JOIN geometries g ON m.study_slug = g.study_slug AND m.geometry_key = g.key 
+            WHERE g.key IS NULL AND m.study_slug = ${study_slug}
           `
           if (results.length) {
             const missingGeometries = results.map(r => r.geometry_key).sort()
