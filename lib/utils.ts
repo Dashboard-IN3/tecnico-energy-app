@@ -7,16 +7,16 @@ export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
   }`
 }
 
-export const largeNumberDisplay = (number: number): string => {
+export const largeNumberDisplay = (number: number, decimals = 2): string => {
   if (number < 1000) {
     return number.toString() // Return the number as is if it's less than 1000
   } else if (number < 1000000) {
-    return (number / 1000).toFixed(2) + "K" // Convert to thousands
+    return (number / 1000).toFixed(decimals) + "K" // Convert to thousands
   } else if (number < 1000000000) {
-    return (number / 1000000).toFixed(2) + "M" // Convert to millions
+    return (number / 1000000).toFixed(decimals) + "M" // Convert to millions
   } else if (number < 1000000000000) {
-    return (number / 1000000000).toFixed(2) + "B" // Convert to billions
+    return (number / 1000000000).toFixed(decimals) + "B" // Convert to billions
   } else {
-    return (number / 1000000000000).toFixed(2) + "T" // Convert to trillions
+    return (number / 1000000000000).toFixed(decimals) + "T" // Convert to trillions
   }
 }
