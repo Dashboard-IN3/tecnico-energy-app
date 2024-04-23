@@ -10,6 +10,7 @@ import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
+import { ColorLegend } from "./color-legend"
 
 type MapViewProps = {
   children?: ReactNode
@@ -159,6 +160,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       >
         <ScenarioControl />
         <DrawControlPane />
+        <ColorLegend />
         <DrawBboxControl
           map={map!}
           isEnabled={isDrawing}
