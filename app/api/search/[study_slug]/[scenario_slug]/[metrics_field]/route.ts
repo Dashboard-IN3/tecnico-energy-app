@@ -6,6 +6,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
   const { study_slug, metrics_field, scenario_slug } = params
   const coordinates = req?.nextUrl?.searchParams.get("coordinates")!
   // get all features if we have no aoi
+  // only return the aggregated values from metrics with LIMIT 1
   if (coordinates == "null") {
     const search = await prisma.$queryRaw`
       SELECT 
@@ -20,6 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
           ((g.study_slug = ${study_slug} AND m.scenario_slug IS NULL AND ${scenario_slug} = 'baseline') OR 
           (g.study_slug = ${study_slug} AND m.scenario_slug IS NOT NULL AND m.scenario_slug = ${scenario_slug}))
       GROUP BY m.id
+      ORDER BY data_total asc
+      LIMIT 1
     `
     return Response.json({ search })
   }
