@@ -14,10 +14,11 @@ Data is modeled with the following concepts:
 - Theme: Belongs to study, represents a field of research for a given study.
 - Scenario: A way that would modify the outcome of a study.
 
-To provide data, two files must be provided:
+To provide data, three files must be provided:
 
 1. A XLSX spreadsheet file for a study, named `{study_identifier}.xlsx`
-1. A gzipped GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson.gz`
+2. A gzipped GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson.gz`
+3. A MDX file describing the content for the study details page
 
 ### Study Spreadsheet
 
@@ -34,7 +35,7 @@ The study spreadsheet must contain the following worksheets. Column/key names ar
     - `Metrics Key Field`: Text, required; must match a column name present in `metrics` tab
     - `Highlight`: boolean, optional;
 - `metrics`: raw data. The following conditions must be met:
-    - Each metric must have a corresponding geometry in the accompanying geometry file. This is determined by matching the value at the column specified by the `Metrics Key Field` to the value of the geometery's property at the `Geom Key Field`.
+  - Each metric must have a corresponding geometry in the accompanying geometry file. This is determined by matching the value at the column specified by the `Metrics Key Field` to the value of the geometery's property at the `Geom Key Field`.
 - `metrics_metadata`:
   - Columns
     - `field_name`: Text, required;
@@ -55,6 +56,14 @@ The study spreadsheet must contain the following worksheets. Column/key names ar
 - `FeatureCollection` of `Polygon` or `MultiPolygon` values.
 - Each `Feature` must contain a unique `id` property of either a string or integer.
 - Features that are not referenced by a metric in the study spreadsheet will be logged and ignored at time of ingestion.
+
+### Study Details Markdown
+
+- the `front matter` contained at the top of each mdx file needs to be enclosed in `---`
+- each file needs to contain the `title`, `description`, and `type: Doc` fields in the `front matter`. There is only one type and it needs to be `Doc`.
+- it is possible but optional to include MDX content in html tags like `<img/>`
+- The markdown content needs to follow standard markdown syntax as described
+  in _[Markdown Guide](https://www.markdownguide.org/basic-syntax/)_
 
 ## Development
 
@@ -125,3 +134,7 @@ pnpm dev
 ```
 
 Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples) ([Documentation](https://nextjs.org/docs/deployment)).
+
+### Previewing Compiled Markdown content
+
+- running `pnpm contentlayer build` will pull from the mdx files in the `data` directory. The compiled files will overwrite the content in the `.contentlayer` directory.
