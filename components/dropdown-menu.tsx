@@ -1,5 +1,4 @@
 import dynamic from "next/dynamic"
-import { useStore } from "../app/lib/store"
 const Select = dynamic(() => import("react-select"), { ssr: false })
 
 export type DropdownOption = { value: string; label: string }
