@@ -171,7 +171,7 @@ export const useStore = create<InitialState>((set, get) => ({
               ...state.selectedStudy.selectedTheme.scenarios,
               [scenario_slug]: {
                 ...state.selectedStudy.selectedTheme.scenarios[scenario_slug],
-                seletedCategory: category,
+                selectedCategory: category,
               },
             },
           },
