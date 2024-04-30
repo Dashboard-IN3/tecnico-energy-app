@@ -38,8 +38,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const { selectedTheme } = selectedStudy
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
-  const usage = selectedScenario?.selectedUsage?.value || "ALL"
-  const source = selectedScenario?.selectedSource?.value || "ALL"
+  const usage = selectedScenario?.selectedUsage?.value
+  const source = selectedScenario?.selectedSource?.value
 
   const metricsField = `${category}.${usage}.${source}`
 
@@ -69,7 +69,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   }
 
   useEffect(() => {
-    if (!map) return
+    if (![map, category, usage, source].every(Boolean)) return
     getDbIntersectingFeatures({
       coordinates: aoi.feature ? aoi.feature.geometry.coordinates[0] : null,
       studySlug,

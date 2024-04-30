@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import Image from "next/image"
 import { InPageLink } from "./in-page-link"
 import { useStore } from "../app/lib/store"
@@ -24,8 +25,6 @@ const SummaryValue = ({ value, unit, label }) => {
     </div>
   )
 }
-
-const baselineOption = { value: "ALL", label: "All" }
 
 export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const {
@@ -59,6 +58,29 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
     selectedUsage,
     selectedSource,
   })
+
+  // Ensure selected categories/usages/sources are valid for given scenario
+  useEffect(() => {
+    const { categories, usages, sources } = metricsOptions
+    if (
+      categories.length &&
+      !categories.map(({ value }) => value).includes(selectedCategory?.value)
+    ) {
+      setSelectedCategory(scenarioKey, categories[0])
+    }
+    if (
+      usages.length &&
+      !usages.map(({ value }) => value).includes(selectedUsage?.value)
+    ) {
+      setSelectedUsage(scenarioKey, usages[0])
+    }
+    if (
+      sources.length &&
+      !sources.map(({ value }) => value).includes(selectedSource?.value)
+    ) {
+      setSelectedSource(scenarioKey, sources[0])
+    }
+  }, [selectedCategory?.value, selectedUsage?.value, selectedSource?.value])
 
   return (
     <div
@@ -115,19 +137,19 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       <DropdownMenu
         title="Category"
         options={metricsOptions.categories}
-        selected={selectedCategory ? selectedCategory : baselineOption}
+        selected={selectedCategory || { value: "-", label: "-" }}
         setSelected={option => setSelectedCategory(scenarioKey, option)}
       />
       <DropdownMenu
         title="Usage"
         options={metricsOptions.usages}
-        selected={selectedUsage ? selectedUsage : baselineOption}
+        selected={selectedUsage || { value: "-", label: "-" }}
         setSelected={option => setSelectedUsage(scenarioKey, option)}
       />
       <DropdownMenu
         title="Source"
         options={metricsOptions.sources}
-        selected={selectedSource ? selectedSource : baselineOption}
+        selected={selectedSource || { value: "-", label: "-" }}
         setSelected={option => setSelectedSource(scenarioKey, option)}
       />
     </div>
