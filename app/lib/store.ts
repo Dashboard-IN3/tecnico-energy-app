@@ -3,6 +3,11 @@ import { create } from "zustand"
 import { baselineScenario } from "./utils"
 
 interface InitialState {
+  hoveredFeature: {
+    id: string | null
+    location: { lat: number; lng: number } | null
+  }
+  setHoveredFeature: ({ id, location: {} }) => void
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
   setTotalSelectedFeatures: (featureTotal: number) => void
@@ -29,6 +34,7 @@ interface InitialState {
 }
 
 export const useStore = create<InitialState>((set, get) => ({
+  hoveredFeature: { id: null, location: null },
   selectedStudy: {
     slug: "",
     scale: null,
@@ -257,5 +263,11 @@ export const useStore = create<InitialState>((set, get) => ({
   show3d: false,
   setShow3d: () => {
     set(state => ({ ...state, show3d: !state.show3d }))
+  },
+  setHoveredFeature: (feature: {
+    id: string | null
+    location: { lat: number; lgn: number } | null
+  }) => {
+    set(state => ({ ...state, hoveredFeature: feature }))
   },
 }))

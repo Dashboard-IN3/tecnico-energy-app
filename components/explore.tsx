@@ -2,7 +2,7 @@
 
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
-import { Source, Layer } from "react-map-gl"
+import { Source, Layer, Popup } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
 import { useStore } from "../app/lib/store"
 interface Props {
@@ -21,7 +21,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
 
   const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
-  const { selectedStudy, show3d } = useStore()
+  const { selectedStudy, show3d, hoveredFeatureId } = useStore()
   const { selectedTheme } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
@@ -83,7 +83,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 ],
                 "fill-extrusion-color": [
                   "case",
-                  ["boolean", ["feature-state", "selected"], false],
+                  ["boolean", ["feature-state", "hover"], false],
+                  "#00ff00",
                   [
                     "interpolate-hcl",
                     ["linear"],
@@ -93,12 +94,19 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     100,
                     "#720a0a",
                   ],
-                  "#dadada",
                 ],
                 "fill-extrusion-opacity": 0.9,
               }}
             />
           </Source>
+          <Popup
+            longitude={-100}
+            latitude={40}
+            anchor="bottom"
+            onClose={() => {}}
+          >
+            You are here
+          </Popup>
         </Map>
       </div>
     </>

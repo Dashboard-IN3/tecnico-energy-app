@@ -1,6 +1,12 @@
 "use client"
 
-import React, { useRef, useState, ReactNode, useEffect } from "react"
+import React, {
+  useRef,
+  useState,
+  ReactNode,
+  useEffect,
+  useCallback,
+} from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl from "maplibre-gl"
@@ -30,6 +36,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const {
+    hoveredFeatureId,
+    setHoveredFeatureId,
     setTotalSelectedFeatures,
     setSummaryAvg,
     setSummaryTotal,
@@ -40,7 +48,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const category = selectedScenario?.selectedCategory?.value
   const usage = selectedScenario?.selectedUsage?.value
   const source = selectedScenario?.selectedSource?.value
-
+  console.log({ hoveredFeatureId })
   const metricsField = `${category}.${usage}.${source}`
 
   const getDbIntersectingFeatures = async ({
@@ -144,6 +152,60 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       map.off("zoomend", zoomHandler)
     }
   }, [map])
+
+  const hoverLayerName = "buildings-layer"
+  const hoverHandler = useCallback(
+    (e, isLeaving, map) => {
+      const featureId = e.features?.[0] ? e.features[0].id : null
+
+      if (isLeaving) {
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: hoveredFeatureId,
+          },
+          { hover: false }
+        )
+        map.getCanvas().style.cursor = ""
+        setHoveredFeatureId(null)
+      } else if (featureId !== hoveredFeatureId) {
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: hoveredFeatureId,
+          },
+          { hover: false }
+        )
+
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: featureId,
+          },
+          { hover: true }
+        )
+
+        map.getCanvas().style.cursor = "pointer"
+        setHoveredFeatureId(featureId)
+      }
+    },
+
+    [setHoveredFeatureId, hoveredFeatureId]
+  )
+  // hover feature handler
+  useEffect(() => {
+    if (!map) return
+
+    map.on("mousemove", hoverLayerName, e => hoverHandler(e, false, map))
+    map.on("mouseleave", hoverLayerName, e => hoverHandler(e, true, map))
+    return () => {
+      map.off("mousemove", hoverLayerName, e => hoverHandler(e, false, map))
+      map.off("mouseleave", hoverLayerName, e => hoverHandler(e, true, map))
+    }
+  }, [map, hoverHandler])
 
   return (
     <div ref={mapContainer} className="h-full w-full">
