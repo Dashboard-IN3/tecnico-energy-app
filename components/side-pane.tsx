@@ -37,6 +37,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
   const { selectedTheme, themes, metadata } = selectedStudy
 
   const selectedScenario = selectedTheme?.selectedScenario
+  console.log({ selectedScenario })
   const { selectedCategory, selectedSource, selectedUsage } = selectedScenario
 
   const themeDropdownOptions = Object.values(themes)?.map(theme => ({
@@ -116,6 +117,13 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       </div>
 
       <div className="self-stretch grow-0 shrink basis-0 flex-col justify-start items-start gap-6 flex border-solid border-[1px] border-slate-400 bg-white p-4 rounded-md">
+        <div>
+          {selectedTheme.name}
+          {
+            " for a scenario description for this most amazing scenario. I am very verbose but I really like it."
+          }
+          {/* {selectedTheme.selectedScenario.description} */}
+        </div>
         <div className="w-full">
           <SummaryValue
             value={selectedStudy.summary.summaryTotal}
