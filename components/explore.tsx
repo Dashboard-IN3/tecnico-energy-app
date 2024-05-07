@@ -21,7 +21,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
 
   const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
-  const { selectedStudy, show3d, hoveredFeatureId } = useStore()
+  const { selectedStudy, show3d, hoveredFeature } = useStore()
   const { selectedTheme } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
@@ -84,7 +84,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "hover"], false],
-                  "#00ff00",
+                  "#DAEBFF",
                   [
                     "interpolate-hcl",
                     ["linear"],
@@ -99,14 +99,16 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               }}
             />
           </Source>
-          <Popup
-            longitude={-100}
-            latitude={40}
-            anchor="bottom"
-            onClose={() => {}}
-          >
-            You are here
-          </Popup>
+          {/* {hoveredFeature.id !== null && (
+            // <Popup
+            //   longitude={hoveredFeature?.location?.lng ?? 0}
+            //   latitude={hoveredFeature?.location?.lat ?? 0}
+            //   anchor="bottom"
+            //   onClose={() => {}}
+            // >
+            //   You are viewing {hoveredFeature.id}
+            // </Popup>
+          )} */}
         </Map>
       </div>
     </>

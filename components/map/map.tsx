@@ -1,12 +1,6 @@
 "use client"
 
-import React, {
-  useRef,
-  useState,
-  ReactNode,
-  useEffect,
-  useCallback,
-} from "react"
+import React, { useRef, useState, ReactNode, useEffect } from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl from "maplibre-gl"
@@ -36,8 +30,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const {
-    hoveredFeatureId,
-    setHoveredFeatureId,
+    hoveredFeature,
+    setHoveredFeature,
     setTotalSelectedFeatures,
     setSummaryAvg,
     setSummaryTotal,
@@ -48,7 +42,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const category = selectedScenario?.selectedCategory?.value
   const usage = selectedScenario?.selectedUsage?.value
   const source = selectedScenario?.selectedSource?.value
-  console.log({ hoveredFeatureId })
+
   const metricsField = `${category}.${usage}.${source}`
 
   const getDbIntersectingFeatures = async ({
@@ -153,59 +147,76 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     }
   }, [map])
 
-  const hoverLayerName = "buildings-layer"
-  const hoverHandler = useCallback(
-    (e, isLeaving, map) => {
-      const featureId = e.features?.[0] ? e.features[0].id : null
-
-      if (isLeaving) {
-        map.setFeatureState(
-          {
-            source: "building-footprints",
-            sourceLayer: "default",
-            id: hoveredFeatureId,
-          },
-          { hover: false }
-        )
-        map.getCanvas().style.cursor = ""
-        setHoveredFeatureId(null)
-      } else if (featureId !== hoveredFeatureId) {
-        map.setFeatureState(
-          {
-            source: "building-footprints",
-            sourceLayer: "default",
-            id: hoveredFeatureId,
-          },
-          { hover: false }
-        )
-
-        map.setFeatureState(
-          {
-            source: "building-footprints",
-            sourceLayer: "default",
-            id: featureId,
-          },
-          { hover: true }
-        )
-
-        map.getCanvas().style.cursor = "pointer"
-        setHoveredFeatureId(featureId)
-      }
-    },
-
-    [setHoveredFeatureId, hoveredFeatureId]
-  )
   // hover feature handler
   useEffect(() => {
     if (!map) return
 
-    map.on("mousemove", hoverLayerName, e => hoverHandler(e, false, map))
-    map.on("mouseleave", hoverLayerName, e => hoverHandler(e, true, map))
-    return () => {
-      map.off("mousemove", hoverLayerName, e => hoverHandler(e, false, map))
-      map.off("mouseleave", hoverLayerName, e => hoverHandler(e, true, map))
+    let hoveredPolygonId: string | null = null
+
+    const hoverLayerName = "buildings-layer"
+
+    const handleMouseMove = (e: any) => {
+      if (e.features && e.features.length > 0) {
+        const newHoveredPolygonId = e.features[0].id ?? null
+        console.log(e)
+
+        if (newHoveredPolygonId !== hoveredPolygonId) {
+          if (hoveredPolygonId !== null) {
+            map.setFeatureState(
+              {
+                source: "building-footprints",
+                sourceLayer: "default",
+                id: hoveredPolygonId,
+              },
+              { hover: false }
+            )
+          }
+
+          hoveredPolygonId = newHoveredPolygonId ?? null
+
+          setHoveredFeature({
+            id: hoveredPolygonId,
+            location: e.lngLat,
+          })
+
+          map.setFeatureState(
+            {
+              source: "building-footprints",
+              sourceLayer: "default",
+              id: hoveredPolygonId as any,
+            },
+            { hover: true }
+          )
+        }
+      }
     }
-  }, [map, hoverHandler])
+
+    const handleMouseLeave = () => {
+      if (hoveredPolygonId !== null) {
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: hoveredPolygonId,
+          },
+          { hover: false }
+        )
+        hoveredPolygonId = null
+        setHoveredFeature({
+          id: null,
+          location: null,
+        })
+      }
+    }
+
+    map.on("mousemove", hoverLayerName, handleMouseMove)
+    map.on("mouseleave", hoverLayerName, handleMouseLeave)
+
+    return () => {
+      map.off("mousemove", hoverLayerName, handleMouseMove)
+      map.off("mouseleave", hoverLayerName, handleMouseLeave)
+    }
+  }, [map, setHoveredFeature])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

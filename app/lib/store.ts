@@ -2,12 +2,13 @@ import { GeoJSONFeature } from "maplibre-gl"
 import { create } from "zustand"
 import { baselineScenario } from "./utils"
 
+type mapFeature = {
+  id: string | null
+  location: { lat: number; lng: number } | null
+}
 interface InitialState {
-  hoveredFeature: {
-    id: string | null
-    location: { lat: number; lng: number } | null
-  }
-  setHoveredFeature: ({ id, location: {} }) => void
+  hoveredFeature: mapFeature
+  setHoveredFeature: (mapFeature) => void
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
   setTotalSelectedFeatures: (featureTotal: number) => void
@@ -264,10 +265,7 @@ export const useStore = create<InitialState>((set, get) => ({
   setShow3d: () => {
     set(state => ({ ...state, show3d: !state.show3d }))
   },
-  setHoveredFeature: (feature: {
-    id: string | null
-    location: { lat: number; lgn: number } | null
-  }) => {
+  setHoveredFeature: (feature: mapFeature) => {
     set(state => ({ ...state, hoveredFeature: feature }))
   },
 }))
