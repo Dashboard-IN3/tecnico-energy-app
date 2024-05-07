@@ -20,7 +20,7 @@ export default async function ExplorePage({
   const initialUsage = Object.values(metricsMetadata)[0]?.usage ?? null
   const initialScenario = {
     slug: "baseline",
-    description: "Baseline Scenario",
+    description: "The baseline values where no scenario has been applied yet.",
     name: "Baseline",
     selectedCategory: initialCategory
       ? { value: initialCategory, label: initialCategory }
@@ -69,6 +69,7 @@ export default async function ExplorePage({
             acc[scenario.scenario?.slug] = {
               slug: scenario.scenario_slug,
               name: scenario.scenario?.name,
+              description: scenario.scenario?.description,
               selectedCategory: {
                 value: initialCategory,
                 label: initialCategory,

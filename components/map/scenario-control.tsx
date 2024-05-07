@@ -22,9 +22,7 @@ export const ScenarioControl: React.FC = () => {
       <div>
         {options.map((option: any, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
-
           const newScenarioSelection = selectedTheme.scenarios[option.value]
-
           return (
             <div key={key} className="mb-2">
               <label className="flex items-center cursor-pointer">
