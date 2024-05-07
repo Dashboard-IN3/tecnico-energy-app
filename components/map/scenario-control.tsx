@@ -1,26 +1,41 @@
+import { useState } from "react"
 import { useStore } from "../../app/lib/store"
-import { baselineScenario } from "../../app/lib/utils"
 
 export const ScenarioControl: React.FC = () => {
   const { setSelectedScenario } = useStore()
+  const [showDescription, setShowDescription] = useState(false)
   const themes = useStore(state => state.selectedStudy.themes)
   const selectedTheme = useStore(state => state.selectedStudy?.selectedTheme)
   if (!selectedTheme || !Object.values(themes).length) {
     return <></>
   }
 
+  type ScenarioOption = { value: string; label: string; description: string }
+
   const options = Object.values(selectedTheme?.scenarios)
     ?.filter((scenario: Studies.Scenario) => scenario.slug !== "baseline")
     .map((scenario: Studies.Scenario) => ({
       value: scenario.slug,
       label: scenario.name,
+      description: scenario.description,
     }))
 
   return (
-    <div className="absolute top-4 right-4 bg-white p-4 rounded shadow-md opacity-90">
-      <div className="text-sm font-medium mb-2 ">Study Scenarios</div>
+    <div
+      className={`absolute top-4 right-4 bg-white pt-4 pb-1 px-4 rounded shadow-md opacity-90  ${
+        showDescription ? "max-h-[80%] max-w-[35%] overflow-y-scroll" : ""
+      }`}
+      style={{
+        zIndex: 1,
+        scrollbarWidth: "none",
+        boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <div className="text-sm font-medium mb-2 ">
+        {selectedTheme.name} Scenarios
+      </div>
       <div>
-        {options.map((option: any, key: number) => {
+        {options.map((option: ScenarioOption, key: number) => {
           const { selectedScenario } = themes[selectedTheme.slug]
           const newScenarioSelection = selectedTheme.scenarios[option.value]
           return (
@@ -55,9 +70,33 @@ export const ScenarioControl: React.FC = () => {
                   <span>{option.label}</span>
                 </div>
               </label>
+              {showDescription && (
+                <div className="pl-6">{option.description} </div>
+              )}
             </div>
           )
         })}
+      </div>
+      <div className="text-sm font-medium mb-2 border-solid border-t pt-3 border-slate-400 mt-4">
+        <div className="items-center flex ">
+          <div
+            className={`w-[30px] h-4 p-0.5 text-sky-800 rounded-full justify-start items-center flex cursor-pointer ${
+              showDescription
+                ? "bg-[#075985]"
+                : "bg-[#DAEBFF] border-solid border-[1px] border-sky-800"
+            }`}
+            onClick={() => setShowDescription(!showDescription)}
+          >
+            <div
+              className={`w-3 h-3 bg-white rounded-full transform transition-transform ${
+                showDescription ? "translate-x-[15px]" : "translate-x-0"
+              }`}
+            ></div>
+          </div>
+          <div className="text-xs font-light leading-normal ml-2">
+            Show Descriptions
+          </div>
+        </div>
       </div>
     </div>
   )
