@@ -16,8 +16,10 @@ export const DrawControlPane: React.FC = () => {
       {selectedStudy.scale === "Building" && (
         <div className="items-center flex">
           <div
-            className={`w-[50px] h-7 p-0.5 bg-slate-300 rounded-full justify-start items-center flex ${
-              show3d ? "bg-[#075985]" : ""
+            className={`w-[50px] h-7 p-0.5 text-sky-800 rounded-full justify-start items-center flex ${
+              show3d
+                ? "bg-[#075985]"
+                : "bg-[#DAEBFF] border-solid border-[1px] border-sky-800"
             }`}
             onClick={handleCheckboxChange}
           >
