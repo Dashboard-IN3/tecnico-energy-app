@@ -88,7 +88,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
       style={{
         zIndex: 1,
         scrollbarWidth: "none",
-        boxShadow: "10px 0 5px -2px rgba(0, 0, 0, 0.15)",
+        boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
       }}
     >
       <div className="w-full text-black text-xl font-extrabold leading-loose">
