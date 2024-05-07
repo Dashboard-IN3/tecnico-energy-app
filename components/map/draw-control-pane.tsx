@@ -1,6 +1,7 @@
 import { useStore } from "../../app/lib/store"
 import Trash from "../icons/trash"
 import Draw from "../icons/draw"
+import Pick from "../icons/pick"
 
 export const DrawControlPane: React.FC = () => {
   const { setIsDrawing, setAoi, selectedStudy, setShow3d, show3d } = useStore()
@@ -34,6 +35,18 @@ export const DrawControlPane: React.FC = () => {
       )}
 
       <div className="justify-center items-end flex gap-3">
+        <button
+          onClick={() => {
+            setIsDrawing(false)
+            // setAoi({ feature: undefined, bbox: [] })
+          }}
+          className={`hover:shadow-lg pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
+            isDrawing && "bg-slate-100"
+          }`}
+        >
+          <Pick fill="#075985" />
+          <div className="ml-2 text-sm">Pick</div>
+        </button>
         <button
           onClick={() => {
             setIsDrawing(!isDrawing)
