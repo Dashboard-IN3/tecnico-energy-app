@@ -11,6 +11,7 @@ import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
 import { ColorLegend } from "./color-legend"
+import { relative } from "path"
 
 type MapViewProps = {
   children?: ReactNode
