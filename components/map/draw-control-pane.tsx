@@ -12,7 +12,7 @@ export const DrawControlPane: React.FC = () => {
   }
 
   return (
-    <div className="absolute bottom-4 left-4 bg-white p-4 rounded shadow-md opacity-90 flex justify-center gap-3">
+    <div className="absolute bottom-4 left-4  p-4 rounded flex justify-center gap-3">
       {selectedStudy.scale === "Building" && (
         <div className="items-center flex">
           <div
@@ -39,7 +39,7 @@ export const DrawControlPane: React.FC = () => {
             setIsDrawing(!isDrawing)
             setAoi({ feature: undefined, bbox: [] })
           }}
-          className={`hover:shadow-lg pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
+          className={`hover:shadow-lg bg-white opacity-80 pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
             isDrawing && "bg-slate-100"
           }`}
         >
@@ -51,9 +51,10 @@ export const DrawControlPane: React.FC = () => {
             setAoi({ feature: undefined, bbox: [] })
             setIsDrawing(false)
           }}
-          className={`pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            aoi.feature ? "hover:shadow-lg" : "opacity-30 hover:cursor-default"
+          className={`pt-3 pb-2 px-4 bg-white rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
+            aoi.feature ? "hover:shadow-lg" : "hover:cursor-default"
           }`}
+          style={{ opacity: aoi.feature ? 0.8 : 0.3 }}
         >
           <Trash fill="#075985" />
           <div className="ml-2 text-sm">Clear</div>
