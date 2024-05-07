@@ -45,7 +45,7 @@ export const DrawControlPane: React.FC = () => {
           }`}
         >
           <Pick fill="#075985" />
-          <div className="ml-2 text-sm">Pick</div>
+          <div className="ml-2 text-sm">Select</div>
         </button>
         <button
           onClick={() => {
