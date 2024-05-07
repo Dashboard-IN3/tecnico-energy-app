@@ -19,7 +19,7 @@ export const ColorLegend: React.FC = () => {
   ]
 
   return (
-    <div className="absolute bottom-8 right-4 bg-white p-2 rounded shadow-md opacity-90">
+    <div className="absolute bottom-8 right-4 bg-white p-2 rounded shadow-md opacity-90 border-solid border">
       <div className="pb-2">{`${selectedCategory} in ${summaryUnit}`}</div>
       <div className="flex justify-center">
         {colorScheme.map((style, idx) => {

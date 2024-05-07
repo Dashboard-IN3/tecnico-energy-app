@@ -22,8 +22,8 @@ export const ScenarioControl: React.FC = () => {
 
   return (
     <div
-      className={`absolute top-4 right-4 bg-white pt-4 pb-1 px-4 rounded shadow-md opacity-90  ${
-        showDescription ? "max-h-[80%] max-w-[35%] overflow-y-scroll" : ""
+      className={`absolute top-4 right-4 w-[30%] h-[50%] bg-white p-6 rounded shadow-md opacity-90 border-solid border  ${
+        showDescription ? "max-h-[50%] max-w-[35%] overflow-y-scroll" : ""
       }`}
       style={{
         zIndex: 1,
@@ -31,7 +31,7 @@ export const ScenarioControl: React.FC = () => {
         boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <div className="text-sm font-medium mb-2 ">
+      <div className="text-lg font-medium mb-4">
         {selectedTheme.name} Scenarios
       </div>
       <div>
@@ -77,8 +77,8 @@ export const ScenarioControl: React.FC = () => {
           )
         })}
       </div>
-      <div className="text-sm font-medium mb-2 border-solid border-t pt-3 border-slate-400 mt-4">
-        <div className="items-center flex ">
+      <div className="text-sm font-medium absolute top-6 right-6 align-center justify-center">
+        <div className="items-center flex">
           <div
             className={`w-[30px] h-4 p-0.5 text-sky-800 rounded-full justify-start items-center flex cursor-pointer ${
               showDescription
