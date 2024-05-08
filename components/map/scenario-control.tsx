@@ -22,8 +22,8 @@ export const ScenarioControl: React.FC = () => {
 
   return (
     <div
-      className={`absolute top-4 right-4 w-[420px] h-[50%] bg-white p-6 rounded shadow-md opacity-90 border-solid border overflow-y-scroll  ${
-        showDescription ? "max-h-[50%] max-w-[35%] min-w-[420px]" : ""
+      className={`absolute top-4 right-4 w-[300px] h-[50%] bg-white p-6 rounded shadow-md opacity-90 border-solid border overflow-y-scroll  ${
+        showDescription ? "max-h-[50%] max-w-[35%] min-w-[300px]" : ""
       }`}
       style={{
         zIndex: 1,
@@ -31,8 +31,29 @@ export const ScenarioControl: React.FC = () => {
         boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <div className="text-lg font-medium mb-4">
+      <div className="text-lg font-medium mb-2">
         {selectedTheme.name} Scenarios
+      </div>
+      <div className="text-sm font-medium align-center justify-center pb-2 mb-4 border-b-2 border-solid">
+        <div className="items-center flex">
+          <div
+            className={`w-[30px] h-4 p-0.5 text-sky-800 rounded-full justify-start items-center flex cursor-pointer ${
+              showDescription
+                ? "bg-[#075985]"
+                : "bg-[#DAEBFF] border-solid border-[1px] border-sky-800"
+            }`}
+            onClick={() => setShowDescription(!showDescription)}
+          >
+            <div
+              className={`w-3 h-3 bg-white rounded-full transform transition-transform ${
+                showDescription ? "translate-x-[15px]" : "translate-x-0"
+              }`}
+            ></div>
+          </div>
+          <div className="text-xs font-light leading-normal ml-2">
+            Show Descriptions
+          </div>
+        </div>
       </div>
       <div>
         {options.map((option: ScenarioOption, key: number) => {
@@ -76,27 +97,6 @@ export const ScenarioControl: React.FC = () => {
             </div>
           )
         })}
-      </div>
-      <div className="text-sm font-medium absolute top-[31px] right-7 align-center justify-center">
-        <div className="items-center flex">
-          <div
-            className={`w-[30px] h-4 p-0.5 text-sky-800 rounded-full justify-start items-center flex cursor-pointer ${
-              showDescription
-                ? "bg-[#075985]"
-                : "bg-[#DAEBFF] border-solid border-[1px] border-sky-800"
-            }`}
-            onClick={() => setShowDescription(!showDescription)}
-          >
-            <div
-              className={`w-3 h-3 bg-white rounded-full transform transition-transform ${
-                showDescription ? "translate-x-[15px]" : "translate-x-0"
-              }`}
-            ></div>
-          </div>
-          <div className="text-xs font-light leading-normal ml-2">
-            Show Descriptions
-          </div>
-        </div>
       </div>
     </div>
   )
