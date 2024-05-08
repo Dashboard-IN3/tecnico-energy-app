@@ -22,8 +22,8 @@ export const ScenarioControl: React.FC = () => {
 
   return (
     <div
-      className={`absolute top-4 right-4 w-[30%] h-[50%] bg-white p-6 rounded shadow-md opacity-90 border-solid border  ${
-        showDescription ? "max-h-[50%] max-w-[35%] overflow-y-scroll" : ""
+      className={`absolute top-4 right-4 w-[420px] h-[50%] bg-white p-6 rounded shadow-md opacity-90 border-solid border overflow-y-scroll  ${
+        showDescription ? "max-h-[50%] max-w-[35%] min-w-[420px]" : ""
       }`}
       style={{
         zIndex: 1,
