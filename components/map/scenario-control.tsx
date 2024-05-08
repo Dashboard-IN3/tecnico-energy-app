@@ -12,13 +12,21 @@ export const ScenarioControl: React.FC = () => {
 
   type ScenarioOption = { value: string; label: string; description: string }
 
-  const options = Object.values(selectedTheme?.scenarios)
-    ?.filter((scenario: Studies.Scenario) => scenario.slug !== "baseline")
-    .map((scenario: Studies.Scenario) => ({
+  let options = Object.values(selectedTheme?.scenarios).map(
+    (scenario: Studies.Scenario) => ({
       value: scenario.slug,
       label: scenario.name,
       description: scenario.description,
-    }))
+    })
+  )
+
+  const baselineScenarioOption = options.find(
+    option => option.value == "baseline"
+  )
+  options = options.filter(option => option.value !== "baseline")
+  if (baselineScenarioOption) {
+    options.unshift(baselineScenarioOption)
+  }
 
   return (
     <div

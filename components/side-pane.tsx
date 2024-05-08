@@ -91,10 +91,10 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
         boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <div className="w-full text-black text-xl font-extrabold leading-loose">
+      <div className="w-full text-black text-xl font-extrabold">
         {selectedStudy.name}
       </div>
-      {imgSrc && (
+      {/* {imgSrc && (
         <div className="relative w-full min-h-[175px] max-w-[250px] md:max-w-lg">
           <Image
             className="w-full h-[200px] object-cover rounded-lg"
@@ -105,7 +105,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
             priority={true}
           />
         </div>
-      )}
+      )} */}
 
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />

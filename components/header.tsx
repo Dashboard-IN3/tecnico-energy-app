@@ -1,16 +1,18 @@
 import Link from "next/link"
 import Github from "./icons/github"
+import Logo from "./icons/logo"
 
 export const Header = () => {
   return (
     <nav
-      className="bg-white shadow-md flex px-2 "
+      className="bg-white shadow-md flex"
       style={{ justifyContent: "space-between", alignItems: "center" }}
     >
-      <div className="sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6">
         <div className="flex justify-between h-16">
           <Link href={"/"} className="flex items-center text-2xl font-bold">
-            Urban Data Visualizer
+            <Logo />
+            <span className="ml-2">Urban Data Visualizer</span>
           </Link>
         </div>
       </div>
