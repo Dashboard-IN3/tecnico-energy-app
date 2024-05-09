@@ -67,10 +67,12 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     const summaryDescription = search.search[0]?.data_description ?? ""
     setSummaryDescription(summaryDescription)
-    console.log({ summaryDescription })
 
-    updateIntersectingFeatures(featureIDs)
-    setTotalSelectedFeatures(featureIDs.length)
+    const mapFeatures = search.search[0].feature_objects
+    const summaryMax = search.search[0].data_max
+
+    updateIntersectingFeatures(mapFeatures, summaryMax)
+    setTotalSelectedFeatures(mapFeatures.length)
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
     setSummaryUnit(summaryUnit)
@@ -86,34 +88,38 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     })
   }, [aoi.feature, aoi.bbox, map, metricsField, selectedScenario?.slug])
 
-  const updateIntersectingFeatures = featureIdsToUpdate => {
+  const updateIntersectingFeatures = (featureIdsToUpdate, summaryMax) => {
     // remove Ids that are no longer in new array of ids
     const toRemove = difference(selectedFeatureIds, featureIdsToUpdate)
 
-    toRemove.forEach(featureID => {
+    toRemove.forEach(featureData => {
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: undefined }
+        { selected: undefined, relative_shading_percentage: undefined }
       )
     })
 
     // add Ids that are in new selection but not in previous yet
     const toAdd = difference(featureIdsToUpdate, selectedFeatureIds)
 
-    toAdd.forEach(featureID => {
+    toAdd.forEach(featureData => {
+      // console.log(featureData.shading, summaryTotal)
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: true }
+        {
+          selected: true,
+          relative_shading_percentage: (featureData.shading / summaryMax) * 100,
+        }
       )
     })
 
