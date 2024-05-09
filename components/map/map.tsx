@@ -31,6 +31,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const {
+    hoveredFeature,
+    setHoveredFeature,
     setTotalSelectedFeatures,
     setSummaryAvg,
     setSummaryDescription,
@@ -58,10 +60,10 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
-    const featureIDs = search.search[0].feature_ids
-    const summaryTotal = search.search[0].data_total
-    const summaryUnit = search.search[0].data_unit
-    const summaryAvg = search.search[0].data_avg
+    const featureIDs = search.search[0]?.feature_ids ?? []
+    const summaryTotal = search.search[0]?.data_total ?? 0
+    const summaryUnit = search.search[0]?.data_unit ?? ""
+    const summaryAvg = search.search[0]?.data_avg ?? 0
 
     const summaryDescription = search.search[0]?.data_description ?? ""
     setSummaryDescription(summaryDescription)
@@ -150,6 +152,82 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       map.off("zoomend", zoomHandler)
     }
   }, [map])
+
+  // hover feature handler
+  useEffect(() => {
+    if (!map) return
+
+    let hoveredPolygonId: string | null = null
+
+    const hoverLayerName = "buildings-layer"
+
+    const handleMouseMove = (e: any) => {
+      if (e.features && e.features.length > 0) {
+        map.getCanvas().style.cursor = "pointer"
+        const newHoveredPolygonId = e.features[0].id ?? null
+
+        if (newHoveredPolygonId !== hoveredPolygonId) {
+          if (hoveredPolygonId !== null) {
+            map.setFeatureState(
+              {
+                source: "building-footprints",
+                sourceLayer: "default",
+                id: hoveredPolygonId,
+              },
+              { hover: false }
+            )
+          }
+
+          hoveredPolygonId = newHoveredPolygonId ?? null
+
+          setHoveredFeature({
+            id: hoveredPolygonId,
+            location: e.lngLat,
+            value: e.features[0].properties.shading,
+            unit: e.features[0].properties.unit,
+          })
+
+          map.setFeatureState(
+            {
+              source: "building-footprints",
+              sourceLayer: "default",
+              id: hoveredPolygonId as any,
+            },
+            { hover: true }
+          )
+        }
+      }
+    }
+
+    const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = ""
+      if (hoveredPolygonId !== null) {
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: hoveredPolygonId,
+          },
+          { hover: false }
+        )
+        hoveredPolygonId = null
+        setHoveredFeature({
+          id: null,
+          location: null,
+          value: null,
+          unit: null,
+        })
+      }
+    }
+
+    map.on("mousemove", hoverLayerName, handleMouseMove)
+    map.on("mouseleave", hoverLayerName, handleMouseLeave)
+
+    return () => {
+      map.off("mousemove", hoverLayerName, handleMouseMove)
+      map.off("mouseleave", hoverLayerName, handleMouseLeave)
+    }
+  }, [map, setHoveredFeature])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

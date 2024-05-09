@@ -2,9 +2,10 @@
 
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
-import { Source, Layer } from "react-map-gl"
+import { Source, Layer, Popup } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
 import { useStore } from "../app/lib/store"
+import { largeNumberDisplay } from "../lib/utils"
 interface Props {
   params: { slug: string }
   metaData: Studies.Study
@@ -21,7 +22,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
 
   const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
-  const { selectedStudy, show3d } = useStore()
+  const { selectedStudy, show3d, hoveredFeature } = useStore()
   const { selectedTheme } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
@@ -82,6 +83,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 ],
                 "fill-extrusion-color": [
                   "case",
+                  ["boolean", ["feature-state", "hover"], false],
+                  "#DAEBFF", // hovered features
                   ["boolean", ["feature-state", "selected"], false],
                   [
                     "interpolate-hcl",
@@ -92,12 +95,38 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     100,
                     "#720a0a",
                   ],
-                  "#dadada",
+                  "#dadada", // deselected features
                 ],
                 "fill-extrusion-opacity": 0.9,
               }}
             />
           </Source>
+          {hoveredFeature?.id ? (
+            <Popup
+              longitude={hoveredFeature?.location?.lng ?? 0}
+              latitude={hoveredFeature?.location?.lat ?? 0}
+              anchor="bottom"
+              closeButton={false}
+              style={{ padding: 0 }}
+            >
+              <div
+                className="font-medium text-sm"
+                style={{ fontFamily: "Helvetica Neue" }}
+              >
+                <div>{hoveredFeature.id}</div>
+                <div>
+                  <span className="font-medium mr-1 ">
+                    {largeNumberDisplay(hoveredFeature.value ?? 0, 0)}
+                  </span>
+                  <span className="font-light text-xs">
+                    {hoveredFeature.unit}
+                  </span>
+                </div>
+              </div>
+            </Popup>
+          ) : (
+            <></>
+          )}
         </Map>
       </div>
     </>

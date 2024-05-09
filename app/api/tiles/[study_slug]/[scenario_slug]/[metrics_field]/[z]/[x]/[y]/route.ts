@@ -141,7 +141,8 @@ class Tile {
           gm.max_shading as global_max,
           CAST(t.properties->'floors_ag' AS NUMERIC) AS floors,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
-          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
+          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage,
+          m.data->${this.metrics_field}->>'units' AS unit
         FROM
           ${rawVals.table} t
         JOIN
