@@ -5,6 +5,8 @@ import { baselineScenario } from "./utils"
 type mapFeature = {
   id: string | null
   location: { lat: number; lng: number } | null
+  value: number | null
+  unit: string | null
 }
 interface InitialState {
   hoveredFeature: mapFeature
@@ -35,7 +37,8 @@ interface InitialState {
 }
 
 export const useStore = create<InitialState>((set, get) => ({
-  hoveredFeature: { id: null, location: null },
+  hoveredFeature: { id: null, location: null, value: null, unit: null },
+  shading: null,
   selectedStudy: {
     slug: "",
     scale: null,

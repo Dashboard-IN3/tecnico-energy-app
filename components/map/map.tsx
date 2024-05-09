@@ -157,8 +157,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
     const handleMouseMove = (e: any) => {
       if (e.features && e.features.length > 0) {
+        map.getCanvas().style.cursor = "pointer"
         const newHoveredPolygonId = e.features[0].id ?? null
-        console.log(e)
 
         if (newHoveredPolygonId !== hoveredPolygonId) {
           if (hoveredPolygonId !== null) {
@@ -177,6 +177,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
           setHoveredFeature({
             id: hoveredPolygonId,
             location: e.lngLat,
+            value: e.features[0].properties.shading,
+            unit: e.features[0].properties.unit,
           })
 
           map.setFeatureState(
@@ -192,6 +194,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     }
 
     const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = ""
       if (hoveredPolygonId !== null) {
         map.setFeatureState(
           {
@@ -205,6 +208,8 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
         setHoveredFeature({
           id: null,
           location: null,
+          value: null,
+          unit: null,
         })
       }
     }

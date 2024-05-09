@@ -5,6 +5,7 @@ import Map from "./map/map"
 import { Source, Layer, Popup } from "react-map-gl"
 import { LngLatLike } from "mapbox-gl"
 import { useStore } from "../app/lib/store"
+import { largeNumberDisplay } from "../lib/utils"
 interface Props {
   params: { slug: string }
   metaData: Studies.Study
@@ -99,16 +100,32 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               }}
             />
           </Source>
-          {/* {hoveredFeature.id !== null && (
-            // <Popup
-            //   longitude={hoveredFeature?.location?.lng ?? 0}
-            //   latitude={hoveredFeature?.location?.lat ?? 0}
-            //   anchor="bottom"
-            //   onClose={() => {}}
-            // >
-            //   You are viewing {hoveredFeature.id}
-            // </Popup>
-          )} */}
+          {hoveredFeature?.id ? (
+            <Popup
+              longitude={hoveredFeature?.location?.lng ?? 0}
+              latitude={hoveredFeature?.location?.lat ?? 0}
+              anchor="bottom"
+              closeButton={false}
+              style={{ padding: 0 }}
+            >
+              <div
+                className="font-medium text-sm"
+                style={{ fontFamily: "Helvetica Neue" }}
+              >
+                <div>{hoveredFeature.id}</div>
+                <div>
+                  <span className="font-medium mr-1 ">
+                    {largeNumberDisplay(hoveredFeature.value ?? 0, 0)}
+                  </span>
+                  <span className="font-light text-xs">
+                    {hoveredFeature.unit}
+                  </span>
+                </div>
+              </div>
+            </Popup>
+          ) : (
+            <></>
+          )}
         </Map>
       </div>
     </>
