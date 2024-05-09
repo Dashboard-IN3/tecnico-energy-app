@@ -87,7 +87,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                   [
                     "interpolate-hcl",
                     ["linear"],
-                    ["get", "shading_percentage"],
+                    ["feature-state", "relative_shading_percentage"],
                     0,
                     "#fab482",
                     100,

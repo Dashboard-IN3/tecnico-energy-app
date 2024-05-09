@@ -56,13 +56,14 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
-    const featureIDs = search.search[0].feature_ids
+    const mapFeatures = search.search[0].feature_objects
     const summaryTotal = search.search[0].data_total
     const summaryUnit = search.search[0].data_unit
     const summaryAvg = search.search[0].data_avg
+    const summaryMax = search.search[0].data_max
 
-    updateIntersectingFeatures(featureIDs)
-    setTotalSelectedFeatures(featureIDs.length)
+    updateIntersectingFeatures(mapFeatures, summaryMax)
+    setTotalSelectedFeatures(mapFeatures.length)
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
     setSummaryUnit(summaryUnit)
@@ -78,34 +79,38 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     })
   }, [aoi.feature, aoi.bbox, map, metricsField, selectedScenario?.slug])
 
-  const updateIntersectingFeatures = featureIdsToUpdate => {
+  const updateIntersectingFeatures = (featureIdsToUpdate, summaryMax) => {
     // remove Ids that are no longer in new array of ids
     const toRemove = difference(selectedFeatureIds, featureIdsToUpdate)
 
-    toRemove.forEach(featureID => {
+    toRemove.forEach(featureData => {
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: undefined }
+        { selected: undefined, relative_shading_percentage: undefined }
       )
     })
 
     // add Ids that are in new selection but not in previous yet
     const toAdd = difference(featureIdsToUpdate, selectedFeatureIds)
 
-    toAdd.forEach(featureID => {
+    toAdd.forEach(featureData => {
+      // console.log(featureData.shading, summaryTotal)
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: true }
+        {
+          selected: true,
+          relative_shading_percentage: (featureData.shading / summaryMax) * 100,
+        }
       )
     })
 
