@@ -87,6 +87,7 @@ export default async function ExplorePage({
     summary: {
       totalSelectedFeatures: 0,
       summaryUnit: "",
+      summaryDescription: "",
       summaryTotal: 0,
       summaryAvg: 0,
     },

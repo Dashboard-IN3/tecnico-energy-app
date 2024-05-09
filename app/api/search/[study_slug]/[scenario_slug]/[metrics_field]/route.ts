@@ -11,6 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
     const search = await prisma.$queryRaw`
       SELECT 
         json_agg(g.key) as feature_ids, 
+        CAST(m.data -> ${metrics_field} ->> 'description' AS VARCHAR) AS data_description, 
         CAST(m.data -> ${metrics_field} ->> 'sum' AS NUMERIC) AS data_total,
         CAST(m.data -> ${metrics_field} ->> 'avg' AS NUMERIC) AS data_avg,
         CAST(m.data -> ${metrics_field} ->> 'units' AS VARCHAR) AS data_unit 
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
           SUM(COALESCE(data_value, 0)) AS data_total,
           AVG(COALESCE(data_value, 0)) AS data_avg,
           data_unit,
+          data_description,
           json_agg(id) AS feature_ids
       FROM 
           IntersectedGeometries

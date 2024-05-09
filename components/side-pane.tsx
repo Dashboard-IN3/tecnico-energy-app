@@ -110,7 +110,7 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           </div>
           <div>
             <span className="font-semibold">Description:</span>{" "}
-            {` ${selectedScenario.description}`}
+            {` ${selectedStudy.summary.summaryDescription}`}
           </div>
         </div>
         <div className="w-full">

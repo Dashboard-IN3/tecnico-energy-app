@@ -33,6 +33,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const {
     setTotalSelectedFeatures,
     setSummaryAvg,
+    setSummaryDescription,
     setSummaryTotal,
     setSummaryUnit,
   } = useStore()
@@ -61,6 +62,10 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     const summaryTotal = search.search[0].data_total
     const summaryUnit = search.search[0].data_unit
     const summaryAvg = search.search[0].data_avg
+
+    const summaryDescription = search.search[0]?.data_description ?? ""
+    setSummaryDescription(summaryDescription)
+    console.log({ summaryDescription })
 
     updateIntersectingFeatures(featureIDs)
     setTotalSelectedFeatures(featureIDs.length)

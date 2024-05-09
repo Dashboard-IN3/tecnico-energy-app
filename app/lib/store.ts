@@ -6,6 +6,7 @@ interface InitialState {
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
   setTotalSelectedFeatures: (featureTotal: number) => void
+  setSummaryDescription: (summaryDescription: string) => void
   setSummaryTotal: (summaryTotal: number) => void
   setSummaryUnit: (summaryUnit: string) => void
   setSummaryAvg: (summaryAvg: number) => void
@@ -37,6 +38,7 @@ export const useStore = create<InitialState>((set, get) => ({
     imageSrc: "",
     summary: {
       totalSelectedFeatures: 0,
+      summaryDescription: "",
       summaryTotal: 0,
       summaryUnit: "null",
       summaryAvg: 0,
@@ -103,6 +105,18 @@ export const useStore = create<InitialState>((set, get) => ({
         summary: {
           ...state.selectedStudy.summary,
           summaryAvg,
+        },
+      },
+    }))
+  },
+
+  setSummaryDescription: (summaryDescription: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryDescription,
         },
       },
     }))
