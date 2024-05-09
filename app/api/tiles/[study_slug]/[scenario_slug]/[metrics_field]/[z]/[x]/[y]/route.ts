@@ -157,7 +157,9 @@ class Tile {
           )
           AND
           ((t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
-          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug})) 
+          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}))
+          AND
+          m.data->${this.metrics_field}->>'value' IS NOT NULL -- remove features with NULL value
       )
       SELECT
         ST_AsMVT(mvtgeom.*)
