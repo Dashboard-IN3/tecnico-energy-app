@@ -58,10 +58,10 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
-    const featureIDs = search.search[0].feature_ids
-    const summaryTotal = search.search[0].data_total
-    const summaryUnit = search.search[0].data_unit
-    const summaryAvg = search.search[0].data_avg
+    const featureIDs = search.search[0]?.feature_ids ?? []
+    const summaryTotal = search.search[0]?.data_total ?? 0
+    const summaryUnit = search.search[0]?.data_unit ?? ""
+    const summaryAvg = search.search[0]?.data_avg ?? 0
 
     updateIntersectingFeatures(featureIDs)
     setTotalSelectedFeatures(featureIDs.length)
