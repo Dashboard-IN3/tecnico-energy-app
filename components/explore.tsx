@@ -85,7 +85,8 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 "fill-extrusion-color": [
                   "case",
                   ["boolean", ["feature-state", "hover"], false],
-                  "#DAEBFF",
+                  "#DAEBFF", // hovered features
+                  ["boolean", ["feature-state", "selected"], false],
                   [
                     "interpolate-hcl",
                     ["linear"],
@@ -95,6 +96,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                     100,
                     "#720a0a",
                   ],
+                  "#dadada", // deselected features
                 ],
                 "fill-extrusion-opacity": 0.9,
               }}
