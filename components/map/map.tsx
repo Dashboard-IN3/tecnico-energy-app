@@ -11,6 +11,7 @@ import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
 import { ColorLegend } from "./color-legend"
+import { relative } from "path"
 
 type MapViewProps = {
   children?: ReactNode
@@ -30,8 +31,11 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const { aoi, isDrawing } = selectedStudy
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
   const {
+    hoveredFeature,
+    setHoveredFeature,
     setTotalSelectedFeatures,
     setSummaryAvg,
+    setSummaryDescription,
     setSummaryTotal,
     setSummaryUnit,
   } = useStore()
@@ -56,13 +60,19 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
-    const featureIDs = search.search[0].feature_ids
-    const summaryTotal = search.search[0].data_total
-    const summaryUnit = search.search[0].data_unit
-    const summaryAvg = search.search[0].data_avg
+    const featureIDs = search.search[0]?.feature_ids ?? []
+    const summaryTotal = search.search[0]?.data_total ?? 0
+    const summaryUnit = search.search[0]?.data_unit ?? ""
+    const summaryAvg = search.search[0]?.data_avg ?? 0
 
-    updateIntersectingFeatures(featureIDs)
-    setTotalSelectedFeatures(featureIDs.length)
+    const summaryDescription = search.search[0]?.data_description ?? ""
+    setSummaryDescription(summaryDescription)
+
+    const mapFeatures = search.search[0].feature_objects
+    const summaryMax = search.search[0].data_max
+
+    updateIntersectingFeatures(mapFeatures, summaryMax)
+    setTotalSelectedFeatures(mapFeatures.length)
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
     setSummaryUnit(summaryUnit)
@@ -78,34 +88,38 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     })
   }, [aoi.feature, aoi.bbox, map, metricsField, selectedScenario?.slug])
 
-  const updateIntersectingFeatures = featureIdsToUpdate => {
+  const updateIntersectingFeatures = (featureIdsToUpdate, summaryMax) => {
     // remove Ids that are no longer in new array of ids
     const toRemove = difference(selectedFeatureIds, featureIdsToUpdate)
 
-    toRemove.forEach(featureID => {
+    toRemove.forEach(featureData => {
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: undefined }
+        { selected: undefined, relative_shading_percentage: undefined }
       )
     })
 
     // add Ids that are in new selection but not in previous yet
     const toAdd = difference(featureIdsToUpdate, selectedFeatureIds)
 
-    toAdd.forEach(featureID => {
+    toAdd.forEach(featureData => {
+      // console.log(featureData.shading, summaryTotal)
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureID,
+          id: featureData.id,
         },
-        { selected: true }
+        {
+          selected: true,
+          relative_shading_percentage: (featureData.shading / summaryMax) * 100,
+        }
       )
     })
 
@@ -144,6 +158,82 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       map.off("zoomend", zoomHandler)
     }
   }, [map])
+
+  // hover feature handler
+  useEffect(() => {
+    if (!map) return
+
+    let hoveredPolygonId: string | null = null
+
+    const hoverLayerName = "buildings-layer"
+
+    const handleMouseMove = (e: any) => {
+      if (e.features && e.features.length > 0) {
+        map.getCanvas().style.cursor = "pointer"
+        const newHoveredPolygonId = e.features[0].id ?? null
+
+        if (newHoveredPolygonId !== hoveredPolygonId) {
+          if (hoveredPolygonId !== null) {
+            map.setFeatureState(
+              {
+                source: "building-footprints",
+                sourceLayer: "default",
+                id: hoveredPolygonId,
+              },
+              { hover: false }
+            )
+          }
+
+          hoveredPolygonId = newHoveredPolygonId ?? null
+
+          setHoveredFeature({
+            id: hoveredPolygonId,
+            location: e.lngLat,
+            value: e.features[0].properties.shading,
+            unit: e.features[0].properties.unit,
+          })
+
+          map.setFeatureState(
+            {
+              source: "building-footprints",
+              sourceLayer: "default",
+              id: hoveredPolygonId as any,
+            },
+            { hover: true }
+          )
+        }
+      }
+    }
+
+    const handleMouseLeave = () => {
+      map.getCanvas().style.cursor = ""
+      if (hoveredPolygonId !== null) {
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: hoveredPolygonId,
+          },
+          { hover: false }
+        )
+        hoveredPolygonId = null
+        setHoveredFeature({
+          id: null,
+          location: null,
+          value: null,
+          unit: null,
+        })
+      }
+    }
+
+    map.on("mousemove", hoverLayerName, handleMouseMove)
+    map.on("mouseleave", hoverLayerName, handleMouseLeave)
+
+    return () => {
+      map.off("mousemove", hoverLayerName, handleMouseMove)
+      map.off("mouseleave", hoverLayerName, handleMouseLeave)
+    }
+  }, [map, setHoveredFeature])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

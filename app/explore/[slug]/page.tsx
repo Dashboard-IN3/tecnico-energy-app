@@ -20,7 +20,7 @@ export default async function ExplorePage({
   const initialUsage = Object.values(metricsMetadata)[0]?.usage ?? null
   const initialScenario = {
     slug: "baseline",
-    description: "Baseline Scenario",
+    description: "The baseline values where no scenario has been applied yet.",
     name: "Baseline",
     selectedCategory: initialCategory
       ? { value: initialCategory, label: initialCategory }
@@ -69,6 +69,7 @@ export default async function ExplorePage({
             acc[scenario.scenario?.slug] = {
               slug: scenario.scenario_slug,
               name: scenario.scenario?.name,
+              description: scenario.scenario?.description,
               selectedCategory: {
                 value: initialCategory,
                 label: initialCategory,
@@ -86,6 +87,7 @@ export default async function ExplorePage({
     summary: {
       totalSelectedFeatures: 0,
       summaryUnit: "",
+      summaryDescription: "",
       summaryTotal: 0,
       summaryAvg: 0,
     },
@@ -101,7 +103,7 @@ export default async function ExplorePage({
   return (
     <>
       <StoreInitialize stateObject={stateObject} />
-      <div className="grid grid-cols-1 grid-rows-[auto,1fr,1fr] md:grid-cols-[350px,1fr] md:grid-rows-[auto,1fr] h-screen w-full overflow-x-hidden">
+      <div className="grid grid-cols-1 grid-rows-[auto,1fr,1fr] md:grid-cols-[420px,1fr] md:grid-rows-[auto,1fr] h-screen w-full overflow-x-hidden">
         <div className="row-span-1 col-span-2 relative border-b border-gray-200">
           <Header />
         </div>

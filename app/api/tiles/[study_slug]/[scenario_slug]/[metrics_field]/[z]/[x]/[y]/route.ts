@@ -141,7 +141,8 @@ class Tile {
           gm.max_shading as global_max,
           CAST(t.properties->'floors_ag' AS NUMERIC) AS floors,
           CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC)) AS INTEGER) AS shading,
-          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage
+          CAST(ROUND(CAST(m.data->${this.metrics_field}->>'value' AS NUMERIC) / NULLIF(gm.max_shading, 0) * 100) AS INTEGER) AS shading_percentage,
+          m.data->${this.metrics_field}->>'units' AS unit
         FROM
           ${rawVals.table} t
         JOIN
@@ -157,7 +158,9 @@ class Tile {
           )
           AND
           ((t.study_slug = ${this.study_slug} AND m.scenario_slug IS NULL AND ${this.scenario_slug} = 'baseline') OR 
-          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug})) 
+          (t.study_slug = ${this.study_slug} AND m.scenario_slug = ${this.scenario_slug}))
+          AND
+          m.data->${this.metrics_field}->>'value' IS NOT NULL -- remove features with NULL value
       )
       SELECT
         ST_AsMVT(mvtgeom.*)

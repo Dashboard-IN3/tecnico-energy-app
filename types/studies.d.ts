@@ -10,6 +10,7 @@ declare namespace Studies {
     summary: {
       totalSelectedFeatures: number
       summaryUnit: string
+      summaryDescription: string
       summaryTotal: number
       summaryAvg: number
     }
