@@ -5,6 +5,7 @@ import { promisify } from "util"
 import prisma from "../lib/prisma"
 import { Workbook } from "./utils/Workbook"
 import { metrics, Prisma } from "@prisma/client"
+import { getChecksum } from "./utils/checksum"
 
 const gunzip = promisify(zlib.gunzip)
 
@@ -30,9 +31,31 @@ async function main() {
     const worksheetPath = `${file.path}/${file.name}`
     const geojsonPath = `${file.path}/${filename.name}.geojson.gz`
 
+    const checksums = {
+      study_slug,
+      metrics: await getChecksum(worksheetPath),
+      geo: await getChecksum(geojsonPath),
+    }
+
+    if (
+      await prisma.file_checksum.count({
+        where: checksums,
+      })
+    ) {
+      log(`Study unchanged from last ingestion. Skipping.`)
+      continue
+    }
+
     try {
       await prisma.$transaction(
         async tx => {
+          // Update checksums
+          await tx.file_checksum.upsert({
+            create: checksums,
+            update: checksums,
+            where: { study_slug },
+          })
+
           const workbook = await Workbook.load(worksheetPath)
 
           // Clear existing data for study
@@ -302,24 +325,30 @@ async function main() {
   }
 }
 
-main().finally(async () => {
-  await prisma.$disconnect()
-
-  console.log(
-    `\n***** Successfully ingested ${successes.length} studies: *****`
+main()
+  .catch(e =>
+    console.error(
+      `An uncaught error occurred during ingestion: ${indent(e.message)}`
+    )
   )
-  successes.forEach(study_slug => console.log(`- Study: ${study_slug}`))
+  .finally(async () => {
+    await prisma.$disconnect()
 
-  if (failures.length) {
-    console.log(`\n***** Failed to ingest ${failures.length} studies: *****`)
-    failures.forEach(([study_slug, error]) => {
-      console.log(`- Study: ${study_slug}`)
-      console.log("  Error Cause: " + indent(`${error.cause}`))
-      console.log("  Error Stack: " + indent(`${error.stack}`) + "\n")
-    })
-  }
-  process.exit(failures.length)
-})
+    console.log(
+      `\n***** Successfully ingested ${successes.length} studies: *****`
+    )
+    successes.forEach(study_slug => console.log(`- Study: ${study_slug}`))
+
+    if (failures.length) {
+      console.log(`\n***** Failed to ingest ${failures.length} studies: *****`)
+      failures.forEach(([study_slug, error]) => {
+        console.log(`- Study: ${study_slug}`)
+        console.log("  Error Cause: " + indent(`${error.cause}`))
+        console.log("  Error Stack: " + indent(`${error.stack}`) + "\n")
+      })
+    }
+    process.exit(failures.length)
+  })
 
 function indent(str: string, spaces: number = 4, skipFirst: boolean = true) {
   return str
