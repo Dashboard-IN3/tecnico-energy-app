@@ -6,6 +6,7 @@ env:
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+  PR_DB: pr_${{ github.event.number }}
 
 on:
   pull_request:
@@ -82,8 +83,7 @@ jobs:
 
       - name: Update Vercel environment information with new DB name
         run: |
-          DB_NAME=PR_$(echo "$GITHUB_REF" | awk -F / '{print $3}')
-          sed -i "s/${{ steps.original-dotenv.outputs.POSTGRES_DATABASE }}/${DB_NAME}/g" ${{ env.VERCEL_ENV_FILE }}
+          sed -i "s/${{ steps.original-dotenv.outputs.POSTGRES_DATABASE }}/${PR_DB}/g" ${{ env.VERCEL_ENV_FILE }}
         shell: bash
 
       - name: Read updated Vercel environment information
@@ -211,12 +211,6 @@ jobs:
           path: ${{ env.VERCEL_ENV_FILE }}
           log-variables: true
 
-      - name: Get DB name
-        id: db-name
-        run: |
-          echo NAME=PR_$(echo "$GITHUB_REF" | awk -F / '{print $3}') >> $GITHUB_OUTPUT
-        shell: bash
-
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
@@ -227,7 +221,7 @@ jobs:
           psql ${{ steps.original-dotenv.outputs.POSTGRES_DATABASE }} -c "
             SELECT pg_terminate_backend(pg_stat_activity.pid)
             FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '${{ steps.db-name.outputs.NAME }}'
+            WHERE pg_stat_activity.datname = '$PR_DB'
             AND pid <> pg_backend_pid();"
         env:
           PGHOST: ${{ steps.original-dotenv.outputs.POSTGRES_HOST }}
@@ -236,7 +230,7 @@ jobs:
 
       - name: Drop database
         run: |
-          dropdb ${{ steps.db-name.outputs.NAME }}
+          dropdb $PR_DB
         env:
           PGHOST: ${{ steps.original-dotenv.outputs.POSTGRES_HOST }}
           PGUSER: ${{ steps.original-dotenv.outputs.POSTGRES_USER }}
