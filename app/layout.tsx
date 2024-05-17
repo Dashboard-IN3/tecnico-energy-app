@@ -4,7 +4,7 @@ import { Inter } from "next/font/google"
 export const metadata = {
   title: "Técnico",
   description:
-    "A simple Next.js app with Vercel Postgres as the database and Prisma as the ORM",
+    "An interactive application to help others understand the energy consumption of urban environments.",
 }
 
 const inter = Inter({
