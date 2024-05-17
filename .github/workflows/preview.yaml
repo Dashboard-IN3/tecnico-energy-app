@@ -159,8 +159,6 @@ jobs:
   destroy:
     if: ${{ github.event.action == 'closed' }}
     runs-on: ubuntu-latest
-    env:
-      PR_NUMBER: ${{ github.event.number }}
     steps:
       - uses: actions/checkout@v4
 
