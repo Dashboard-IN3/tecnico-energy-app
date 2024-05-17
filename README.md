@@ -22,6 +22,9 @@ To provide data, three files must be provided:
 
 ### Study Spreadsheet
 
+> [!TIP]
+> A template for a study spreadsheet can be [**downloaded here.**](https://docs.google.com/spreadsheets/d/e/2PACX-1vTmOxQMN-UMsIKKyhb2n-kQD1_KW_-qJ2ktQQeVcXLSfu7_Tx5H8FpJIRuALpAD54Jef2lwCYiv783v/pub?output=xlsx)
+
 The study spreadsheet must contain the following worksheets. Column/key names are case insensitive and asterisks are removed prior to ingestion. Coumns/keys with that contain "ignore" are ignored.
 
 - `study`: metadata about the study. Formatted in key, value format.
