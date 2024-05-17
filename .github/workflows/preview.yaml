@@ -11,8 +11,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 
+# Required for commenting on PRs
 permissions:
   pull-requests: write
+
+# Prevent concurrent executions
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
