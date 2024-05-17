@@ -6,7 +6,6 @@ env:
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-  VERCEL_TEAM_ID: ${{ vars.VERCEL_ORG_ID }}
 
 on:
   pull_request:
