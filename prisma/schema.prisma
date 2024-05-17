@@ -18,6 +18,14 @@ datasource db {
   extensions = [postgis, pg_trgm]
 }
 
+// Checksums for source data, used to prevent unnecessary ingestions.
+model file_checksum {
+  study_slug String   @id
+  metrics    String
+  geo        String
+  createdAt  DateTime @default(now())
+}
+
 // Study data.
 model study {
   slug                    String

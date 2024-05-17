@@ -2,10 +2,19 @@ import { GeoJSONFeature } from "maplibre-gl"
 import { create } from "zustand"
 import { baselineScenario } from "./utils"
 
+type mapFeature = {
+  id: string | null
+  location: { lat: number; lng: number } | null
+  value: number | null
+  unit: string | null
+}
 interface InitialState {
+  hoveredFeature: mapFeature
+  setHoveredFeature: (mapFeature) => void
   selectedStudy: Studies.Study
   setAoi: (aoi: MapState.aoi) => void
   setTotalSelectedFeatures: (featureTotal: number) => void
+  setSummaryDescription: (summaryDescription: string) => void
   setSummaryTotal: (summaryTotal: number) => void
   setSummaryUnit: (summaryUnit: string) => void
   setSummaryAvg: (summaryAvg: number) => void
@@ -29,6 +38,8 @@ interface InitialState {
 }
 
 export const useStore = create<InitialState>((set, get) => ({
+  hoveredFeature: { id: null, location: null, value: null, unit: null },
+  shading: null,
   selectedStudy: {
     slug: "",
     scale: null,
@@ -37,6 +48,7 @@ export const useStore = create<InitialState>((set, get) => ({
     imageSrc: "",
     summary: {
       totalSelectedFeatures: 0,
+      summaryDescription: "",
       summaryTotal: 0,
       summaryUnit: "null",
       summaryAvg: 0,
@@ -103,6 +115,18 @@ export const useStore = create<InitialState>((set, get) => ({
         summary: {
           ...state.selectedStudy.summary,
           summaryAvg,
+        },
+      },
+    }))
+  },
+
+  setSummaryDescription: (summaryDescription: string) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryDescription,
         },
       },
     }))
@@ -257,5 +281,8 @@ export const useStore = create<InitialState>((set, get) => ({
   show3d: false,
   setShow3d: () => {
     set(state => ({ ...state, show3d: !state.show3d }))
+  },
+  setHoveredFeature: (feature: mapFeature) => {
+    set(state => ({ ...state, hoveredFeature: feature }))
   },
 }))

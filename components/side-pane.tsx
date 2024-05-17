@@ -84,34 +84,35 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
 
   return (
     <div
-      className="w-full h-full p-3 md:p-7 bg-slate-100 shadow-lg relative flex-col justify-start gap-6 md:inline-flex overflow-scroll"
-      style={{ scrollbarWidth: "none" }}
+      className="w-full h-full p-3 md:p-7 bg-slate-100 flex-col justify-start gap-4 md:inline-flex overflow-scroll"
+      style={{
+        zIndex: 1,
+        scrollbarWidth: "none",
+        boxShadow: "6px 0 10px -2px rgba(0, 0, 0, 0.1)",
+      }}
     >
-      <div className="w-full text-black text-xl font-extrabold leading-loose">
+      <div className="w-full text-black text-xl font-extrabold">
         {selectedStudy.name}
       </div>
-      {imgSrc && (
-        <div className="relative w-full min-h-[175px] max-w-[250px] md:max-w-lg">
-          <Image
-            className="w-full h-[200px] object-cover rounded-lg"
-            src={imgSrc}
-            fill={true}
-            alt="Placeholder"
-            sizes="(max-width: 150px) 100vw, (max-width: 150px) 50vw, 150px"
-            priority={true}
-          />
-        </div>
-      )}
 
       <div className="self-stretch justify-end items-start gap-6 inline-flex">
         <InPageLink href={`${studyId}/details`} label="Study Details" />
-        {/* <InPageLink href={`${studyId}/attributes`} label="Data Attribues" /> */}
         <div className="grow shrink basis-0 text-right text-black text-sm font-normal leading-tight">
           {selectedStudy.summary.totalSelectedFeatures} Features
         </div>
       </div>
 
       <div className="self-stretch grow-0 shrink basis-0 flex-col justify-start items-start gap-6 flex border-solid border-[1px] border-slate-400 bg-white p-4 rounded-md">
+        <div>
+          <div>
+            <span className="font-semibold">Theme:</span>{" "}
+            {` ${selectedTheme.name}`}
+          </div>
+          <div>
+            <span className="font-semibold">Description:</span>{" "}
+            {` ${selectedStudy.summary.summaryDescription}`}
+          </div>
+        </div>
         <div className="w-full">
           <SummaryValue
             value={selectedStudy.summary.summaryTotal}
@@ -125,15 +126,17 @@ export const SidePane: React.FC<Props> = ({ imgSrc, studyId }) => {
           />
         </div>
       </div>
-      <DropdownMenu
-        title="Theme"
-        options={themeDropdownOptions}
-        selected={{
-          value: selectedTheme?.slug,
-          label: selectedTheme?.name,
-        }}
-        setSelected={option => setSelectedTheme(themes[option.value])}
-      />
+      {Object.values(themes).length > 1 && (
+        <DropdownMenu
+          title="Theme"
+          options={themeDropdownOptions}
+          selected={{
+            value: selectedTheme?.slug,
+            label: selectedTheme?.name,
+          }}
+          setSelected={option => setSelectedTheme(themes[option.value])}
+        />
+      )}
       <DropdownMenu
         title="Category"
         options={metricsOptions.categories}
