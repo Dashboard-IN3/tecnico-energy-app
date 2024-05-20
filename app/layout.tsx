@@ -2,7 +2,7 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 
 export const metadata = {
-  title: "Técnico",
+  title: "IN+ Urban Dashboard",
   description:
     "An interactive application to help others understand the energy consumption of urban environments.",
 }
