@@ -91,7 +91,7 @@ export default async function ExplorePage({
       summaryTotal: 0,
       summaryAvg: 0,
     },
-    isDrawing: false,
+    mapInteraction: null,
     aoi: { feature: undefined, bbox: [] },
   }
   const stateObject = {

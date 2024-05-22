@@ -11,7 +11,6 @@ import { useStore } from "../../app/lib/store"
 import { round, difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
 import { ColorLegend } from "./color-legend"
-import { relative } from "path"
 
 type MapViewProps = {
   children?: ReactNode
@@ -21,24 +20,30 @@ type MapViewProps = {
   studySlug: string
 }
 
+type MapFeature = { id: string; shading: number; isSelected: boolean }
+
 const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
-  const { setAoi, setIsDrawing } = useStore()
+  const { setAoi, setmapInteraction } = useStore()
   const selectedStudy = useStore(state => state.selectedStudy)
-  const { aoi, isDrawing } = selectedStudy
-  const [selectedFeatureIds, setSelectedFeatureIds] = useState([])
+  const { aoi, mapInteraction } = selectedStudy
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState<{
+    [id: string]: MapFeature
+  }>()
   const {
     hoveredFeature,
     setHoveredFeature,
     setTotalSelectedFeatures,
     setSummaryAvg,
     setSummaryDescription,
+    setSummaryMax,
     setSummaryTotal,
     setSummaryUnit,
   } = useStore()
+  const summaryMax = useStore(state => state.selectedStudy.summary.summaryMax)
   const { selectedTheme } = selectedStudy
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
@@ -60,7 +65,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
     )
     const search = await searchResponse.json()
-    const featureIDs = search.search[0]?.feature_ids ?? []
     const summaryTotal = search.search[0]?.data_total ?? 0
     const summaryUnit = search.search[0]?.data_unit ?? ""
     const summaryAvg = search.search[0]?.data_avg ?? 0
@@ -69,9 +73,9 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     setSummaryDescription(summaryDescription)
 
     const mapFeatures = search.search[0].feature_objects
-    const summaryMax = search.search[0].data_max
 
-    updateIntersectingFeatures(mapFeatures, summaryMax)
+    setSummaryMax(parseInt(search.search[0].data_max))
+    updateIntersectingFeatures(mapFeatures, search.search[0].data_max)
     setTotalSelectedFeatures(mapFeatures.length)
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
@@ -90,7 +94,9 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
   const updateIntersectingFeatures = (featureIdsToUpdate, summaryMax) => {
     // remove Ids that are no longer in new array of ids
-    const toRemove = difference(selectedFeatureIds, featureIdsToUpdate)
+    const toRemove = selectedFeatureIds
+      ? difference(Object.values(selectedFeatureIds), featureIdsToUpdate)
+      : []
 
     toRemove.forEach(featureData => {
       // Update the paint properties of specific features by ID
@@ -105,10 +111,11 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     })
 
     // add Ids that are in new selection but not in previous yet
-    const toAdd = difference(featureIdsToUpdate, selectedFeatureIds)
+    const toAdd = selectedFeatureIds
+      ? difference(featureIdsToUpdate, Object.values(selectedFeatureIds))
+      : featureIdsToUpdate
 
     toAdd.forEach(featureData => {
-      // console.log(featureData.shading, summaryTotal)
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
@@ -123,13 +130,18 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       )
     })
 
-    setSelectedFeatureIds(featureIdsToUpdate)
+    setSelectedFeatureIds(
+      featureIdsToUpdate.reduce((acc, value) => {
+        acc[value.id] = { ...value, isSelected: true }
+        return acc
+      }, {})
+    )
     setTotalSelectedFeatures(featureIdsToUpdate.length)
   }
 
   // map event handlers
   const handleDrawComplete = (feature: GeoJSON.Feature) => {
-    setIsDrawing(false)
+    setmapInteraction(null)
     setAoi({
       bbox: bbox(feature.geometry),
       feature,
@@ -235,6 +247,49 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     }
   }, [map, setHoveredFeature])
 
+  // feature selection handler
+  useEffect(() => {
+    if (!map) return
+
+    const clickHandler = e => {
+      if (e.features && e.features.length > 0 && selectedFeatureIds) {
+        const clickedFeature = e.features[0]
+        const selectedFeature = selectedFeatureIds[clickedFeature.id]
+        // update feature state and map feature state
+        if (selectedFeature.isSelected) {
+          // remove feature
+          map.setFeatureState(
+            {
+              source: "building-footprints",
+              sourceLayer: "default",
+              id: clickedFeature.id,
+            },
+            { selected: undefined, relative_shading_percentage: undefined }
+          )
+          selectedFeatureIds[clickedFeature.id].isSelected = false
+        } else {
+          map.setFeatureState(
+            {
+              source: "building-footprints",
+              sourceLayer: "default",
+              id: clickedFeature.id,
+            },
+            {
+              selected: true,
+              relative_shading_percentage:
+                (selectedFeature.shading / summaryMax) * 100,
+            }
+          )
+          selectedFeatureIds[clickedFeature.id].isSelected = true
+        }
+      }
+    }
+    map.on("click", "buildings-layer", e => clickHandler(e))
+    return () => {
+      map.off("click", "buildings-layer", e => clickHandler(e))
+    }
+  }, [map, selectedFeatureIds, summaryMax])
+
   return (
     <div ref={mapContainer} className="h-full w-full">
       <Map
@@ -253,7 +308,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
         <ColorLegend />
         <DrawBboxControl
           map={map!}
-          isEnabled={isDrawing}
+          isEnabled={mapInteraction === "drawing"}
           handleDrawComplete={handleDrawComplete}
           aoi={aoi}
           drawSelectionChange={drawSelectionChange}

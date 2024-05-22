@@ -4,8 +4,9 @@ import Draw from "../icons/draw"
 import Pick from "../icons/pick"
 
 export const DrawControlPane: React.FC = () => {
-  const { setIsDrawing, setAoi, selectedStudy, setShow3d, show3d } = useStore()
-  const isDrawing = useStore(state => state.selectedStudy.isDrawing)
+  const { setmapInteraction, setAoi, selectedStudy, setShow3d, show3d } =
+    useStore()
+  const mapInteraction = useStore(state => state.selectedStudy.mapInteraction)
   const aoi = useStore(state => state.selectedStudy.aoi)
 
   const handleCheckboxChange = () => {
@@ -39,11 +40,11 @@ export const DrawControlPane: React.FC = () => {
       <div className="justify-center items-end flex gap-3">
         <button
           onClick={() => {
-            setIsDrawing(false)
-            // setAoi({ feature: undefined, bbox: [] })
+            setmapInteraction("selection")
+            setAoi({ feature: undefined, bbox: [] })
           }}
           className={`hover:shadow-lg pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            isDrawing && "bg-slate-100"
+            mapInteraction === "selection" && "bg-slate-100"
           }`}
         >
           <Pick fill="#075985" />
@@ -51,11 +52,11 @@ export const DrawControlPane: React.FC = () => {
         </button>
         <button
           onClick={() => {
-            setIsDrawing(!isDrawing)
+            setmapInteraction("drawing")
             setAoi({ feature: undefined, bbox: [] })
           }}
           className={`hover:shadow-lg bg-white opacity-80 pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            isDrawing && "bg-slate-100"
+            mapInteraction === "drawing" && "bg-slate-100"
           }`}
         >
           <Draw fill="#075985" />
@@ -64,7 +65,7 @@ export const DrawControlPane: React.FC = () => {
         <button
           onClick={() => {
             setAoi({ feature: undefined, bbox: [] })
-            setIsDrawing(false)
+            setmapInteraction(null)
           }}
           className={`pt-3 pb-2 px-4 bg-white rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
             aoi.feature ? "hover:shadow-lg" : "hover:cursor-default"

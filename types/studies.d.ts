@@ -13,8 +13,9 @@ declare namespace Studies {
       summaryDescription: string
       summaryTotal: number
       summaryAvg: number
+      summaryMax: number
     }
-    isDrawing: boolean
+    mapInteraction: MapState.MapInteractions
     aoi: MapState.aoi
     metadata: Metadata
     scale: "Building" | "Municipality" | null

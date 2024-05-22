@@ -16,9 +16,10 @@ interface InitialState {
   setTotalSelectedFeatures: (featureTotal: number) => void
   setSummaryDescription: (summaryDescription: string) => void
   setSummaryTotal: (summaryTotal: number) => void
+  setSummaryMax: (summaryMax: number) => void
   setSummaryUnit: (summaryUnit: string) => void
   setSummaryAvg: (summaryAvg: number) => void
-  setIsDrawing: (isDrawing: boolean) => void
+  setmapInteraction: (mapInteraction: MapState.MapInteractions) => void
   setSelectedTheme: (theme: Studies.Theme) => void
   setSelectedCategory: (
     scenario_slug: string,
@@ -52,8 +53,9 @@ export const useStore = create<InitialState>((set, get) => ({
       summaryTotal: 0,
       summaryUnit: "null",
       summaryAvg: 0,
+      summaryMax: 0,
     },
-    isDrawing: false,
+    mapInteraction: null,
     aoi: {
       feature: undefined,
       bbox: [],
@@ -96,6 +98,18 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
+  setSummaryMax: (summaryMax: number) => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        summary: {
+          ...state.selectedStudy.summary,
+          summaryMax,
+        },
+      },
+    }))
+  },
+
   setSummaryUnit: (summaryUnit: string) => {
     set(state => ({
       selectedStudy: {
@@ -132,9 +146,9 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setIsDrawing: (isDrawing: boolean) => {
+  setmapInteraction: (mapInteraction: MapState.MapInteractions) => {
     set(state => ({
-      selectedStudy: { ...state.selectedStudy, isDrawing },
+      selectedStudy: { ...state.selectedStudy, mapInteraction },
     }))
   },
 
