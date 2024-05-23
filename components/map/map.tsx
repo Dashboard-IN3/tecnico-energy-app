@@ -1,6 +1,12 @@
 "use client"
 
-import React, { useRef, useState, ReactNode, useEffect } from "react"
+import React, {
+  useRef,
+  useState,
+  ReactNode,
+  useEffect,
+  useCallback,
+} from "react"
 import Map, { MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl from "maplibre-gl"
@@ -20,21 +26,37 @@ type MapViewProps = {
   studySlug: string
 }
 
-type MapFeature = { id: string; shading: number; isSelected: boolean }
+export type MapFeature = { id: string; shading: number; isSelected: boolean }
+
+const getDbIntersectingFeatures = async ({
+  coordinates,
+  studySlug,
+  scenarioSlug,
+  metricsField,
+}) => {
+  console.log("getting intersection")
+  const linestring = coordinates
+    ? encodeURI(coordinates.map(pair => pair.join(" ")).join(","))
+    : null
+  const searchResponse = await fetch(
+    `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
+  )
+  return await searchResponse.json()
+}
 
 const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
-  const { setAoi, setmapInteraction } = useStore()
+  const { setAoi, setMapInteraction } = useStore()
   const selectedStudy = useStore(state => state.selectedStudy)
-  const { aoi, mapInteraction } = selectedStudy
-  const [selectedFeatureIds, setSelectedFeatureIds] = useState<{
+  const { aoi, mapInteraction, isMapStagedForClearing, selectedTheme } =
+    selectedStudy
+  const [selectedFeaturesById, setSelectedFeaturesById] = useState<{
     [id: string]: MapFeature
-  }>()
+  } | null>(null)
   const {
-    hoveredFeature,
     setHoveredFeature,
     setTotalSelectedFeatures,
     setSummaryAvg,
@@ -42,61 +64,137 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     setSummaryMax,
     setSummaryTotal,
     setSummaryUnit,
+    setMapStagedForClearing,
   } = useStore()
   const summaryMax = useStore(state => state.selectedStudy.summary.summaryMax)
-  const { selectedTheme } = selectedStudy
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
   const usage = selectedScenario?.selectedUsage?.value
   const source = selectedScenario?.selectedSource?.value
-
   const metricsField = `${category}.${usage}.${source}`
 
-  const getDbIntersectingFeatures = async ({
+  const updateFeatureState = async ({
     coordinates,
     studySlug,
     scenarioSlug,
     metricsField,
   }) => {
-    const linestring = coordinates
-      ? encodeURI(coordinates.map(pair => pair.join(" ")).join(","))
-      : null
-    const searchResponse = await fetch(
-      `${global.window?.location.origin}/api/search/${studySlug}/${scenarioSlug}/${metricsField}?coordinates=${linestring}`
-    )
-    const search = await searchResponse.json()
+    // only run this for draw interactions
+    const search = await getDbIntersectingFeatures({
+      coordinates,
+      studySlug,
+      scenarioSlug,
+      metricsField,
+    })
     const summaryTotal = search.search[0]?.data_total ?? 0
     const summaryUnit = search.search[0]?.data_unit ?? ""
     const summaryAvg = search.search[0]?.data_avg ?? 0
-
     const summaryDescription = search.search[0]?.data_description ?? ""
+    const dbSearchFeatures = search.search[0].feature_objects
+
     setSummaryDescription(summaryDescription)
-
-    const mapFeatures = search.search[0].feature_objects
-
     setSummaryMax(parseInt(search.search[0].data_max))
-    updateIntersectingFeatures(mapFeatures, search.search[0].data_max)
-    setTotalSelectedFeatures(mapFeatures.length)
+    setTotalSelectedFeatures(dbSearchFeatures.length)
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
     setSummaryUnit(summaryUnit)
+    const augmentedDbFeatures = dbSearchFeatures.reduce((acc, feature) => {
+      acc[feature.id] = {
+        ...feature,
+        isSelected: mapInteraction === "selection" ? false : true,
+      }
+      return acc
+    }, {})
+
+    // update empty features
+    if (!selectedFeaturesById) {
+      setSelectedFeaturesById(augmentedDbFeatures)
+    }
+
+    if (mapInteraction === "selection") {
+      if (isMapStagedForClearing) {
+        setSelectedFeaturesById(state => {
+          if (!state) return null
+          Object.values(state).forEach(feature => {
+            state[feature.id].isSelected = false
+          })
+          return state
+        })
+      }
+      updateSelectionFeatures(dbSearchFeatures, search.search[0].data_max)
+      // Remember to clear state when map clears
+    } else {
+      updateDrawFeatures(dbSearchFeatures, search.search[0].data_max)
+      setSelectedFeaturesById(state => {
+        if (!state) return null
+        Object.values(state).forEach(feature => {
+          state[feature.id].isSelected = false
+        })
+        return { ...state, ...augmentedDbFeatures }
+      })
+    }
+
+    setTotalSelectedFeatures(dbSearchFeatures.length)
   }
 
   useEffect(() => {
     if (![map, category, usage, source].every(Boolean)) return
-    getDbIntersectingFeatures({
+    updateFeatureState({
       coordinates: aoi.feature ? aoi.feature.geometry.coordinates[0] : null,
       studySlug,
       metricsField,
       scenarioSlug: selectedScenario?.slug,
     })
-  }, [aoi.feature, aoi.bbox, map, metricsField, selectedScenario?.slug])
+  }, [aoi.feature, map, metricsField, selectedScenario?.slug, mapInteraction])
 
-  const updateIntersectingFeatures = (featureIdsToUpdate, summaryMax) => {
-    // remove Ids that are no longer in new array of ids
-    const toRemove = selectedFeatureIds
-      ? difference(Object.values(selectedFeatureIds), featureIdsToUpdate)
+  const updateSelectionFeatures = (dbSearchFeatures, summaryMax) => {
+    if (!selectedFeaturesById) return
+
+    const selectedFeatures = selectedFeaturesById
+      ? Object.values(selectedFeaturesById)
       : []
+
+    if (isMapStagedForClearing) {
+      selectedFeatures.forEach(feature => {
+        // Update the paint properties of specific features by ID
+        map!.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: feature.id,
+          },
+          {
+            selected: false,
+            relative_shading_percentage: (feature.shading / summaryMax) * 100,
+          }
+        )
+      })
+      setMapStagedForClearing(false)
+      return
+    }
+    console.log({ selectedFeatures })
+    dbSearchFeatures.forEach(feature => {
+      // Update the paint properties of specific features by ID
+      map!.setFeatureState(
+        {
+          source: "building-footprints",
+          sourceLayer: "default",
+          id: feature.id,
+        },
+        {
+          selected: selectedFeaturesById[feature.id].isSelected,
+          relative_shading_percentage: (feature.shading / summaryMax) * 100,
+        }
+      )
+    })
+  }
+
+  const updateDrawFeatures = (dbSearchFeatures, summaryMax) => {
+    const selectedFeatures = selectedFeaturesById
+      ? Object.values(selectedFeaturesById)
+      : []
+    // remove Ids that are no longer in new array of ids
+    const toRemove = difference(selectedFeatures, dbSearchFeatures)
 
     toRemove.forEach(featureData => {
       // Update the paint properties of specific features by ID
@@ -111,37 +209,27 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     })
 
     // add Ids that are in new selection but not in previous yet
-    const toAdd = selectedFeatureIds
-      ? difference(featureIdsToUpdate, Object.values(selectedFeatureIds))
-      : featureIdsToUpdate
+    const toAdd = difference(dbSearchFeatures, selectedFeatures)
 
-    toAdd.forEach(featureData => {
+    toAdd.forEach(feature => {
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
         {
           source: "building-footprints",
           sourceLayer: "default",
-          id: featureData.id,
+          id: feature.id,
         },
         {
           selected: true,
-          relative_shading_percentage: (featureData.shading / summaryMax) * 100,
+          relative_shading_percentage: (feature.shading / summaryMax) * 100,
         }
       )
     })
-
-    setSelectedFeatureIds(
-      featureIdsToUpdate.reduce((acc, value) => {
-        acc[value.id] = { ...value, isSelected: true }
-        return acc
-      }, {})
-    )
-    setTotalSelectedFeatures(featureIdsToUpdate.length)
   }
 
   // map event handlers
   const handleDrawComplete = (feature: GeoJSON.Feature) => {
-    setmapInteraction(null)
+    setMapInteraction(null)
     setAoi({
       bbox: bbox(feature.geometry),
       feature,
@@ -173,7 +261,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
 
   // hover feature handler
   useEffect(() => {
-    if (!map) return
+    if (!map || mapInteraction !== "selection") return
 
     let hoveredPolygonId: string | null = null
 
@@ -183,7 +271,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       if (e.features && e.features.length > 0) {
         map.getCanvas().style.cursor = "pointer"
         const newHoveredPolygonId = e.features[0].id ?? null
-
         if (newHoveredPolygonId !== hoveredPolygonId) {
           if (hoveredPolygonId !== null) {
             map.setFeatureState(
@@ -245,50 +332,59 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       map.off("mousemove", hoverLayerName, handleMouseMove)
       map.off("mouseleave", hoverLayerName, handleMouseLeave)
     }
-  }, [map, setHoveredFeature])
+  }, [map, setHoveredFeature, mapInteraction])
 
-  // feature selection handler
-  useEffect(() => {
-    if (!map) return
-
-    const clickHandler = e => {
-      if (e.features && e.features.length > 0 && selectedFeatureIds) {
+  const singleSelectionHandler = useCallback(
+    e => {
+      if (!map) return
+      if (e.features && e.features.length > 0 && selectedFeaturesById) {
         const clickedFeature = e.features[0]
-        const selectedFeature = selectedFeatureIds[clickedFeature.id]
-        // update feature state and map feature state
-        if (selectedFeature.isSelected) {
-          // remove feature
-          map.setFeatureState(
-            {
-              source: "building-footprints",
-              sourceLayer: "default",
-              id: clickedFeature.id,
-            },
-            { selected: undefined, relative_shading_percentage: undefined }
-          )
-          selectedFeatureIds[clickedFeature.id].isSelected = false
-        } else {
-          map.setFeatureState(
-            {
-              source: "building-footprints",
-              sourceLayer: "default",
-              id: clickedFeature.id,
-            },
-            {
-              selected: true,
-              relative_shading_percentage:
-                (selectedFeature.shading / summaryMax) * 100,
+        const clickedFeatureId = clickedFeature.id
+        const selectedFeature = selectedFeaturesById[clickedFeatureId]
+
+        // Update map feature
+        map.setFeatureState(
+          {
+            source: "building-footprints",
+            sourceLayer: "default",
+            id: clickedFeatureId,
+          },
+          {
+            selected: clickedFeature.state.selected ? undefined : true,
+            relative_shading_percentage: clickedFeature.state.selected
+              ? undefined
+              : clickedFeature.properties.shading_percentage,
+          }
+        )
+
+        // update state object
+        setSelectedFeaturesById(state => {
+          if (!state) {
+            return null
+          } else {
+            return {
+              ...state,
+              [clickedFeature.id]: {
+                ...state[clickedFeature.id],
+                isSelected: selectedFeature.isSelected ? false : true,
+              },
             }
-          )
-          selectedFeatureIds[clickedFeature.id].isSelected = true
-        }
+          }
+        })
       }
-    }
-    map.on("click", "buildings-layer", e => clickHandler(e))
+    },
+    [selectedFeaturesById, map, mapInteraction]
+  )
+
+  useEffect(() => {
+    if (!map || mapInteraction !== "selection") return
+
+    map.on("click", "buildings-layer", singleSelectionHandler)
+
     return () => {
-      map.off("click", "buildings-layer", e => clickHandler(e))
+      map.off("click", "buildings-layer", singleSelectionHandler)
     }
-  }, [map, selectedFeatureIds, summaryMax])
+  }, [map, singleSelectionHandler, mapInteraction])
 
   return (
     <div ref={mapContainer} className="h-full w-full">

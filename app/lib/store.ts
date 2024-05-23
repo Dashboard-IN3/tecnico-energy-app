@@ -19,7 +19,8 @@ interface InitialState {
   setSummaryMax: (summaryMax: number) => void
   setSummaryUnit: (summaryUnit: string) => void
   setSummaryAvg: (summaryAvg: number) => void
-  setmapInteraction: (mapInteraction: MapState.MapInteractions) => void
+  setMapInteraction: (mapInteraction: MapState.MapInteractions) => void
+  setMapStagedForClearing: (isStaged: boolean) => void
   setSelectedTheme: (theme: Studies.Theme) => void
   setSelectedCategory: (
     scenario_slug: string,
@@ -56,6 +57,7 @@ export const useStore = create<InitialState>((set, get) => ({
       summaryMax: 0,
     },
     mapInteraction: null,
+    isMapStagedForClearing: false,
     aoi: {
       feature: undefined,
       bbox: [],
@@ -94,6 +96,15 @@ export const useStore = create<InitialState>((set, get) => ({
           ...state.selectedStudy.summary,
           summaryTotal,
         },
+      },
+    }))
+  },
+
+  setMapStagedForClearing: isStaged => {
+    set(state => ({
+      selectedStudy: {
+        ...state.selectedStudy,
+        isMapStagedForClearing: isStaged,
       },
     }))
   },
@@ -146,7 +157,7 @@ export const useStore = create<InitialState>((set, get) => ({
     }))
   },
 
-  setmapInteraction: (mapInteraction: MapState.MapInteractions) => {
+  setMapInteraction: (mapInteraction: MapState.MapInteractions) => {
     set(state => ({
       selectedStudy: { ...state.selectedStudy, mapInteraction },
     }))

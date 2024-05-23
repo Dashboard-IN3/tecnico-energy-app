@@ -16,6 +16,7 @@ declare namespace Studies {
       summaryMax: number
     }
     mapInteraction: MapState.MapInteractions
+    isMapStagedForClearing: boolean
     aoi: MapState.aoi
     metadata: Metadata
     scale: "Building" | "Municipality" | null
