@@ -47,9 +47,9 @@ export const DrawControlPane: React.FC = () => {
           onClick={() => {
             if (mapInteraction !== "selection") {
               setMapInteraction("selection")
-              setMapStagedForClearing(true)
               setAoi({ feature: undefined, bbox: [] })
             }
+            setMapStagedForClearing(true)
           }}
           className={`hover:shadow-lg bg-white opacity-80 pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
             mapInteraction === "selection" && "bg-slate-100 opacity-100"

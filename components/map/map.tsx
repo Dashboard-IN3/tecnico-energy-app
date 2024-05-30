@@ -14,7 +14,7 @@ import DrawBboxControl from "./draw-bbox-control"
 import { bbox } from "@turf/turf"
 import { ScenarioControl } from "./scenario-control"
 import { useStore } from "../../app/lib/store"
-import { round, difference } from "lodash-es"
+import { difference } from "lodash-es"
 import { DrawControlPane } from "./draw-control-pane"
 import { ColorLegend } from "./color-legend"
 
@@ -46,7 +46,6 @@ const getDbIntersectingFeatures = async ({
 
 const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
-  const [roundedZoom, setRoundedZoom] = useState(0)
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
   const { setAoi, setMapInteraction } = useStore()
@@ -66,7 +65,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     setSummaryUnit,
     setMapStagedForClearing,
   } = useStore()
-  const summaryMax = useStore(state => state.selectedStudy.summary.summaryMax)
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
   const usage = selectedScenario?.selectedUsage?.value
@@ -98,10 +96,12 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
     setSummaryAvg(summaryAvg)
     setSummaryTotal(summaryTotal)
     setSummaryUnit(summaryUnit)
+
+    // add isSelected property to dbSearchFeatures
     const augmentedDbFeatures = dbSearchFeatures.reduce((acc, feature) => {
       acc[feature.id] = {
         ...feature,
-        isSelected: mapInteraction === "selection" ? false : true,
+        isSelected: true,
       }
       return acc
     }, {})
@@ -133,7 +133,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
         return { ...state, ...augmentedDbFeatures }
       })
     }
-
     setTotalSelectedFeatures(dbSearchFeatures.length)
   }
 
@@ -145,7 +144,14 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       metricsField,
       scenarioSlug: selectedScenario?.slug,
     })
-  }, [aoi.feature, map, metricsField, selectedScenario?.slug, mapInteraction])
+  }, [
+    aoi.feature,
+    map,
+    metricsField,
+    selectedScenario?.slug,
+    mapInteraction,
+    isMapStagedForClearing,
+  ])
 
   const updateSelectionFeatures = (dbSearchFeatures, summaryMax) => {
     if (!selectedFeaturesById) return
@@ -172,7 +178,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
       setMapStagedForClearing(false)
       return
     }
-    console.log({ selectedFeatures })
+
     dbSearchFeatures.forEach(feature => {
       // Update the paint properties of specific features by ID
       map!.setFeatureState(
@@ -245,19 +251,6 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
   const drawSelectionChange = () => {
     console.log("draw selection fired")
   }
-
-  // zoom event listener
-  useEffect(() => {
-    if (!map) return
-
-    const zoomHandler = () => {
-      setRoundedZoom(round(map.getZoom()))
-    }
-    map.on("zoomend", zoomHandler)
-    return () => {
-      map.off("zoomend", zoomHandler)
-    }
-  }, [map])
 
   // hover feature handler
   useEffect(() => {
@@ -357,7 +350,7 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
           }
         )
 
-        // update state object
+        // update state features
         setSelectedFeaturesById(state => {
           if (!state) {
             return null
@@ -403,12 +396,14 @@ const MapView = ({ id, center, zoom, children, studySlug }: MapViewProps) => {
         <DrawControlPane />
         <ColorLegend />
         <DrawBboxControl
-          map={map!}
-          isEnabled={mapInteraction === "drawing"}
-          handleDrawComplete={handleDrawComplete}
-          aoi={aoi}
-          drawSelectionChange={drawSelectionChange}
-          drawUpdate={drawUpdate}
+          {...{
+            map: map!,
+            isEnabled: mapInteraction === "drawing",
+            handleDrawComplete,
+            aoi,
+            drawSelectionChange,
+            drawUpdate,
+          }}
         />
         {map &&
           children &&
