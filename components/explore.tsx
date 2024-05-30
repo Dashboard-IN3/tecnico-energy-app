@@ -101,7 +101,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
               }}
             />
           </Source>
-          {/* {hoveredFeature?.id ? (
+          {hoveredFeature?.id ? (
             <Popup
               longitude={hoveredFeature?.location?.lng ?? 0}
               latitude={hoveredFeature?.location?.lat ?? 0}
@@ -126,7 +126,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
             </Popup>
           ) : (
             <></>
-          )} */}
+          )}
         </Map>
       </div>
     </>
