@@ -76,9 +76,13 @@ export const DrawControlPane: React.FC = () => {
             setMapInteraction(null)
           }}
           className={`pt-3 pb-2 px-4 bg-white rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            aoi.feature ? "hover:shadow-lg" : "hover:cursor-default"
+            aoi.feature || mapInteraction === "selection"
+              ? "hover:shadow-lg"
+              : "hover:cursor-default"
           }`}
-          style={{ opacity: aoi.feature ? 0.8 : 0.3 }}
+          style={{
+            opacity: aoi.feature || mapInteraction === "selection" ? 0.8 : 0.3,
+          }}
         >
           <Trash fill="#075985" />
           <div className="ml-2 text-sm">Clear</div>
