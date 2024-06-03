@@ -156,23 +156,26 @@ export const useFeatureState = ({
       })
     } else {
       if (mapInteraction === "selection") {
-        const augmentedDbFeatures = dbSearchFeatures.reduce((acc, feature) => {
+        const selectionFeatures = dbSearchFeatures.reduce((acc, feature) => {
           acc[feature.id] = {
             ...feature,
-            isSelected: false,
+            isSelected:
+              feature.id in selectedFeaturesById && !isMapStagedForClearing
+                ? selectedFeaturesById[feature.id].isSelected
+                : false,
           }
           return acc
         }, {})
-
-        setSelectedFeaturesById(augmentedDbFeatures)
         if (isMapStagedForClearing) {
           clearMapFeatureSelection({
-            selectedFeaturesById: augmentedDbFeatures,
+            selectedFeaturesById: selectionFeatures,
             map,
             summary,
             setMapStagedForClearing,
           })
         }
+
+        setSelectedFeaturesById(selectionFeatures)
       } else {
         setSelectedFeaturesById(state => {
           if (!state) return null
