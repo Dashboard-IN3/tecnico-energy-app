@@ -5,4 +5,6 @@ declare namespace MapState {
     feature: GeoJSONFeature
     bbox: number[]
   }
+
+  export type MapInteractions = null | "drawing" | "selection"
 }

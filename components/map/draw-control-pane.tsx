@@ -4,10 +4,16 @@ import Draw from "../icons/draw"
 import Pick from "../icons/pick"
 
 export const DrawControlPane: React.FC = () => {
-  const { setIsDrawing, setAoi, selectedStudy, setShow3d, show3d } = useStore()
-  const isDrawing = useStore(state => state.selectedStudy.isDrawing)
+  const {
+    setMapInteraction,
+    setMapStagedForClearing,
+    setAoi,
+    selectedStudy,
+    setShow3d,
+    show3d,
+  } = useStore()
+  const mapInteraction = useStore(state => state.selectedStudy.mapInteraction)
   const aoi = useStore(state => state.selectedStudy.aoi)
-
   const handleCheckboxChange = () => {
     setShow3d()
   }
@@ -39,11 +45,14 @@ export const DrawControlPane: React.FC = () => {
       <div className="justify-center items-end flex gap-3">
         <button
           onClick={() => {
-            setIsDrawing(false)
-            // setAoi({ feature: undefined, bbox: [] })
+            if (mapInteraction !== "selection") {
+              setMapInteraction("selection")
+              setAoi({ feature: undefined, bbox: [] })
+            }
+            setMapStagedForClearing(true)
           }}
-          className={`hover:shadow-lg pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            isDrawing && "bg-slate-100"
+          className={`hover:shadow-lg bg-white opacity-80 pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
+            mapInteraction === "selection" && "bg-slate-100 opacity-100"
           }`}
         >
           <Pick fill="#075985" />
@@ -51,11 +60,11 @@ export const DrawControlPane: React.FC = () => {
         </button>
         <button
           onClick={() => {
-            setIsDrawing(!isDrawing)
+            setMapInteraction("drawing")
             setAoi({ feature: undefined, bbox: [] })
           }}
           className={`hover:shadow-lg bg-white opacity-80 pt-3 pb-2 px-4 rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            isDrawing && "bg-slate-100"
+            mapInteraction === "drawing" && "bg-slate-100 opacity-100"
           }`}
         >
           <Draw fill="#075985" />
@@ -64,12 +73,16 @@ export const DrawControlPane: React.FC = () => {
         <button
           onClick={() => {
             setAoi({ feature: undefined, bbox: [] })
-            setIsDrawing(false)
+            setMapInteraction(null)
           }}
           className={`pt-3 pb-2 px-4 bg-white rounded-md border border-sky-800 text-sky-800 flex justify-center align-center ${
-            aoi.feature ? "hover:shadow-lg" : "hover:cursor-default"
+            aoi.feature || mapInteraction === "selection"
+              ? "hover:shadow-lg"
+              : "hover:cursor-default"
           }`}
-          style={{ opacity: aoi.feature ? 0.8 : 0.3 }}
+          style={{
+            opacity: aoi.feature || mapInteraction === "selection" ? 0.8 : 0.3,
+          }}
         >
           <Trash fill="#075985" />
           <div className="ml-2 text-sm">Clear</div>

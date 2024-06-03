@@ -90,8 +90,10 @@ export default async function ExplorePage({
       summaryDescription: "",
       summaryTotal: 0,
       summaryAvg: 0,
+      summaryMax: 0,
     },
-    isDrawing: false,
+    mapInteraction: null,
+    isMapStagedForClearing: false,
     aoi: { feature: undefined, bbox: [] },
   }
   const stateObject = {
