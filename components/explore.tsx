@@ -23,7 +23,7 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
   const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
   const { selectedStudy, show3d, hoveredFeature } = useStore()
-  const { selectedTheme } = selectedStudy
+  const { selectedTheme, mapInteraction } = selectedStudy
 
   const selectedScenario = selectedTheme.selectedScenario
   const category = selectedScenario?.selectedCategory?.value
@@ -100,6 +100,26 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
                 "fill-extrusion-opacity": 0.9,
               }}
             />
+            {mapInteraction === "selection" && (
+              <Layer
+                id="buildings-outline-layer"
+                beforeId={
+                  metaData?.scale?.toLowerCase() === "building"
+                    ? "housenumber"
+                    : "road_path"
+                }
+                minzoom={metaData?.scale?.toLowerCase() === "building" ? 14 : 0}
+                type="line"
+                source={"buildings"}
+                source-layer="default"
+                paint={{
+                  "line-color": "#fab482",
+                  "line-width": 1,
+                  "line-opacity":
+                    metaData?.scale?.toLowerCase() === "building" ? 0.5 : 0.2,
+                }}
+              />
+            )}
           </Source>
           {hoveredFeature?.id ? (
             <Popup
