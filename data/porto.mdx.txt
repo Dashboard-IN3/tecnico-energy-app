@@ -1,0 +1,13 @@
+---
+title: A study about Porto
+description: Information about Porto's living spaces
+type: Doc
+---
+
+# The Porto Study
+
+A description goes here about the study's methodology.
+
+| Key | Value |
+| --- | --- |
+| abc | xyz |
