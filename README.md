@@ -62,11 +62,8 @@ The study spreadsheet must contain the following worksheets. Column/key names ar
 
 ### Study Details Markdown
 
-- the `front matter` contained at the top of each mdx file needs to be enclosed in `---`
-- each file needs to contain the `title`, `description`, and `type: Doc` fields in the `front matter`. There is only one type and it needs to be `Doc`.
-- it is possible but optional to include MDX content in html tags like `<img/>`
-- The markdown content needs to follow standard markdown syntax as described
-  in _[Markdown Guide](https://www.markdownguide.org/basic-syntax/)_
+- it is possible to include MDX content in html tags (e.g. `<img src="..." width="..." alt="..." />`)
+- The markdown content needs to follow standard markdown syntax as described in _[Markdown Guide](https://www.markdownguide.org/basic-syntax/)_
 
 ## Development
 
