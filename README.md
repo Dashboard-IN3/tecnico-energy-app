@@ -18,7 +18,7 @@ To provide data, three files must be provided:
 
 1. A XLSX spreadsheet file for a study, named `{study_identifier}.xlsx`
 2. A gzipped GeoJSON file containing geometries associated with the study, named `{study_identifier}.geojson.gz`
-3. A MDX file describing the content for the study details page
+3. A MDX (with a `.md` extension) file describing the content for the study details page
 
 ### Study Spreadsheet
 

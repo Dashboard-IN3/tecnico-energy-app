@@ -1,8 +1,8 @@
 <br />
 <img
-  src={"https://images.unsplash.com/photo-1524928872228-9b284de342b3"}
+  src="https://plus.unsplash.com/premium_photo-1677653126817-a05d8c6ddb9d"
   alt="Image alt"
-  width="600px"
+  width="200px"
 />
 
 ### Lorem Ipsum
