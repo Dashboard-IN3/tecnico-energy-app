@@ -3,7 +3,6 @@
 import { SidePane } from "./side-pane"
 import Map from "./map/map"
 import { Source, Layer, Popup } from "react-map-gl"
-import { LngLatLike } from "mapbox-gl"
 import { useStore } from "../app/lib/store"
 import { largeNumberDisplay } from "../lib/utils"
 interface Props {
@@ -14,13 +13,6 @@ interface Props {
 const Explore: React.FC<Props> = ({ params, metaData }) => {
   const layerType =
     metaData?.scale?.toLowerCase() === "building" ? "fill-extrusion" : "line"
-
-  const mapCenter: LngLatLike =
-    metaData?.scale?.toLowerCase() === "building"
-      ? [-9.142, 38.735]
-      : [-9.102, 38.755]
-
-  const mapZoom = metaData?.scale?.toLowerCase() === "building" ? 12 : 6
 
   const { selectedStudy, show3d, hoveredFeature } = useStore()
   const { selectedTheme, mapInteraction } = selectedStudy
@@ -44,10 +36,9 @@ const Explore: React.FC<Props> = ({ params, metaData }) => {
         <Map
           {...{
             id: "explore-map",
-            zoom: mapZoom,
-            center: mapCenter,
             layerType,
             studySlug: params.slug,
+            bbox: metaData.bbox,
           }}
         >
           <Source

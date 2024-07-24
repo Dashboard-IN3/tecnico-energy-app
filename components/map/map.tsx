@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useRef, useState, ReactNode } from "react"
-import Map, { MapRef } from "react-map-gl"
+import React, { useRef, useState, ReactNode, useEffect } from "react"
+import Map, { LngLatLike, MapRef } from "react-map-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import maplibregl from "maplibre-gl"
 import DrawBboxControl from "./draw-bbox-control"
@@ -16,15 +16,14 @@ import { useSingleSelectionHandler } from "./useSingleSelectionHandler"
 
 type MapViewProps = {
   children?: ReactNode
-  center: number[]
-  zoom: number
+  bbox: number[]
   id: string
   studySlug: string
 }
 
 export type MapFeature = { id: string; shading: number; isSelected: boolean }
 
-const MapView = ({ center, zoom, children, studySlug }: MapViewProps) => {
+const MapView = ({ bbox: studyBounds, children, studySlug }: MapViewProps) => {
   const [map, setMap] = useState<MapRef>()
   const mapContainer = useRef(null)
   const setMapRef = (m: MapRef) => setMap(m)
@@ -80,13 +79,13 @@ const MapView = ({ center, zoom, children, studySlug }: MapViewProps) => {
       <Map
         ref={setMapRef}
         style={{ width: "100%", height: "100%" }}
-        initialViewState={{
-          latitude: center[1],
-          longitude: center[0],
-          zoom,
-        }}
         mapLib={maplibregl}
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+        onLoad={() => {
+          map?.fitBounds(studyBounds as LngLatLike, {
+            padding: 20,
+          })
+        }}
       >
         <ScenarioControl />
         <DrawControlPane />

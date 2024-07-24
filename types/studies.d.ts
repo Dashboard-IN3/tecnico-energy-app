@@ -3,6 +3,7 @@ declare namespace Studies {
     themes: { [themeId: string]: Theme }
     slug: string
     name: string
+    bbox: number[]
     description: string
     image_src?: string | null
     selectedTheme: Theme

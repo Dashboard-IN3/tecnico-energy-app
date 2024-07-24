@@ -285,6 +285,34 @@ async function main() {
            * Pre-process derived data
            */
 
+          // Create spatial summary
+          log(`deriving spatial summary for ${study_slug}...`)
+          await tx.$executeRaw`
+            WITH summary AS (
+              SELECT
+                  ST_Extent(geom) AS bbox,
+                  ST_Centroid(ST_Extent(geom)) AS centroid
+              FROM
+                  geometries
+              WHERE
+                  study_slug = ${study_slug}
+            ),
+            coordinates AS (
+                SELECT
+                    ARRAY[ST_XMin(bbox), ST_YMin(bbox), ST_XMax(bbox), ST_YMax(bbox)] AS bbox_array,
+                    ARRAY[ST_X(centroid), ST_Y(centroid)] AS centroid_array
+                FROM
+                    summary
+            )
+            UPDATE
+                study
+            SET
+                centroid_coordinates = c.centroid_array,
+                bbox = c.bbox_array
+            FROM
+                coordinates c;
+            `
+
           // Create scenario metrics
           log(`deriving pre-aggregated scenario metrics for ${study_slug}...`)
           const scenarioMetricsCount = await tx.$executeRaw`
