@@ -44,10 +44,11 @@ export const useStore = create<InitialState>((set, get) => ({
   shading: null,
   selectedStudy: {
     slug: "",
+    bbox: [],
     scale: null,
     name: "",
     description: "",
-    imageSrc: "",
+    image_src: "",
     summary: {
       totalSelectedFeatures: 0,
       summaryDescription: "",
