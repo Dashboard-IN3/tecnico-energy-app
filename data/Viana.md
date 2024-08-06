@@ -1,6 +1,6 @@
 <br />
 <img
-  src=[Imgur](https://imgur.com/osGX6L8)
+  src="https://imgur.com/osGX6L8"
   alt="Image alt"
   width="200px"
 />
