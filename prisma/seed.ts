@@ -310,7 +310,9 @@ async function main() {
                 centroid_coordinates = c.centroid_array,
                 bbox = c.bbox_array
             FROM
-                coordinates c;
+                coordinates c
+            WHERE
+                study.slug = ${study_slug}
             `
 
           // Create scenario metrics
