@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   deploy:
+    # Run on PR creation or PR update
     if: ${{ github.event.action == 'opened' || github.event.action == 'synchronize' }}
     runs-on: ubuntu-latest
     steps:
@@ -113,13 +114,42 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build project artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Get current time
+        uses: gerred/actions/current-time@master
+        id: current-time
 
-      - name: Deploy project artifacts to Vercel
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "* Commit: "
+
+      - name: Build project
+        id: build
+        run: |
+          set -o pipefail  # Ensure the pipe fails if any command fails
+          set +e  # Allow the script to continue running even if commands fail
+
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} | tee build-output.txt
+          EXIT_CODE=$?
+
+          set -e  # Re-enable automatic exit on failure
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "BUILD_OUTPUT<<EOF" >> $GITHUB_OUTPUT
+            cat build-output.txt >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+          exit $EXIT_CODE
+
+      - name: Deploy project to Vercel
         id: deploy
         run: |
-          echo URL=$(vercel deploy \
+          echo URL=$( \
+            vercel deploy \
             --prebuilt \
             --token=${{ secrets.VERCEL_TOKEN }} \
             --env POSTGRES_PRISMA_URL='${{ steps.updated-dotenv.outputs.POSTGRES_PRISMA_URL }}' \
@@ -127,29 +157,38 @@ jobs:
           ) >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.deploy.outputs.URL }}"
+      - run: echo "${{ steps.build.outputs.BUILD_OUTPUT }}"
+        if: failure()
 
-      - name: Get current time
-        uses: gerred/actions/current-time@master
-        if: ${{ github.event.pull_request.number }}
-        id: current-time
-
-      - name: Find Comment
-        uses: peter-evans/find-comment@v1
-        if: ${{ github.event.pull_request.number }}
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: Latest commit deployed to
-
-      - name: Create or update comment
+      - name: Create or update comment with URL
         uses: peter-evans/create-or-update-comment@v4
-        if: ${{ github.event.pull_request.number }}
+        if: success()
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             🚀 Latest commit deployed to ${{ steps.deploy.outputs.URL }}
+
+            * Date: `${{ steps.current-time.outputs.time }}`
+            * Commit: ${{ github.sha }} (merging ${{ github.event.pull_request.head.sha }} into ${{ github.event.pull_request.base.sha }})
+
+          edit-mode: replace
+
+      - name: Create or update comment with failure details
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure()
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ❌ Failed to deploy preview.
+
+            <details>
+
+              ```
+              ${{ steps.build.outputs.BUILD_OUTPUT }}
+              ```
+            </details>
 
             * Date: `${{ steps.current-time.outputs.time }}`
             * Commit: ${{ github.sha }} (merging ${{ github.event.pull_request.head.sha }} into ${{ github.event.pull_request.base.sha }})
@@ -238,12 +277,10 @@ jobs:
 
       - name: Get current time
         uses: gerred/actions/current-time@master
-        if: ${{ github.event.pull_request.number }}
         id: current-time
 
       - name: Find Comment
         uses: peter-evans/find-comment@v1
-        if: ${{ github.event.pull_request.number }}
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -252,7 +289,6 @@ jobs:
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
-        if: ${{ github.event.pull_request.number }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}

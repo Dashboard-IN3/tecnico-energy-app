@@ -31,22 +31,19 @@ async function main() {
     const worksheetPath = `${file.path}/${file.name}`
     const geojsonPath = `${file.path}/${filename.name}.geojson.gz`
 
-    const checksums = {
-      study_slug,
-      metrics: await getChecksum(worksheetPath),
-      geo: await getChecksum(geojsonPath),
-    }
-
-    if (
-      await prisma.file_checksum.count({
-        where: checksums,
-      })
-    ) {
-      log(`Study unchanged from last ingestion. Skipping.`)
-      continue
-    }
-
     try {
+      const checksums = {
+        study_slug,
+        metrics: await getChecksum(worksheetPath),
+        geo: await getChecksum(geojsonPath),
+      }
+
+      const existsCount = await prisma.file_checksum.count({ where: checksums })
+      if (existsCount) {
+        log(`Study unchanged from last ingestion. Skipping.`)
+        continue
+      }
+
       await prisma.$transaction(
         async tx => {
           // Update checksums
