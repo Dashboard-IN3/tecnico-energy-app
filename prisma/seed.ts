@@ -198,19 +198,28 @@ async function main() {
               properties json
             ) ON COMMIT DROP
           `
-          await tx.$executeRaw`CREATE INDEX ON tmp_geometries (key)`
 
-          const totalGeometries = await tx.$executeRaw(Prisma.sql`
-            INSERT INTO tmp_geometries (key, geom, properties) VALUES ${Prisma.join(
-              geoJSON.features.map(f => {
-                const geomKey = f.properties[studyResult.geom_key_field]
-                const geomStr = JSON.stringify(f.geometry)
-                const props = JSON.stringify(f.properties)
-                return Prisma.sql`(${geomKey}, ST_GeomFromGeoJSON(${geomStr}), ${props}::json)`
-              })
-            )}
-          `)
-          log(`inserted ${totalGeometries} geometries into a temporary table`)
+          let totalGeometries = 0
+          const chunkSize = 10_000
+          for (let i = 0; i < geoJSON.features.length; i += chunkSize) {
+            const chunk = geoJSON.features.slice(i, i + chunkSize)
+
+            totalGeometries += await tx.$executeRaw(Prisma.sql`
+              INSERT INTO tmp_geometries (key, geom, properties) VALUES ${Prisma.join(
+                chunk.map(f => {
+                  const geomKey = f.properties[studyResult.geom_key_field]
+                  const geomStr = JSON.stringify(f.geometry)
+                  const props = JSON.stringify(f.properties)
+                  return Prisma.sql`(${geomKey}, ST_GeomFromGeoJSON(${geomStr}), ${props}::json)`
+                })
+              )}
+            `)
+            log(
+              `inserted ${totalGeometries} geometries into a temporary table...`
+            )
+          }
+
+          await tx.$executeRaw`CREATE INDEX ON tmp_geometries (key)`
 
           const retainedGeometries = await tx.$executeRaw`
             INSERT INTO geometries (key, study_slug, geom, properties)
