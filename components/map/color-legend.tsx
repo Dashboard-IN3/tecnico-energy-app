@@ -8,7 +8,7 @@ export const ColorLegend: React.FC = () => {
     selectedStudy?.selectedTheme?.selectedScenario?.selectedCategory?.label
   const summaryUnit = selectedStudy.summary.summaryUnit
 
-  const total = selectedStudy.summary.summaryTotal
+  const max = selectedStudy.summary.summaryMax
 
   const colorScheme = [
     `bg-[#fedeb4]`,
@@ -32,7 +32,7 @@ export const ColorLegend: React.FC = () => {
                 )}
               ></div>
               <div className="flex justify-center">
-                {largeNumberDisplay(total / (colorScheme.length - idx), 0)}
+                {largeNumberDisplay(max / (colorScheme.length - idx), 0)}
               </div>
             </span>
           )
