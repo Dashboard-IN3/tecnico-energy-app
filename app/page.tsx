@@ -18,7 +18,7 @@ export default async function Home() {
         
         {/* Logo Container - Bottom right corner */}
         <div className="flex justify-end gap-2 pr-4 pb-4">
-          <a href="https://in3.dem.ist.utl.pt/" target="_blank" rel="noopener noreferrer">
+          <a href="https://recuperarportugal.gov.pt/" target="_blank" rel="noopener noreferrer">
             <Image
               src="/BARRA_LOGOS-03.png"
               alt="IN+ Logo"
