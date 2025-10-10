@@ -20,7 +20,7 @@ export default async function Home() {
         <div className="flex justify-end gap-2 pr-4 pb-4">
           <a href="https://in3.dem.ist.utl.pt/" target="_blank" rel="noopener noreferrer">
             <Image
-              src="/IN-logo.png"
+              src="/BARRA_LOGOS-03.png"
               alt="IN+ Logo"
               width={120}
               height={60}
