@@ -36,6 +36,22 @@ export default async function Home() {
               className="object-contain h-[60px] w-auto" // Consistent height with first logo
             />
           </a>
+          <a href="https://in3.dem.ist.utl.pt/" target="_blank" rel="noopener noreferrer">
+            <Image
+              src="/IN-logo.png"
+              alt="IN+ Logo"
+              width={2048}
+              height={295}
+              className="object-contain h-[60px] w-auto" // Height locked, width scales
+            />
+          </a>
+
+
+
+
+
+
+          
         </div>
       </div>
     </PlausibleProvider>
