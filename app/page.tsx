@@ -40,8 +40,8 @@ export default async function Home() {
             <Image
               src="/IN-logo.png"
               alt="IN+ Logo"
-              width={2048}
-              height={295}
+              width={120}
+              height={60}
               className="object-contain h-[60px] w-auto" // Height locked, width scales
             />
           </a>
