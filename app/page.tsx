@@ -18,7 +18,7 @@ export default async function Home() {
         
         {/* Logo Container - Bottom right corner */}
         <div className="flex justify-end gap-2 pr-4 pb-4">
-          <a href="https://in3.dem.ist.utl.pt/" target="_blank" rel="noopener noreferrer">
+          <a href="https://recuperarportugal.gov.pt/" target="_blank" rel="noopener noreferrer">
             <Image
               src="/BARRA_LOGOS-03.png"
               alt="IN+ Logo"
@@ -28,12 +28,14 @@ export default async function Home() {
             />
           </a>
           <a href="https://www.beneutral.pt/" target="_blank" rel="noopener noreferrer">
-            <Image
-              src="/beNeutral-logo.webp"
-              alt="beNeutral Logo"
-              width={120}
-              height={60}
-              className="object-contain h-[60px] w-auto" // Consistent height with first logo
+                <Image
+                  src="/BARRA_LOGOS-03.png"
+                  alt="PRR / República Portuguesa / UE Logos"
+                  width={2048}
+                  height={295}
+                  unoptimized
+                  className="object-contain h-[60px] w-auto"
+                />
             />
           </a>
         </div>
