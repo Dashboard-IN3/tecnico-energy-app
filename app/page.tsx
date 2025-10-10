@@ -22,8 +22,8 @@ export default async function Home() {
             <Image
               src="/BARRA_LOGOS-03.png"
               alt="IN+ Logo"
-              width={120}
-              height={60}
+              width={2048}
+              height={295}
               className="object-contain h-[60px] w-auto" // Height locked, width scales
             />
           </a>
