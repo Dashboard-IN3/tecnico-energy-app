@@ -8,7 +8,7 @@
 ### Modelo Guimarães
 
 Modelação do consumo de energia, custo de energia anuais de um bairro em Guimarães no âmbito do projecto BeNEUTRAL
-
+Software: City Energy Analyst
 Modelado por: Ricardo Oliveira, IN+, IST, Lisboa (2025)
 
 ricardo.a.gomes@tecnico.ulisboa.pt
