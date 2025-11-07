@@ -9,7 +9,7 @@
 
 Modelação do potencial de produção de elecricidade considerando painéis fotovoltaicos com eficiência de 16%. 
 Ricardo Gomes, Instituto Superior Técnico, 2024
-
+Software: City Energy Analyst
 Tipo de cobertura // % de cobertura disponivel para PV
 em terraço // 50%
 cobertura inclinada // 20%
